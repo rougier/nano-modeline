@@ -1,6 +1,6 @@
 ;;; nano-modeline.el --- NΛNO modeline -*- lexical-binding: t -*-
 ;; -------------------------------------------------------------------
-;; GNU Emacs / NΛNO modeline
+;; GNU Emacs / N Λ N O modeline
 ;; Copyright (C) 2020-2021 - NΛNO developers 
 ;;
 ;; This file is not part of GNU Emacs.
