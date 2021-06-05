@@ -9,7 +9,7 @@ A simple modeline. Best with [N Λ N O theme](https://github.com/rougier/nano-th
 Install with [straight.el](https://github.com/raxod502/straight.el):
 
 ```
-;; Optional
+;; Optional (N Λ N O theme)
 (straight-use-package '(nano-theme :type git :host github
                                    :repo "rougier/nano-theme"))
 
