@@ -2,7 +2,13 @@
 
 A simple modeline. Best with [N Λ N O theme](https://github.com/rougier/nano-theme).
 
-![](images/screenshot.png)
+![](images/nano-modeline.png)
+
+<div>
+<img src="./images/nano-modeline-light.png" width=47.5%>
+<img src="./images/nano-modeline-dark.png"  width=47.5%>
+</div>
+
 
 ### Installation
 

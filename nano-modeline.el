@@ -25,9 +25,8 @@
 ;; -------------------------------------------------------------------
 (require 'subr-x)
 
-(defgroup nano-modeline nil
-  "NΛNO"
-  :group 'nano)
+(defgroup nano nil
+  "N Λ N O")
 
 (defgroup nano-modeline nil
   "Modeline settings"
