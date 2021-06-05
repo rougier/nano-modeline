@@ -1,7 +1,7 @@
-;;; nano-modeline.el --- NΛNO modeline -*- lexical-binding: t -*-
+;;; nano-modeline.el --- N Λ N O Modeline -*- lexical-binding: t -*-
 ;; -------------------------------------------------------------------
-;; GNU Emacs / N Λ N O modeline
-;; Copyright (C) 2020-2021 - NΛNO developers 
+;; GNU Emacs / N Λ N O Modeline
+;; Copyright (C) 2020-2021 - N Λ N O developers 
 ;;
 ;; This file is not part of GNU Emacs.
 ;;
@@ -19,7 +19,7 @@
 ;; along with this program. If not, see <http://www.gnu.org/licenses/>
 ;; -------------------------------------------------------------------
 ;;
-;; NΛNO modeline format:
+;; Modeline is rendered as:
 ;; [ status | name (primary)                               secondary ]
 ;;
 ;; -------------------------------------------------------------------
