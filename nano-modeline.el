@@ -50,7 +50,7 @@ Modeline is composed as:
 (defvar nano-modeline--selected-window nil
   "Currently selected window")
 
-(defcustom nano-modeline-position 'bottom
+(defcustom nano-modeline-position 'top
   "Default position (top or bottom)"
   :type '(choice (const :tag "Top"    top)
                  (const :tag "Bottom" bottom))
@@ -578,13 +578,12 @@ Modeline is composed as:
                       :underline  'unspecified :overline   'unspecified
                       :box        'unspecified :inherit    'unspecified))
 
-(defun nano-modeline (&optional position)
+(defun nano-modeline ()
   "Install a header line whose content is dependend on the major mode"
   (interactive)
 
   ;; Update selected window
   (setq nano-modeline--selected-window (selected-window))
-  (setq nano-modeline-position (or position nano-modeline-position))
   
   ;; "Box" effect is obtained through display property
   (nano-modeline-face-clear 'mode-line)
@@ -593,14 +592,14 @@ Modeline is composed as:
   (setq eshell-status-in-modeline nil)
   
         ;; TTY mode top
-  (cond ((and (not (display-graphic-p) (eq nano-modeline-position 'top)))
+  (cond ((and (not (display-graphic-p)) (eq nano-modeline-position 'top))
 	 (setq mode-line-format nil)
 	 (setq-default mode-line-format nil)
 	 (set-face-attribute 'mode-line nil :inherit 'nano-modeline-active)
 	 (set-face-attribute 'mode-line-inactive nil :inherit 'nano-modeline-inactive))
 
 	;; TTY Mode bottom
-	((and (not (display-graphic-p) (eq nano-modeline-position 'top)))
+	((and (not (display-graphic-p)) (eq nano-modeline-position 'top))
 	 (setq header-line-format nil)
 	 (setq-default header-line-format nil))
 	
