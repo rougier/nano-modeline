@@ -9,6 +9,15 @@ A simple modeline. Best with [N Λ N O theme](https://github.com/rougier/nano-th
 <img src="./images/nano-modeline-dark.png"  width=47.5%>
 </div>
 
+![](images/nano-modeline-default.png)
+![](images/nano-modeline-mu4e.png)
+![](images/nano-modeline-deft.png)
+![](images/nano-modeline-agenda.png)
+![](images/nano-modeline-elfeed.png)
+![](images/nano-modeline-term.png)
+![](images/nano-modeline-capture.png)
+![](images/nano-modeline-docview.png)
+
 
 ### Installation
 
