@@ -132,7 +132,7 @@ Modeline is composed as:
                                  (+ (if (eq backend 'Hg) 2 3) 2))))  nil))
 
 (defun nano-mode-name ()
-  (if (listp mode-name) (car mode-name) mode-name))
+  (format-mode-line mode-name))
 
 
 ;; From https://amitp.blogspot.com/2011/08/emacs-custom-mode-line.html
