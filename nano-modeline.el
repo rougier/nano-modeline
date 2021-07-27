@@ -23,7 +23,7 @@
 ;; [ status | name (primary)                               secondary ]
 ;;
 ;; -------------------------------------------------------------------
-(require 'subr-x)
+(require 's)
 
 (defgroup nano nil
   "N Λ N O")
@@ -402,7 +402,7 @@ Modeline is composed as:
                                          :underline nil
                                          :box nil
                                          :height 1.0)))
-(add-hook 'mu4e-view-mode-hook #'nano-modeline-mu4e-view-hook)
+;; (add-hook 'mu4e-view-mode-hook #'nano-modeline-mu4e-view-hook)
 
 
 ;; ---------------------------------------------------------------------
@@ -492,11 +492,22 @@ Modeline is composed as:
      page-number)))
 
 ;; ---------------------------------------------------------------------
-(defun buffer-menu-mode-header-line ()
-  (face-remap-add-relative
-   'header-line `(:background ,(face-background 'nano-subtle))))
-(add-hook 'Buffer-menu-mode-hook
-          #'buffer-menu-mode-header-line)
+(defun nano-modeline-buffer-menu-mode-p ()
+  (derived-mode-p 'buffer-menu-mode))
+
+(defun nano-modeline-buffer-menu-mode ()
+    (let ((buffer-name "Buffer list")
+          (mode-name   (nano-mode-name))
+          (position    (format-mode-line "%l:%c")))
+
+      (nano-modeline-compose (nano-modeline-status)
+                             buffer-name "" position)))
+;;(defun buffer-menu-mode-header-line ()
+;;  (face-remap-add-relative
+;;   'header-line `(:background ,(face-background 'nano-subtle))))
+;;(add-hook 'Buffer-menu-mode-hook
+;;          #'buffer-menu-mode-header-line)
+(setq Buffer-menu-use-header-line nil)
 
 ;; ---------------------------------------------------------------------
 (defun nano-modeline-completion-list-mode-p ()
@@ -519,15 +530,14 @@ Modeline is composed as:
   (derived-mode-p 'deft-mode))
 
 (defun nano-modeline-deft-mode ()
-  (let ((prefix " DEFT ")
+  (let ((prefix " RO ")
         (primary "Notes")
         (filter  (if deft-filter-regexp
                      (deft-whole-filter-regexp) "<filter>"))
         (matches (if deft-filter-regexp
                      (format "%d matches" (length deft-current-files))
                    (format "%d notes" (length deft-all-files)))))
-    (nano-modeline-compose " DEFT "
-                           primary filter matches)))
+    (nano-modeline-compose prefix primary filter matches)))
     
 
 ;; ---------------------------------------------------------------------
@@ -637,10 +647,13 @@ Modeline is composed as:
 	 ((nano-modeline-mu4e-dashboard-mode-p)  (nano-modeline-mu4e-dashboard-mode))
 	 ((nano-modeline-mu4e-main-mode-p)       (nano-modeline-mu4e-main-mode))
 	 ((nano-modeline-mu4e-headers-mode-p)    (nano-modeline-mu4e-headers-mode))
-	 ;; ((nano-modeline-mu4e-view-mode-p)       (nano-modeline-mu4e-view-mode))
+	 ((nano-modeline-mu4e-view-mode-p)       (nano-modeline-mu4e-view-mode))
 	 ((nano-modeline-text-mode-p)            (nano-modeline-default-mode))
 	 ((nano-modeline-pdf-view-mode-p)        (nano-modeline-pdf-view-mode))
 	 ((nano-modeline-docview-mode-p)         (nano-modeline-docview-mode))
+
+;;     ((nano-modeline-buffer-menu-mode-p)     (nano-modeline-buffer-menu-mode))
+     
 	 ((nano-modeline-completion-list-mode-p) (nano-modeline-completion-list-mode))
 	 ((nano-modeline-nano-help-mode-p)       (nano-modeline-nano-help-mode))
 	 (t                                      (nano-modeline-default-mode)))))))
@@ -654,5 +667,7 @@ Modeline is composed as:
 ;;  a modeline is evaluated, the corresponding window is always selected.
 (add-hook 'post-command-hook
 	  (lambda () (setq nano-modeline--selected-window (selected-window))))
+
+(nano-modeline)
 
 (provide 'nano-modeline)
