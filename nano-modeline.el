@@ -196,6 +196,15 @@ Modeline is composed as:
 					       'nano-modeline-inactive-secondary)))))
 
 ;; ---------------------------------------------------------------------
+(with-eval-after-load 'mu4e
+  (if (string> mu4e-mu-version "1.6.5")
+      (defun nano-modeline-mu4e-server-props ()
+        "Encapsulates the call to the variable mu4e-/~server-props depending on the version mu4e."
+        mu4e--server-props)
+    (defun nano-modeline-mu4e-server-props ()
+      "Encapsulates the call to the variable mu4e-/~server-props depending on the version mu4e."
+      mu4e~server-props)))
+
 (defun nano-modeline-mu4e-dashboard-mode-p ()
   (bound-and-true-p mu4e-dashboard-mode))
 
@@ -203,7 +212,7 @@ Modeline is composed as:
   (nano-modeline-compose (nano-modeline-status)
                          "Mail"
                          (nano-modeline-mu4e-context)
-                         (format "%d messages" (plist-get mu4e~server-props :doccount))))
+                         (format "%d messages" (plist-get (nano-modeline-mu4e-server-props) :doccount))))
 
 ;; ---------------------------------------------------------------------
 ;; since the EIN library itself is constantly re-rendering the notebook, and thus
@@ -372,11 +381,15 @@ Modeline is composed as:
 
 (defun nano-modeline-mu4e-headers-mode ()
   (nano-modeline-compose (nano-modeline-status)
-                         (mu4e~quote-for-modeline mu4e~headers-last-query)
+                         (mu4e-quote-for-modeline (mu4e-last-query))
                          ""
                          ""))
 
 (with-eval-after-load 'mu4e
+  (unless (fboundp 'mu4e-last-query)
+    (defun mu4e-last-query ()
+      "Get the most recent query or nil if there is none."
+      mu4e~headers-last-query))
   (defun mu4e~header-line-format () (nano-modeline)))
 
 ;; ---------------------------------------------------------------------
