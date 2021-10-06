@@ -6,7 +6,7 @@
 ;; URL: https://github.com/rougier/nano-modeline
 ;; Version: 0.1
 ;; Package-Requires: ((emacs "27.1"))
-;; Keywords: mode-line, header-line
+;; Keywords: convenience, mode-line, header-line
 
 ;; This file is not part of GNU Emacs.
 
@@ -175,12 +175,12 @@ Modeline is composed as:
         (concat "#" (substring-no-properties vc-mode
                                  (+ (if (eq backend 'Hg) 2 3) 2))))  nil))
 
-(defun nano-mode-name ()
+(defun nano-modeline-mode-name ()
   (format-mode-line mode-name))
 
 
 ;; From https://amitp.blogspot.com/2011/08/emacs-custom-mode-line.html
-(defun shorten-directory (dir max-length)
+(defun nano-modeline-shorten-directory (dir max-length)
   "Show up to `max-length' characters of a directory name `dir'."
   (let ((path (reverse (split-string (abbreviate-file-name dir) "/")))
         (output ""))
@@ -245,9 +245,7 @@ Modeline is composed as:
     "Encapsulates the call to the variable mu4e-/~server-props depending on the version mu4e."
     (if (string> mu4e-mu-version "1.6.5")
         mu4e--server-props
-      mu4e~server-props))
-
-  )
+      mu4e~server-props)))
 
 (defun nano-modeline-mu4e-dashboard-mode-p ()
   (bound-and-true-p mu4e-dashboard-mode))
@@ -284,9 +282,9 @@ Modeline is composed as:
 
 ;; Elfeed (regular header)
 (with-eval-after-load 'elfeed
-  (defun elfeed-setup-header ()
+  (defun nano-modeline-elfeed-setup-header ()
     (setq header-line-format (default-value 'header-line-format)))
-  (setq elfeed-search-header-function #'elfeed-setup-header))
+  (setq elfeed-search-header-function #'nano-modeline-elfeed-setup-header))
 
 ;; ---------------------------------------------------------------------
 (defun nano-modeline-elfeed-show-mode-p ()
@@ -313,13 +311,13 @@ Modeline is composed as:
 
 ;; Calendar (no header, only overline)
 (with-eval-after-load 'calendar
-  (defun calendar-setup-header ()
+  (defun nano-modeline-calendar-setup-header ()
     (setq header-line-format "")
     (face-remap-add-relative
      'header-line `(:overline ,(face-foreground 'default)
                     :height 0.5
                     :background ,(face-background 'default))))
-  (add-hook 'calendar-initial-window-hook #'calendar-setup-header)
+  (add-hook 'calendar-initial-window-hook #'nano-modeline-calendar-setup-header)
 
   ;; From https://emacs.stackexchange.com/questions/45650
   (add-to-list 'display-buffer-alist
@@ -337,13 +335,13 @@ Modeline is composed as:
                          ""))
 
 (with-eval-after-load 'org-capture
-  (defun org-capture-turn-off-header-line ()
+  (defun nano-modeline-org-capture-turn-off-header-line ()
     (setq-local header-line-format (default-value 'header-line-format))
     ;; (fit-window-to-buffer nil nil 8)
     ;; (face-remap-add-relative 'header-line '(:background "#ffffff"))
     (message nil))
   (add-hook 'org-capture-mode-hook
-            #'org-capture-turn-off-header-line))
+            #'nano-modeline-org-capture-turn-off-header-line))
 
 ;; ---------------------------------------------------------------------
 (setq Info-use-header-line nil)
@@ -407,7 +405,7 @@ Modeline is composed as:
   (nano-modeline-compose " >_ "
                          "Terminal"
                          (concat "(" shell-file-name ")")
-                         (shorten-directory default-directory 32)))
+                         (nano-modeline-shorten-directory default-directory 32)))
 
 ;; ---------------------------------------------------------------------
 (defun nano-modeline-mu4e-loading-mode-p ()
@@ -440,18 +438,21 @@ Modeline is composed as:
 
 (defun nano-modeline-mu4e-headers-mode ()
   (nano-modeline-compose (nano-modeline-status)
-                         (nano-modeline-mu4e-quote (mu4e-last-query))
+                         (nano-modeline-mu4e-quote (nano-modeline-mu4e-last-query))
                          ""
                          (format "[%s]"
                                  (nano-modeline-mu4e-quote
                                   (mu4e-context-name (mu4e-context-current))))))
 
 (with-eval-after-load 'mu4e
-  (unless (fboundp 'mu4e-last-query)
-    (defun mu4e-last-query ()
+    (defun nano-modeline-mu4e-last-query ()
       "Get the most recent query or nil if there is none."
-      mu4e~headers-last-query))
-  (defun mu4e~header-line-format () (nano-modeline)))
+      (if (fboundp 'mu4e-last-query)
+          (mu4e-last-query)
+        mu4e~headers-last-query))
+  ;;  (defun mu4e~header-line-format ()
+  ;;    (nano-modeline))
+  (advice-add 'mu4e~header-line-format :override #'nano-modeline))
 
 ;; ---------------------------------------------------------------------
 (setq mu4e-modeline-max-width 72)
@@ -510,7 +511,7 @@ Modeline is composed as:
 
 (defun nano-modeline-org-clock-mode ()
     (let ((buffer-name (format-mode-line "%b"))
-          (mode-name   (nano-mode-name))
+          (mode-name   (nano-modeline-mode-name))
           (branch      (nano-modeline-vc-branch))
           (position    (format-mode-line "%l:%c")))
       (nano-modeline-compose (nano-modeline-status)
@@ -527,7 +528,7 @@ Modeline is composed as:
 
 (defun nano-modeline-docview-mode ()
   (let ((buffer-name (format-mode-line "%b"))
-    (mode-name   (nano-mode-name))
+    (mode-name   (nano-modeline-mode-name))
     (branch      (nano-modeline-vc-branch))
     (page-number (concat
               (number-to-string (doc-view-current-page)) "/"
@@ -549,7 +550,7 @@ Modeline is composed as:
 
 (defun nano-modeline-pdf-view-mode ()
   (let ((buffer-name (format-mode-line "%b"))
-    (mode-name   (nano-mode-name))
+    (mode-name   (nano-modeline-mode-name))
     (branch      (nano-modeline-vc-branch))
     (page-number (concat
               (number-to-string (pdf-view-current-page)) "/"
@@ -571,7 +572,7 @@ Modeline is composed as:
 
 (defun nano-modeline-buffer-menu-mode ()
     (let ((buffer-name "Buffer list")
-          (mode-name   (nano-mode-name))
+          (mode-name   (nano-modeline-mode-name))
           (position    (format-mode-line "%l:%c")))
 
       (nano-modeline-compose (nano-modeline-status)
@@ -591,14 +592,14 @@ Modeline is composed as:
 
 (defun nano-modeline-completion-list-mode ()
     (let ((buffer-name (format-mode-line "%b"))
-          (mode-name   (nano-mode-name))
+          (mode-name   (nano-modeline-mode-name))
           (position    (format-mode-line "%l:%c")))
 
       (nano-modeline-compose (nano-modeline-status)
                              buffer-name "" position)))
 ;; ---------------------------------------------------------------------
 (with-eval-after-load 'deft
-  (defun deft-print-header ()
+  (defun nano-modeline-deft-print-header ()
     (force-mode-line-update)
     (widget-insert "\n")))
 
@@ -625,7 +626,7 @@ Modeline is composed as:
 
 (defun nano-modeline-default-mode ()
     (let ((buffer-name (format-mode-line "%b"))
-          (mode-name   (nano-mode-name))
+          (mode-name   (nano-modeline-mode-name))
           (branch      (nano-modeline-vc-branch))
           (position    (format-mode-line "%l:%c")))
       (nano-modeline-compose (nano-modeline-status)
@@ -750,3 +751,4 @@ Modeline is composed as:
 (nano-modeline)
 
 (provide 'nano-modeline)
+;;; nano-modeline.el ends here
