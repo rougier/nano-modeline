@@ -581,7 +581,9 @@ Modeline is composed as:
 ;;   'header-line `(:background ,(face-background 'nano-subtle))))
 ;;(add-hook 'Buffer-menu-mode-hook
 ;;          #'buffer-menu-mode-header-line)
-(setq Buffer-menu-use-header-line nil)
+(if (boundp 'Buffer-menu-use-header-line)
+    (setq Buffer-menu-use-header-line nil))
+
 
 ;; ---------------------------------------------------------------------
 (defun nano-modeline-completion-list-mode-p ()
@@ -672,7 +674,9 @@ Modeline is composed as:
   (nano-modeline-face-clear 'mode-line)
   (nano-modeline-face-clear 'mode-line-inactive)
   (nano-modeline-face-clear 'header-line)
-  (setq eshell-status-in-modeline nil)
+  
+  (if (boundp 'eshell-status-in-modeline)
+    (setq eshell-status-in-modeline nil))
   
         ;; TTY mode top
   (cond ((and (not (display-graphic-p))
