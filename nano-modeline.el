@@ -161,7 +161,15 @@ Modeline is composed as:
   "Should the user supplied mode be called for modeline?"
   nano-modeline-user-mode)
 
-(defun vc-branch ()
+(defun nano-modeline-truncate (str size &optional ellipsis)
+  "If STR is longer than SIZE, truncate it and add ELLIPSIS."
+
+  (let ((ellipsis (or ellipsis "…")))
+    (if (> (length str) size)
+        (format "%s%s" (substring str 0 (- size (length ellipsis))) ellipsis)
+      str)))
+
+(defun nano-modeline-vc-branch ()
   (if vc-mode
       (let ((backend (vc-backend buffer-file-name)))
         (concat "#" (substring-no-properties vc-mode
@@ -293,7 +301,7 @@ Modeline is composed as:
          (feed-title   (plist-get (elfeed-feed-meta feed) :title))
          (entry-author (elfeed-meta elfeed-show-entry :author)))
     (nano-modeline-compose (nano-modeline-status)
-                           (s-truncate 40 title "…")
+                           (nano-modeline-truncate title 40)
                            (concat "(" tags-str ")")
                            feed-title)))
 
@@ -457,7 +465,7 @@ Modeline is composed as:
          (from    (mu4e~headers-contact-str (mu4e-message-field msg :from)))
          (date     (mu4e-message-field msg :date)))
     (nano-modeline-compose (nano-modeline-status)
-                           (s-truncate 40 subject "…")
+                           (nano-modeline-truncate subject 40)
                            ""
                            from)))
 
@@ -503,7 +511,7 @@ Modeline is composed as:
 (defun nano-modeline-org-clock-mode ()
     (let ((buffer-name (format-mode-line "%b"))
           (mode-name   (nano-mode-name))
-          (branch      (vc-branch))
+          (branch      (nano-modeline-vc-branch))
           (position    (format-mode-line "%l:%c")))
       (nano-modeline-compose (nano-modeline-status)
                              buffer-name 
@@ -520,7 +528,7 @@ Modeline is composed as:
 (defun nano-modeline-docview-mode ()
   (let ((buffer-name (format-mode-line "%b"))
     (mode-name   (nano-mode-name))
-    (branch      (vc-branch))
+    (branch      (nano-modeline-vc-branch))
     (page-number (concat
               (number-to-string (doc-view-current-page)) "/"
               (or (ignore-errors
@@ -542,7 +550,7 @@ Modeline is composed as:
 (defun nano-modeline-pdf-view-mode ()
   (let ((buffer-name (format-mode-line "%b"))
     (mode-name   (nano-mode-name))
-    (branch      (vc-branch))
+    (branch      (nano-modeline-vc-branch))
     (page-number (concat
               (number-to-string (pdf-view-current-page)) "/"
               (or (ignore-errors
@@ -616,7 +624,7 @@ Modeline is composed as:
 (defun nano-modeline-default-mode ()
     (let ((buffer-name (format-mode-line "%b"))
           (mode-name   (nano-mode-name))
-          (branch      (vc-branch))
+          (branch      (nano-modeline-vc-branch))
           (position    (format-mode-line "%l:%c")))
       (nano-modeline-compose (nano-modeline-status)
                              buffer-name
