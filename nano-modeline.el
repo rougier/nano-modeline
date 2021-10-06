@@ -152,6 +152,15 @@ Modeline is composed as:
   "Modeline face for inactive MODIFIED element"
   :group 'nano-modeline-inactive)
 
+(defcustom nano-modeline-user-mode nil
+  "User supplied mode to be evaluated for modeline."
+  :type '(choice (const nil) function)
+  :group 'nano-modeline)
+
+(defun nano-modeline-user-mode-p ()
+  "Should the user supplied mode be called for modeline?"
+  nano-modeline-user-mode)
+
 (defun vc-branch ()
   (if vc-mode
       (let ((backend (vc-backend buffer-file-name)))
@@ -224,13 +233,13 @@ Modeline is composed as:
 
 ;; ---------------------------------------------------------------------
 (with-eval-after-load 'mu4e
-  (if (string> mu4e-mu-version "1.6.5")
-      (defun nano-modeline-mu4e-server-props ()
-        "Encapsulates the call to the variable mu4e-/~server-props depending on the version mu4e."
-        mu4e--server-props)
-    (defun nano-modeline-mu4e-server-props ()
-      "Encapsulates the call to the variable mu4e-/~server-props depending on the version mu4e."
-      mu4e~server-props)))
+  (defun nano-modeline-mu4e-server-props ()
+    "Encapsulates the call to the variable mu4e-/~server-props depending on the version mu4e."
+    (if (string> mu4e-mu-version "1.6.5")
+        mu4e--server-props
+      mu4e~server-props))
+
+  )
 
 (defun nano-modeline-mu4e-dashboard-mode-p ()
   (bound-and-true-p mu4e-dashboard-mode))
@@ -413,17 +422,21 @@ Modeline is composed as:
                          (format-time-string "%A %d %B %Y, %H:%M")))
 
 ;; ---------------------------------------------------------------------
+(defun nano-modeline-mu4e-quote (str)
+  (if (string> mu4e-mu-version "1.6.5")
+      (mu4e~quote-for-modeline str)
+    (mu4e-quote-for-modeline str)))
+
 (defun nano-modeline-mu4e-headers-mode-p ()
   (derived-mode-p 'mu4e-headers-mode))
 
 (defun nano-modeline-mu4e-headers-mode ()
   (nano-modeline-compose (nano-modeline-status)
-                         (mu4e-quote-for-modeline (mu4e-last-query))
+                         (nano-modeline-mu4e-quote (mu4e-last-query))
                          ""
                          (format "[%s]"
-                         (mu4e~quote-for-modeline
-                          (mu4e-context-name (mu4e-context-current))))
-                         ))
+                                 (nano-modeline-mu4e-quote
+                                  (mu4e-context-name (mu4e-context-current))))))
 
 (with-eval-after-load 'mu4e
   (unless (fboundp 'mu4e-last-query)
@@ -583,7 +596,7 @@ Modeline is composed as:
   (derived-mode-p 'deft-mode))
 
 (defun nano-modeline-deft-mode ()
-  (let ((prefix " RO ")
+  (let ((prefix (nano-modeline-status))
         (primary "Notes")
         (filter  (if deft-filter-regexp
                      (deft-whole-filter-regexp) "<filter>"))
@@ -686,6 +699,7 @@ Modeline is composed as:
   (let* ((format
           '((:eval
              (cond
+              ((nano-modeline-user-mode-p)            (funcall ,nano-modeline-user-mode)) 
               ((nano-modeline-prog-mode-p)            (nano-modeline-default-mode))
               ((nano-modeline-message-mode-p)         (nano-modeline-message-mode))
               ((nano-modeline-elfeed-search-mode-p)   (nano-modeline-elfeed-search-mode))
