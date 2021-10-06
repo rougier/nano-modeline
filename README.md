@@ -21,7 +21,7 @@ A simple modeline. Best with [N Λ N O theme](https://github.com/rougier/nano-th
 
 ### Installation
 
-Install with `M-: (package-install nano-modeline)`
+Install with `M-: (package-install 'nano-modeline)`
 
 
 ### Usage
