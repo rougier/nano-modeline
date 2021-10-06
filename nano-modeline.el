@@ -1,35 +1,62 @@
-;;; nano-modeline.el --- N Λ N O Modeline -*- lexical-binding: t -*-
-;; -------------------------------------------------------------------
-;; GNU Emacs / N Λ N O Modeline
-;; Copyright (C) 2020-2021 - N Λ N O developers 
-;;
+;;; nano-modeline.el --- N Λ N O modeline -*- lexical-binding: t -*-
+
+;; Copyright (C) 2021 Free Software Foundation, Inc.
+
+;; Maintainer: Nicolas P. Rougier <Nicolas.Rougier@inria.fr>
+;; URL: https://github.com/rougier/nano-modeline
+;; Version: 0.1
+;; Package-Requires: ((emacs "27.1"))
+;; Keywords: mode-line, header-line
+
 ;; This file is not part of GNU Emacs.
-;;
-;; This program is free software: you can redistribute it and/or
-;; modify it under the terms of the GNU General Public License as
-;; published by the Free Software Foundation, either version 3 of the
-;; License, or (at your option) any later version.
-;;
-;; This program is distributed in the hope that it will be useful, but
-;; WITHOUT ANY WARRANTY; without even the implied warranty of
-;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-;; General Public License for more details.
-;;
-;; You should have received a copy of the GNU General Public License
-;; along with this program. If not, see <http://www.gnu.org/licenses/>
-;; -------------------------------------------------------------------
-;;
-;; Modeline is rendered as:
+
+;; This file is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation; either version 3, or (at your option)
+;; any later version.
+
+;; This file is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+
+;; For a full copy of the GNU General Public License
+;; see <https://www.gnu.org/licenses/>.
+
+;;; Commentary:
+;; 
+;; Nano modeline is a custome modeline rendered as:
 ;; [ status | name (primary)                               secondary ]
 ;;
-;; -------------------------------------------------------------------
-(require 's)
-
+;; It can be displayed on bottom (mode-line) or top (header-line)
+;; depending on nano-modeline-position custom setting.
+;;
+;; There are two sets of faces (for active and inactive modelines) that
+;; can be customized (M-x: customize-group + nano-modeline)
+;;
+;; - nano-modeline-active-name      / nano-modeline-inactive-name
+;; - nano-modeline-active-primary   / nano-modeline-inactive-primary
+;; - nano-modeline-active-secondary / nano-modeline-inactive-secondary
+;; - nano-modeline-active-status-RO / nano-modeline-inactive-status-RO
+;; - nano-modeline-active-status-RW / nano-modeline-inactive-status-RW
+;; - nano-modeline-active-status-** / nano-modeline-inactive-status-**
+;;
+;; Usage example:
+;;
+;; M-x: nano-modeline
+;;
+;;; NEWS:
+;;
+;; Version 0.1
+;; - Submission to ELPA
+;;
+;;; Code:
 (defgroup nano nil
-  "N Λ N O")
+  "N Λ N O"
+  :group 'convenience)
 
 (defgroup nano-modeline nil
-  "Modeline settings"
+  "N Λ N O modeline"
   :group 'nano)
 
 (defgroup nano-modeline-active nil
@@ -153,47 +180,47 @@ Modeline is composed as:
   "Compose a string with provided information"
   (let* ((char-width    (window-font-width nil 'header-line))
          (window        (get-buffer-window (current-buffer)))
-	 (active        (eq window nano-modeline--selected-window))
+     (active        (eq window nano-modeline--selected-window))
          (space-up       +0.20)
          (space-down     -0.25)
-	 (prefix (cond ((string= status "RO")
-			(propertize (if (window-dedicated-p)" -- " " RO ")
-				    'face (if active 'nano-modeline-active-status-RO
-					             'nano-modeline-inactive-status-RO)))
+     (prefix (cond ((string= status "RO")
+            (propertize (if (window-dedicated-p)"•RO " " RO ")
+                    'face (if active 'nano-modeline-active-status-RO
+                                 'nano-modeline-inactive-status-RO)))
                        ((string= status "**")
-			(propertize (if (window-dedicated-p)" -- " " ** ")
-				    'face (if active 'nano-modeline-active-status-**
-					             'nano-modeline-inactive-status-**)))
+            (propertize (if (window-dedicated-p)"•** " " ** ")
+                    'face (if active 'nano-modeline-active-status-**
+                                 'nano-modeline-inactive-status-**)))
                        ((string= status "RW")
-			(propertize (if (window-dedicated-p)" -- " " RW ")
-				    'face (if active 'nano-modeline-active-status-RW
-					             'nano-modeline-inactive-status-RW)))
-		       (t (propertize status
-				      'face (if active 'nano-modeline-active-status-**
-					               'nano-modeline-inactive-status-**)))))
+            (propertize (if (window-dedicated-p) "•RW " " RW ")
+                    'face (if active 'nano-modeline-active-status-RW
+                                 'nano-modeline-inactive-status-RW)))
+               (t (propertize status
+                      'face (if active 'nano-modeline-active-status-**
+                                   'nano-modeline-inactive-status-**)))))
          (left (concat
                 (propertize " "  'face (if active 'nano-modeline-active
-					          'nano-modeline-inactive)
-			    'display `(raise ,space-up))
+                              'nano-modeline-inactive)
+                'display `(raise ,space-up))
                 (propertize name 'face (if active 'nano-modeline-active-name
-				                  'nano-modeline-inactive-name))
+                                  'nano-modeline-inactive-name))
                 (propertize " "  'face (if active 'nano-modeline-active
-					          'nano-modeline-inactive)
+                              'nano-modeline-inactive)
                                  'display `(raise ,space-down))
-		(propertize primary 'face (if active 'nano-modeline-active-primary
+        (propertize primary 'face (if active 'nano-modeline-active-primary
                                                      'nano-modeline-inactive-primary))))
          (right (concat secondary " "))
          (available-width (- (window-total-width) 
-			     (length prefix) (length left) (length right)
-			     (/ (window-right-divider-width) char-width)))
-	 (available-width (max 1 available-width)))
+                 (length prefix) (length left) (length right)
+                 (/ (window-right-divider-width) char-width)))
+     (available-width (max 1 available-width)))
     (concat prefix
-	    left
-	    (propertize (make-string available-width ?\ )
-			'face (if active 'nano-modeline-active
-			                 'nano-modeline-inactive))
-	    (propertize right 'face (if active 'nano-modeline-active-secondary
-					       'nano-modeline-inactive-secondary)))))
+        left
+        (propertize (make-string available-width ?\ )
+            'face (if active 'nano-modeline-active
+                             'nano-modeline-inactive))
+        (propertize right 'face (if active 'nano-modeline-active-secondary
+                           'nano-modeline-inactive-secondary)))))
 
 ;; ---------------------------------------------------------------------
 (defun nano-modeline-mu4e-dashboard-mode-p ()
@@ -297,26 +324,26 @@ Modeline is composed as:
 (defun nano-modeline-info-breadcrumbs ()
   (let ((nodes (Info-toc-nodes Info-current-file))
         (cnode Info-current-node)
-	(node Info-current-node)
+    (node Info-current-node)
         (crumbs ())
         (depth Info-breadcrumbs-depth)
-	line)
+    line)
     (while  (> depth 0)
       (setq node (nth 1 (assoc node nodes)))
       (if node (push node crumbs))
       (setq depth (1- depth)))
     (setq crumbs (cons "Top" (if (member (pop crumbs) '(nil "Top"))
-			         crumbs (cons nil crumbs))))
+                     crumbs (cons nil crumbs))))
     (forward-line 1)
     (dolist (node crumbs)
       (let ((text
-	     (if (not (equal node "Top")) node
-	       (format "%s"
-		       (if (stringp Info-current-file)
-			   (file-name-sans-extension
-			    (file-name-nondirectory Info-current-file))
-			 Info-current-file)))))
-	(setq line (concat line (if (null line) "" " > ")
+         (if (not (equal node "Top")) node
+           (format "%s"
+               (if (stringp Info-current-file)
+               (file-name-sans-extension
+                (file-name-nondirectory Info-current-file))
+             Info-current-file)))))
+    (setq line (concat line (if (null line) "" " > ")
                                 (if (null node) "..." text)))))
     (if (and cnode (not (equal cnode "Top")))
         (setq line (concat line (if (null line) "" " > ") cnode)))
@@ -357,6 +384,16 @@ Modeline is composed as:
                          (shorten-directory default-directory 32)))
 
 ;; ---------------------------------------------------------------------
+(defun nano-modeline-mu4e-loading-mode-p ()
+  (derived-mode-p 'mu4e-loading-mode))
+
+(defun nano-modeline-mu4e-loading-mode ()
+  (nano-modeline-compose (nano-modeline-status)
+                         "Mail"
+                         (nano-modeline-mu4e-context)
+                         (format-time-string "%A %d %B %Y, %H:%M")))
+
+;; ---------------------------------------------------------------------
 (defun nano-modeline-mu4e-main-mode-p ()
   (derived-mode-p 'mu4e-main-mode))
 
@@ -374,7 +411,10 @@ Modeline is composed as:
   (nano-modeline-compose (nano-modeline-status)
                          (mu4e~quote-for-modeline mu4e~headers-last-query)
                          ""
-                         ""))
+                         (format "[%s]"
+                         (mu4e~quote-for-modeline
+                          (mu4e-context-name (mu4e-context-current))))
+                         ))
 
 (with-eval-after-load 'mu4e
   (defun mu4e~header-line-format () (nano-modeline)))
@@ -453,20 +493,20 @@ Modeline is composed as:
 
 (defun nano-modeline-docview-mode ()
   (let ((buffer-name (format-mode-line "%b"))
-	(mode-name   (nano-mode-name))
-	(branch      (vc-branch))
-	(page-number (concat
-		      (number-to-string (doc-view-current-page)) "/"
-		      (or (ignore-errors
-			    (number-to-string (doc-view-last-page-number)))
-			  "???"))))
+    (mode-name   (nano-mode-name))
+    (branch      (vc-branch))
+    (page-number (concat
+              (number-to-string (doc-view-current-page)) "/"
+              (or (ignore-errors
+                (number-to-string (doc-view-last-page-number)))
+              "???"))))
     (nano-modeline-compose
      (nano-modeline-status)
      buffer-name
      (concat "(" mode-name
-	     (if branch (concat ", "
-				(propertize branch 'face 'italic)))
-	     ")" )
+         (if branch (concat ", "
+                (propertize branch 'face 'italic)))
+         ")" )
      page-number)))
 
 ;; ---------------------------------------------------------------------
@@ -475,20 +515,20 @@ Modeline is composed as:
 
 (defun nano-modeline-pdf-view-mode ()
   (let ((buffer-name (format-mode-line "%b"))
-	(mode-name   (nano-mode-name))
-	(branch      (vc-branch))
-	(page-number (concat
-		      (number-to-string (pdf-view-current-page)) "/"
-		      (or (ignore-errors
-			    (number-to-string (pdf-cache-number-of-pages)))
-			  "???"))))
+    (mode-name   (nano-mode-name))
+    (branch      (vc-branch))
+    (page-number (concat
+              (number-to-string (pdf-view-current-page)) "/"
+              (or (ignore-errors
+                (number-to-string (pdf-cache-number-of-pages)))
+              "???"))))
     (nano-modeline-compose
      "RW"
      buffer-name
      (concat "(" mode-name
-	     (if branch (concat ", "
-				(propertize branch 'face 'italic)))
-	     ")" )
+         (if branch (concat ", "
+                (propertize branch 'face 'italic)))
+         ")" )
      page-number)))
 
 ;; ---------------------------------------------------------------------
@@ -601,72 +641,72 @@ Modeline is composed as:
   (setq eshell-status-in-modeline nil)
   
         ;; TTY mode top
-  (cond ((and (not (display-graphic-p)) (eq nano-modeline-position 'top))
-	 (setq mode-line-format nil)
-	 (setq-default mode-line-format nil)
-	 (set-face-attribute 'mode-line nil :inherit 'nano-modeline-active)
-	 (set-face-attribute 'mode-line-inactive nil :inherit 'nano-modeline-inactive))
+  (cond ((and (not (display-graphic-p))
+              (eq nano-modeline-position 'top))
+         (setq mode-line-format nil)
+         (setq-default mode-line-format nil)
+         (set-face-attribute 'mode-line nil :inherit 'nano-modeline-active)
+         (set-face-attribute 'mode-line-inactive nil :inherit 'nano-modeline-inactive))
 
-	;; TTY Mode bottom
-	((and (not (display-graphic-p)) (eq nano-modeline-position 'top))
-	 (setq header-line-format nil)
-	 (setq-default header-line-format nil))
-	
-	;; Graphic mode, modeline at top
-	((eq nano-modeline-position 'top)
-	 (setq mode-line-format (list ""))
-	 (setq-default mode-line-format (list ""))
-	 (set-face-attribute 'mode-line nil :inherit 'nano-modeline-active
-			                    :height 0.1)
-	 (set-face-attribute 'mode-line-inactive nil :inherit 'nano-modeline-inactive
-			                              :height 0.1))
-	 
-	;; Graphic mode, modeline at bottom
-	(t
-	 (setq header-line-format nil)
-	 (setq-default header-line-format nil)
-	 (set-face-attribute 'mode-line nil          :height (face-attribute 'default :height))
-	 (set-face-attribute 'mode-line-inactive nil :height (face-attribute 'default :height))))
-	 
-
-  (let ((format
-     '((:eval
-	(cond
-	 ((nano-modeline-prog-mode-p)            (nano-modeline-default-mode))
-	 ((nano-modeline-message-mode-p)         (nano-modeline-message-mode))
-	 ((nano-modeline-elfeed-search-mode-p)   (nano-modeline-elfeed-search-mode))
-	 ((nano-modeline-elfeed-show-mode-p)     (nano-modeline-elfeed-show-mode))
-	 ((nano-modeline-deft-mode-p)            (nano-modeline-deft-mode))
-	 ((nano-modeline-info-mode-p)            (nano-modeline-info-mode))
-	 ((nano-modeline-calendar-mode-p)        (nano-modeline-calendar-mode))
-	 ((nano-modeline-org-capture-mode-p)     (nano-modeline-org-capture-mode))
-	 ((nano-modeline-org-agenda-mode-p)      (nano-modeline-org-agenda-mode))
-	 ((nano-modeline-org-clock-mode-p)       (nano-modeline-org-clock-mode))
-	 ((nano-modeline-term-mode-p)            (nano-modeline-term-mode))
-	 ((nano-modeline-vterm-mode-p)           (nano-modeline-term-mode))
-	 ((nano-modeline-mu4e-dashboard-mode-p)  (nano-modeline-mu4e-dashboard-mode))
-	 ((nano-modeline-mu4e-main-mode-p)       (nano-modeline-mu4e-main-mode))
-	 ((nano-modeline-mu4e-headers-mode-p)    (nano-modeline-mu4e-headers-mode))
-	 ((nano-modeline-mu4e-view-mode-p)       (nano-modeline-mu4e-view-mode))
-	 ((nano-modeline-text-mode-p)            (nano-modeline-default-mode))
-	 ((nano-modeline-pdf-view-mode-p)        (nano-modeline-pdf-view-mode))
-	 ((nano-modeline-docview-mode-p)         (nano-modeline-docview-mode))
-
-;;     ((nano-modeline-buffer-menu-mode-p)     (nano-modeline-buffer-menu-mode))
+        ;; TTY Mode bottom
+        ((and (not (display-graphic-p))
+              (eq nano-modeline-position 'top))
+         (setq header-line-format nil)
+         (setq-default header-line-format nil))
+    
+        ;; Graphic mode, modeline at top
+        ((eq nano-modeline-position 'top)
+         (setq mode-line-format (list ""))
+         (setq-default mode-line-format (list ""))
+         (set-face-attribute 'mode-line nil :inherit 'nano-modeline-active
+                                            :height 0.1)
+         (set-face-attribute 'mode-line-inactive nil :inherit 'nano-modeline-inactive
+                                                     :height 0.1))
      
-	 ((nano-modeline-completion-list-mode-p) (nano-modeline-completion-list-mode))
-	 ((nano-modeline-nano-help-mode-p)       (nano-modeline-nano-help-mode))
-	 (t                                      (nano-modeline-default-mode)))))))
+        ;; Graphic mode, modeline at bottom
+        (t
+         (setq header-line-format nil)
+         (setq-default header-line-format nil)
+         (set-face-attribute 'mode-line nil          :height (face-attribute 'default :height))
+         (set-face-attribute 'mode-line-inactive nil :height (face-attribute 'default :height))))
+     
+  (let* ((format
+          '((:eval
+             (cond
+              ((nano-modeline-prog-mode-p)            (nano-modeline-default-mode))
+              ((nano-modeline-message-mode-p)         (nano-modeline-message-mode))
+              ((nano-modeline-elfeed-search-mode-p)   (nano-modeline-elfeed-search-mode))
+              ((nano-modeline-elfeed-show-mode-p)     (nano-modeline-elfeed-show-mode))
+              ((nano-modeline-deft-mode-p)            (nano-modeline-deft-mode))
+              ((nano-modeline-info-mode-p)            (nano-modeline-info-mode))
+              ((nano-modeline-calendar-mode-p)        (nano-modeline-calendar-mode))
+              ((nano-modeline-org-capture-mode-p)     (nano-modeline-org-capture-mode))
+              ((nano-modeline-org-agenda-mode-p)      (nano-modeline-org-agenda-mode))
+              ((nano-modeline-org-clock-mode-p)       (nano-modeline-org-clock-mode))
+              ((nano-modeline-term-mode-p)            (nano-modeline-term-mode))
+              ((nano-modeline-vterm-mode-p)           (nano-modeline-term-mode))
+              ((nano-modeline-mu4e-dashboard-mode-p)  (nano-modeline-mu4e-dashboard-mode))
+              ((nano-modeline-mu4e-main-mode-p)       (nano-modeline-mu4e-main-mode))
+              ((nano-modeline-mu4e-loading-mode-p)    (nano-modeline-mu4e-loading-mode))
+              ((nano-modeline-mu4e-headers-mode-p)    (nano-modeline-mu4e-headers-mode))
+              ((nano-modeline-mu4e-view-mode-p)       (nano-modeline-mu4e-view-mode))
+              ((nano-modeline-text-mode-p)            (nano-modeline-default-mode))
+              ((nano-modeline-pdf-view-mode-p)        (nano-modeline-pdf-view-mode))
+              ((nano-modeline-docview-mode-p)         (nano-modeline-docview-mode))
+              ;;  ((nano-modeline-buffer-menu-mode-p)     (nano-modeline-buffer-menu-mode))
+              ((nano-modeline-completion-list-mode-p) (nano-modeline-completion-list-mode))
+              ((nano-modeline-nano-help-mode-p)       (nano-modeline-nano-help-mode))
+              (t                                      (nano-modeline-default-mode)))))))
+    
     (if (eq nano-modeline-position 'top)
-	(setq-default header-line-format format)
+        (setq-default header-line-format format)
       (setq-default mode-line-format format))))
-
 
 
 ;; This hooks is necessary to register selected window because when
 ;;  a modeline is evaluated, the corresponding window is always selected.
 (add-hook 'post-command-hook
-	  (lambda () (setq nano-modeline--selected-window (selected-window))))
+      (lambda () (setq nano-modeline--selected-window (selected-window))))
 
 (nano-modeline)
 
