@@ -239,22 +239,6 @@ Modeline is composed as:
         (propertize right 'face (if active 'nano-modeline-active-secondary
                            'nano-modeline-inactive-secondary)))))
 
-;; ---------------------------------------------------------------------
-(with-eval-after-load 'mu4e
-  (defun nano-modeline-mu4e-server-props ()
-    "Encapsulates the call to the variable mu4e-/~server-props depending on the version mu4e."
-    (if (string> mu4e-mu-version "1.6.5")
-        mu4e--server-props
-      mu4e~server-props)))
-
-(defun nano-modeline-mu4e-dashboard-mode-p ()
-  (bound-and-true-p mu4e-dashboard-mode))
-
-(defun nano-modeline-mu4e-dashboard-mode ()
-  (nano-modeline-compose (nano-modeline-status)
-                         "Mail"
-                         (nano-modeline-mu4e-context)
-                         (format "%d messages" (plist-get (nano-modeline-mu4e-server-props) :doccount))))
 
 ;; ---------------------------------------------------------------------
 ;; since the EIN library itself is constantly re-rendering the notebook, and thus
@@ -407,6 +391,40 @@ Modeline is composed as:
                          (concat "(" shell-file-name ")")
                          (nano-modeline-shorten-directory default-directory 32)))
 
+
+;; ---------------------------------------------------------------------
+(with-eval-after-load 'mu4e
+  (defun nano-modeline-mu4e-last-query ()
+    "Get the most recent mu4e query or nil if there is none."
+    (if (fboundp 'mu4e-last-query)
+        (mu4e-last-query)
+      mu4e~headers-last-query))
+  (advice-add 'mu4e~header-line-format :override #'nano-modeline)
+
+  (defun nano-modeline-mu4e-context ()
+    "Return the current mu4e context as a non propertized string."
+
+    (if (> (length (mu4e-context-label)) 0)
+        (concat "(" (substring-no-properties (mu4e-context-label) 1 -1) ")")
+      "(none)"))
+
+  (defun nano-modeline-mu4e-server-props ()
+    "Encapsulates the call to the variable mu4e-/~server-props
+depending on the version of mu4e."
+    (if (string> mu4e-mu-version "1.6.5")
+        mu4e--server-props
+      mu4e~server-props)))
+
+;; ---------------------------------------------------------------------
+(defun nano-modeline-mu4e-dashboard-mode-p ()
+  (bound-and-true-p mu4e-dashboard-mode))
+
+(defun nano-modeline-mu4e-dashboard-mode ()
+  (nano-modeline-compose (nano-modeline-status)
+                         "Mail"
+                         (nano-modeline-mu4e-context)
+                         (format "%d messages" (plist-get (nano-modeline-mu4e-server-props) :doccount))))
+
 ;; ---------------------------------------------------------------------
 (defun nano-modeline-mu4e-loading-mode-p ()
   (derived-mode-p 'mu4e-loading-mode))
@@ -428,6 +446,7 @@ Modeline is composed as:
                          (format-time-string "%A %d %B %Y, %H:%M")))
 
 ;; ---------------------------------------------------------------------
+
 (defun nano-modeline-mu4e-quote (str)
   (if (string> mu4e-mu-version "1.6.5")
       (mu4e~quote-for-modeline str)
@@ -443,16 +462,6 @@ Modeline is composed as:
                          (format "[%s]"
                                  (nano-modeline-mu4e-quote
                                   (mu4e-context-name (mu4e-context-current))))))
-
-(with-eval-after-load 'mu4e
-    (defun nano-modeline-mu4e-last-query ()
-      "Get the most recent query or nil if there is none."
-      (if (fboundp 'mu4e-last-query)
-          (mu4e-last-query)
-        mu4e~headers-last-query))
-  ;;  (defun mu4e~header-line-format ()
-  ;;    (nano-modeline))
-  (advice-add 'mu4e~header-line-format :override #'nano-modeline))
 
 ;; ---------------------------------------------------------------------
 (setq mu4e-modeline-max-width 72)
@@ -597,6 +606,7 @@ Modeline is composed as:
 
       (nano-modeline-compose (nano-modeline-status)
                              buffer-name "" position)))
+
 ;; ---------------------------------------------------------------------
 (with-eval-after-load 'deft
   (defun nano-modeline-deft-print-header ()
@@ -615,7 +625,6 @@ Modeline is composed as:
                      (format "%d matches" (length deft-current-files))
                    (format "%d notes" (length deft-all-files)))))
     (nano-modeline-compose prefix primary filter matches)))
-    
 
 ;; ---------------------------------------------------------------------
 (defun nano-modeline-prog-mode-p ()
@@ -645,14 +654,6 @@ Modeline is composed as:
         (modified    (and buffer-file-name (buffer-modified-p))))
     (cond (modified  "**") (read-only "RO") (t "RW"))))
   
-;; ---------------------------------------------------------------------
-(defun nano-modeline-mu4e-context ()
-  "Return the current mu4e context as a non propertized string."
-
-  (if (> (length (mu4e-context-label)) 0)
-      (concat "(" (substring-no-properties (mu4e-context-label) 1 -1) ")")
-    "(none)"))
-
 
 ;; ---------------------------------------------------------------------
 (defun nano-modeline-face-clear (face)
@@ -748,8 +749,6 @@ Modeline is composed as:
 ;;  a modeline is evaluated, the corresponding window is always selected.
 (add-hook 'post-command-hook
       (lambda () (setq nano-modeline--selected-window (selected-window))))
-
-(nano-modeline)
 
 (provide 'nano-modeline)
 ;;; nano-modeline.el ends here
