@@ -664,6 +664,7 @@ Modeline is composed as:
                       :underline  'unspecified :overline   'unspecified
                       :box        'unspecified :inherit    'unspecified))
 
+;;;###autoload
 (defun nano-modeline ()
   "Install a header line whose content is dependend on the major mode"
   (interactive)
