@@ -81,72 +81,72 @@ Modeline is composed as:
   :group 'nano-modeline)
 
 (defface nano-modeline-active
-  '((t (:inherit nano-subtle)))
+  '((t (:inherit mode-line)))
   "Modeline face for active modeline"
   :group 'nano-modeline-active)
 
 (defface nano-modeline-active-name
-  '((t (:inherit (nano-strong nano-modeline-active))))
+  '((t (:inherit (mode-line bold))))
   "Modeline face for active name element"
   :group 'nano-modeline-active)
 
 (defface nano-modeline-active-primary
-  '((t (:inherit (nano-default nano-modeline-active))))
+  '((t (:inherit mode-line)))
   "Modeline face for active primary element"
   :group 'nano-modeline-active)
 
 (defface nano-modeline-active-secondary
-  '((t (:inherit (nano-faded nano-modeline-active))))
+  '((t (:inherit mode-line)))
   "Modeline face for active secondary element"
   :group 'nano-modeline-active)
 
 (defface nano-modeline-active-status-RO
-  '((t (:inherit nano-popout-i)))
+  '((t (:inherit mode-line)))
   "Modeline face for active READ-ONLY element"
   :group 'nano-modeline-active)
 
 (defface nano-modeline-active-status-RW
-  '((t (:inherit nano-faded-i)))
+  '((t (:inherit mode-line)))
   "Modeline face for active READ-WRITE element"
   :group 'nano-modeline-active)
 
 (defface nano-modeline-active-status-**
-  '((t (:inherit nano-critical)))
+  '((t (:inherit mode-line)))
   "Modeline face for active MODIFIED element"
   :group 'nano-modeline-active)
 
 (defface nano-modeline-inactive
-  '((t (:inherit nano-subtle)))
+  '((t (:inherit mode-line-inactive)))
   "Modeline face for inactive window"
   :group 'nano-modeline-inactive)
 
 (defface nano-modeline-inactive-name
-  '((t (:inherit (nano-faded  nano-modeline-inactive))))
+  '((t (:inherit mode-line-inactive)))
   "Modeline face for inactive name element"
   :group 'nano-modeline-inactive)
 
 (defface nano-modeline-inactive-primary
-  '((t (:inherit (nano-faded nano-modeline-inactive))))
+  '((t (:inherit mode-line-inactive)))
   "Modeline face for inactive primary element"
   :group 'nano-modeline-inactive)
 
 (defface nano-modeline-inactive-secondary
-  '((t (:inherit (nano-faded nano-modeline-inactive))))
+  '((t (:inherit mode-line-inactive)))
   "Modeline face for inactive primary element"
   :group 'nano-modeline-inactive)
 
 (defface nano-modeline-inactive-status-RO
-  '((t (:inherit (nano-popout nano-modeline-inactive))))
+  '((t (:inherit mode-line-inactive)))
   "Modeline face for inactive READ-ONLY element"
   :group 'nano-modeline-inactive)
 
 (defface nano-modeline-inactive-status-RW
-  '((t (:inherit (nano-faded nano-modeline-inactive))))
+  '((t (:inherit nano-mode-line-inactive)))
   "Modeline face for inactive READ-WRITE element"
   :group 'nano-modeline-inactive)
 
 (defface nano-modeline-inactive-status-**
-  '((t (:inherit (nano-critical-i nano-modeline-inactive))))
+  '((t (:inherit nano-modeline-inactive)))
   "Modeline face for inactive MODIFIED element"
   :group 'nano-modeline-inactive)
 
@@ -168,12 +168,14 @@ Modeline is composed as:
       str)))
 
 (defun nano-modeline-vc-branch ()
+  "Return current VC branch if any."
   (if vc-mode
       (let ((backend (vc-backend buffer-file-name)))
         (concat "#" (substring-no-properties vc-mode
                                  (+ (if (eq backend 'Hg) 2 3) 2))))  nil))
 
 (defun nano-modeline-mode-name ()
+  "Return current major mode name"
   (format-mode-line mode-name))
 
 
@@ -191,6 +193,7 @@ Modeline is composed as:
       (setq output (concat "…/" output)))
     output))
 
+
 (defun nano-modeline-compose (status name primary secondary)
   "Compose a string with provided information"
   (let* ((char-width    (window-font-width nil 'header-line))
@@ -198,51 +201,49 @@ Modeline is composed as:
      (active        (eq window nano-modeline--selected-window))
          (space-up       +0.20)
          (space-down     -0.25)
-     (prefix (cond ((string= status "RO")
-            (propertize (if (window-dedicated-p)"•RO " " RO ")
-                    'face (if active 'nano-modeline-active-status-RO
-                                 'nano-modeline-inactive-status-RO)))
+         (prefix (cond ((string= status "RO")
+                        (propertize (if (window-dedicated-p)"•RO " " RO ")
+                                    'face (if active
+                                              'nano-modeline-active-status-RO
+                                            'nano-modeline-inactive-status-RO)))
                        ((string= status "**")
-            (propertize (if (window-dedicated-p)"•** " " ** ")
-                    'face (if active 'nano-modeline-active-status-**
-                                 'nano-modeline-inactive-status-**)))
+                        (propertize (if (window-dedicated-p)"•** " " ** ")
+                                    'face (if active
+                                              'nano-modeline-active-status-**
+                                            'nano-modeline-inactive-status-**)))
                        ((string= status "RW")
-            (propertize (if (window-dedicated-p) "•RW " " RW ")
-                    'face (if active 'nano-modeline-active-status-RW
-                                 'nano-modeline-inactive-status-RW)))
-               (t (propertize status
-                      'face (if active 'nano-modeline-active-status-**
-                                   'nano-modeline-inactive-status-**)))))
+                        (propertize (if (window-dedicated-p) "•RW " " RW ")
+                                    'face (if active 'nano-modeline-active-status-RW
+                                            'nano-modeline-inactive-status-RW)))
+                       (t (propertize status
+                                      'face (if active 'nano-modeline-active-status-**
+                                              'nano-modeline-inactive-status-**)))))
          (left (concat
                 (propertize " "  'face (if active 'nano-modeline-active
-                              'nano-modeline-inactive)
-                'display `(raise ,space-up))
+                                         'nano-modeline-inactive)
+                            'display `(raise ,space-up))
                 (propertize name 'face (if active 'nano-modeline-active-name
-                                  'nano-modeline-inactive-name))
+                                         'nano-modeline-inactive-name))
                 (propertize " "  'face (if active 'nano-modeline-active
-                              'nano-modeline-inactive)
-                                 'display `(raise ,space-down))
-        (propertize primary 'face (if active 'nano-modeline-active-primary
-                                                     'nano-modeline-inactive-primary))))
+                                         'nano-modeline-inactive)
+                            'display `(raise ,space-down))
+                (propertize primary 'face (if active 'nano-modeline-active-primary
+                                            'nano-modeline-inactive-primary))))
          (right (concat secondary " "))
          (available-width (- (window-total-width) 
-                 (length prefix) (length left) (length right)
-                 (/ (window-right-divider-width) char-width)))
+                             (length prefix) (length left) (length right)
+                             (/ (window-right-divider-width) char-width)))
      (available-width (max 1 available-width)))
     (concat prefix
-        left
-        (propertize (make-string available-width ?\ )
-            'face (if active 'nano-modeline-active
-                             'nano-modeline-inactive))
-        (propertize right 'face (if active 'nano-modeline-active-secondary
-                           'nano-modeline-inactive-secondary)))))
+            left
+            (propertize (make-string available-width ?\ )
+                        'face (if active 'nano-modeline-active
+                                'nano-modeline-inactive))
+            (propertize right 'face (if active 'nano-modeline-active-secondary
+                                      'nano-modeline-inactive-secondary)))))
 
 
 ;; ---------------------------------------------------------------------
-;; since the EIN library itself is constantly re-rendering the notebook, and thus
-;; re-setting the header-line-format, we cannot use the nano-modeline function to set
-;; the header format in a notebook buffer.  Fortunately, EIN exposes the
-;; ein:header-line-format variable for just this purpose.
 (defun nano-modeline-ein-notebook-mode ()
   (let ((buffer-name (format-mode-line "%b")))
     (nano-modeline-compose (if (ein:notebook-modified-p) "**" "RW")
@@ -662,45 +663,60 @@ depending on the version of mu4e."
   (unless nano-modeline--saved-mode-line-format
     (setq nano-modeline--saved-mode-line-format mode-line-format)
     (setq nano-modeline--saved-header-line-format header-line-format))
-  
+
+  ;; since the EIN library itself is constantly re-rendering the notebook, and thus
+  ;; re-setting the header-line-format, we cannot use the nano-modeline function to set
+  ;; the header format in a notebook buffer. Fortunately, EIN exposes the
+  ;; ein:header-line-format variable for just this purpose.
   (with-eval-after-load 'ein
-    (setq ein:header-line-format '((:eval (nano-modeline-ein-notebook-mode)))))
+    (if (eq nano-modeline-position 'top)
+        (setq ein:header-line-format '((:eval (nano-modeline-ein-notebook-mode))))))
+
+  ;; Elfeed uses header-line, we need to tell it to use our own format
   (with-eval-after-load 'elfeed
-    (setq elfeed-search-header-function #'nano-modeline-elfeed-setup-header))
+    (if (eq nano-modeline-position 'top)
+        (setq elfeed-search-header-function #'nano-modeline-elfeed-setup-header)))
+  
   (with-eval-after-load 'calendar
     (add-hook 'calendar-initial-window-hook
               #'nano-modeline-calendar-setup-header))
+
   (with-eval-after-load 'org-clock
     (add-hook 'org-clock-out-hook #'nano-modeline-org-clock-out))
+  
   (with-eval-after-load 'org-capture
     (add-hook 'org-capture-mode-hook
               #'nano-modeline-org-capture-turn-off-header-line))
+
   (with-eval-after-load 'esh-mode
     (setq eshell-status-in-mode-line nil))
 
   (with-eval-after-load 'mu4e
     (advice-add 'mu4e~header-line-format :override #'nano-modeline))
-  
-  (setq Info-use-header-line nil)
-  (setq Buffer-menu-use-header-line nil)
+
+  (if (eq nano-modeline-position 'top)
+      (setq Info-use-header-line nil))
+
+  (if (eq nano-modeline-position 'top)
+      (setq Buffer-menu-use-header-line nil))
 
   ;; Update selected window
   (nano-modeline--update-selected-window)
   ;; (setq nano-modeline--selected-window (selected-window))
   
   ;; "Box" effect is obtained through display property
-  (nano-modeline-face-clear 'mode-line)
-  (nano-modeline-face-clear 'mode-line-inactive)
-  (nano-modeline-face-clear 'header-line)
-
+  ;; (nano-modeline-face-clear 'mode-line)
+  ;; (nano-modeline-face-clear 'mode-line-inactive)
+  ;; (nano-modeline-face-clear 'header-line)
 
           ;; TTY mode top
   (cond ((and (not (display-graphic-p))
               (eq nano-modeline-position 'top))
          (setq mode-line-format nil)
          (setq-default mode-line-format nil)
-         (set-face-attribute 'mode-line nil :inherit 'nano-modeline-active)
-         (set-face-attribute 'mode-line-inactive nil :inherit 'nano-modeline-inactive))
+         ;; (set-face-attribute 'mode-line nil :inherit 'nano-modeline-active)
+         ;; (set-face-attribute 'mode-line-inactive nil :inherit 'nano-modeline-inactive)
+         )
 
         ;; TTY Mode bottom
         ((and (not (display-graphic-p))
@@ -710,12 +726,11 @@ depending on the version of mu4e."
     
         ;; Graphic mode, modeline at top
         ((eq nano-modeline-position 'top)
-         (setq mode-line-format (list ""))
-         (setq-default mode-line-format (list ""))
-         (set-face-attribute 'mode-line nil :inherit 'nano-modeline-active
-                                            :height 0.1)
-         (set-face-attribute 'mode-line-inactive nil :inherit 'nano-modeline-inactive
-                                                     :height 0.1))
+         (setq mode-line-format nil) ;;(list ""))
+         (setq-default mode-line-format nil) ;;(list ""))
+         ;; (set-face-attribute 'mode-line nil :inherit 'nano-modeline-active :height 0.1)
+         ;;(set-face-attribute 'mode-line-inactive nil :inherit 'nano-modeline-inactive :height 0.1)
+         )
      
         ;; Graphic mode, modeline at bottom
         (t
@@ -778,11 +793,10 @@ depending on the version of mu4e."
   ;;  (custom-reevaluate-setting 'mode-line)
   ;;  (custom-reevaluate-setting 'mode-line-inactive)
   ;;  (custom-reevaluate-setting 'header-line)
-
-  (set-face-attribute 'mode-line nil
-                      :height (face-attribute 'default :height))
-  (set-face-attribute 'mode-line-inactive nil
-                      :height (face-attribute 'default :height))
+  ;; (set-face-attribute 'mode-line nil
+  ;;                    :height (face-attribute 'default :height))
+  ;; (set-face-attribute 'mode-line-inactive nil
+  ;;                    :height (face-attribute 'default :height))
     
   (setq ein:header-line-format '(:eval (ein:header-line)))
   (setq elfeed-search-header-function #'elfeed-search--header)
@@ -796,9 +810,9 @@ depending on the version of mu4e."
                #'nano-modeline--update-selected-window)
   (advice-remove 'mu4e~header-line-format #'nano-modeline)
 
-  (setq mode-line-format nano-modeline--saved-mode-line-format)
+  (setq         mode-line-format nano-modeline--saved-mode-line-format)
   (setq-default mode-line-format nano-modeline--saved-mode-line-format)
-  (setq header-line-format nano-modeline--saved-header-line-format)
+  (setq         header-line-format nano-modeline--saved-header-line-format)
   (setq-default header-line-format nano-modeline--saved-header-line-format))
 
 
@@ -811,7 +825,10 @@ depending on the version of mu4e."
 
   (if nano-modeline-mode
       (nano-modeline-mode--activate)
-    (nano-modeline-mode--inactivate)))
+    (nano-modeline-mode--inactivate))
+
+  ;; Run any registered hooks
+  (run-hooks 'nano-modeline-mode-hook))
 
 
 (provide 'nano-modeline)
