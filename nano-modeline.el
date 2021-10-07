@@ -141,12 +141,12 @@ Modeline is composed as:
   :group 'nano-modeline-inactive)
 
 (defface nano-modeline-inactive-status-RW
-  '((t (:inherit nano-mode-line-inactive)))
+  '((t (:inherit mode-line-inactive)))
   "Modeline face for inactive READ-WRITE element"
   :group 'nano-modeline-inactive)
 
 (defface nano-modeline-inactive-status-**
-  '((t (:inherit nano-modeline-inactive)))
+  '((t (:inherit mode-line-inactive)))
   "Modeline face for inactive MODIFIED element"
   :group 'nano-modeline-inactive)
 
@@ -704,40 +704,42 @@ depending on the version of mu4e."
   (nano-modeline--update-selected-window)
   ;; (setq nano-modeline--selected-window (selected-window))
   
-  ;; "Box" effect is obtained through display property
-  ;; (nano-modeline-face-clear 'mode-line)
-  ;; (nano-modeline-face-clear 'mode-line-inactive)
-  ;; (nano-modeline-face-clear 'header-line)
 
-          ;; TTY mode top
-  (cond ((and (not (display-graphic-p))
-              (eq nano-modeline-position 'top))
-         (setq mode-line-format nil)
-         (setq-default mode-line-format nil)
-         ;; (set-face-attribute 'mode-line nil :inherit 'nano-modeline-active)
-         ;; (set-face-attribute 'mode-line-inactive nil :inherit 'nano-modeline-inactive)
-         )
+  (setq         mode-line-format nil)
+  (setq-default mode-line-format nil)
+  (setq         header-line-format nil)
+  (setq-default header-line-format nil)
+  
+  ;;         ;; TTY mode top
+  ;; (cond ((and (not (display-graphic-p))
+  ;;             (eq nano-modeline-position 'top))
+  ;;        (setq mode-line-format nil)
+  ;;        (setq-default mode-line-format nil)
+  ;;        ;; (set-face-attribute 'mode-line nil :inherit 'nano-modeline-active)
+  ;;        ;; (set-face-attribute 'mode-line-inactive nil :inherit 'nano-modeline-inactive)
+  ;;        )
 
-        ;; TTY Mode bottom
-        ((and (not (display-graphic-p))
-              (eq nano-modeline-position 'top))
-         (setq header-line-format nil)
-         (setq-default header-line-format nil))
+  ;;       ;; TTY Mode bottom
+  ;;       ((and (not (display-graphic-p))
+  ;;             (eq nano-modeline-position 'top))
+  ;;        (setq header-line-format nil)
+  ;;        (setq-default header-line-format nil))
     
-        ;; Graphic mode, modeline at top
-        ((eq nano-modeline-position 'top)
-         (setq mode-line-format nil) ;;(list ""))
-         (setq-default mode-line-format nil) ;;(list ""))
-         ;; (set-face-attribute 'mode-line nil :inherit 'nano-modeline-active :height 0.1)
-         ;;(set-face-attribute 'mode-line-inactive nil :inherit 'nano-modeline-inactive :height 0.1)
-         )
+  ;;       ;; Graphic mode, modeline at top
+  ;;       ((eq nano-modeline-position 'top)
+  ;;        (setq mode-line-format nil) ;;(list ""))
+  ;;        (setq-default mode-line-format nil) ;;(list ""))
+  ;;        ;; (set-face-attribute 'mode-line nil :inherit 'nano-modeline-active :height 0.1)
+  ;;        ;;(set-face-attribute 'mode-line-inactive nil :inherit 'nano-modeline-inactive :height 0.1)
+  ;;        )
      
-        ;; Graphic mode, modeline at bottom
-        (t
-         (setq header-line-format nil)
-         (setq-default header-line-format nil)
-         (set-face-attribute 'mode-line nil          :height (face-attribute 'default :height))
-         (set-face-attribute 'mode-line-inactive nil :height (face-attribute 'default :height))))
+  ;;       ;; Graphic mode, modeline at bottom
+  ;;       (t
+  ;;        (setq header-line-format nil)
+  ;;        (setq-default header-line-format nil)
+  ;;        (set-face-attribute 'mode-line nil          :height (face-attribute 'default :height))
+  ;;        (set-face-attribute 'mode-line-inactive nil :height (face-attribute 'default :height)))
+  ;;       )
      
   (let* ((format
           '((:eval
@@ -790,13 +792,6 @@ depending on the version of mu4e."
   (custom-reevaluate-setting 'Info-use-header-line)
   (custom-reevaluate-setting 'Buffer-menu-use-header-line)
   (custom-reevaluate-setting 'eshell-status-in-mode-line)
-  ;;  (custom-reevaluate-setting 'mode-line)
-  ;;  (custom-reevaluate-setting 'mode-line-inactive)
-  ;;  (custom-reevaluate-setting 'header-line)
-  ;; (set-face-attribute 'mode-line nil
-  ;;                    :height (face-attribute 'default :height))
-  ;; (set-face-attribute 'mode-line-inactive nil
-  ;;                    :height (face-attribute 'default :height))
     
   (setq ein:header-line-format '(:eval (ein:header-line)))
   (setq elfeed-search-header-function #'elfeed-search--header)
