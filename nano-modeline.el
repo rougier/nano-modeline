@@ -703,44 +703,12 @@ depending on the version of mu4e."
   ;; Update selected window
   (nano-modeline--update-selected-window)
   ;; (setq nano-modeline--selected-window (selected-window))
-  
 
   (setq         mode-line-format nil)
   (setq-default mode-line-format nil)
   (setq         header-line-format nil)
   (setq-default header-line-format nil)
-  
-  ;;         ;; TTY mode top
-  ;; (cond ((and (not (display-graphic-p))
-  ;;             (eq nano-modeline-position 'top))
-  ;;        (setq mode-line-format nil)
-  ;;        (setq-default mode-line-format nil)
-  ;;        ;; (set-face-attribute 'mode-line nil :inherit 'nano-modeline-active)
-  ;;        ;; (set-face-attribute 'mode-line-inactive nil :inherit 'nano-modeline-inactive)
-  ;;        )
-
-  ;;       ;; TTY Mode bottom
-  ;;       ((and (not (display-graphic-p))
-  ;;             (eq nano-modeline-position 'top))
-  ;;        (setq header-line-format nil)
-  ;;        (setq-default header-line-format nil))
-    
-  ;;       ;; Graphic mode, modeline at top
-  ;;       ((eq nano-modeline-position 'top)
-  ;;        (setq mode-line-format nil) ;;(list ""))
-  ;;        (setq-default mode-line-format nil) ;;(list ""))
-  ;;        ;; (set-face-attribute 'mode-line nil :inherit 'nano-modeline-active :height 0.1)
-  ;;        ;;(set-face-attribute 'mode-line-inactive nil :inherit 'nano-modeline-inactive :height 0.1)
-  ;;        )
-     
-  ;;       ;; Graphic mode, modeline at bottom
-  ;;       (t
-  ;;        (setq header-line-format nil)
-  ;;        (setq-default header-line-format nil)
-  ;;        (set-face-attribute 'mode-line nil          :height (face-attribute 'default :height))
-  ;;        (set-face-attribute 'mode-line-inactive nil :height (face-attribute 'default :height)))
-  ;;       )
-     
+      
   (let* ((format
           '((:eval
              (cond
