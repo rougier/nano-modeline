@@ -430,7 +430,6 @@ depending on the version of mu4e."
                          (format-time-string "%A %d %B %Y, %H:%M")))
 
 ;; ---------------------------------------------------------------------
-
 (defun nano-modeline-mu4e-quote (str)
   (if (string> mu4e-mu-version "1.6.5")
       (mu4e~quote-for-modeline str)
@@ -488,7 +487,6 @@ depending on the version of mu4e."
 (defun nano-modeline-message-mode ()
   (nano-modeline-compose (nano-modeline-status)
                          "Message" "(draft)" ""))
-
 
 ;; ---------------------------------------------------------------------
 (defvar org-mode-line-string nil)
@@ -576,7 +574,6 @@ depending on the version of mu4e."
 ;;(add-hook 'Buffer-menu-mode-hook
 ;;          #'buffer-menu-mode-header-line)
 
-
 ;; ---------------------------------------------------------------------
 (defun nano-modeline-completion-list-mode-p ()
   (derived-mode-p 'completion-list-mode))
@@ -648,7 +645,7 @@ depending on the version of mu4e."
                       :box        'unspecified :inherit    'unspecified))
 
 
-
+;; ---------------------------------------------------------------------
 (defvar nano-modeline--saved-mode-line-format nil)
 (defvar nano-modeline--saved-header-line-format nil)
 (defvar nano-modeline--selected-window nil)
@@ -659,7 +656,7 @@ depending on the version of mu4e."
 
 
 (defun nano-modeline-mode--activate ()
-  ""
+  "Activate nano modeline"
 
   ;; Save current mode-line and header-line
   (unless nano-modeline--saved-mode-line-format
@@ -773,7 +770,7 @@ depending on the version of mu4e."
 
 
 (defun nano-modeline-mode--inactivate ()
-  ""
+  "Inactivate nano mode line and restored default mode-line"
   
   (custom-reevaluate-setting 'Info-use-header-line)
   (custom-reevaluate-setting 'Buffer-menu-use-header-line)
