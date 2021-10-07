@@ -4,7 +4,7 @@
 
 ;; Maintainer: Nicolas P. Rougier <Nicolas.Rougier@inria.fr>
 ;; URL: https://github.com/rougier/nano-modeline
-;; Version: 0.1
+;; Version: 0.2
 ;; Package-Requires: ((emacs "27.1"))
 ;; Keywords: convenience, mode-line, header-line
 
@@ -25,10 +25,10 @@
 
 ;;; Commentary:
 ;; 
-;; Nano modeline is a custome modeline rendered as:
+;; Nano modeline is a minor mode that modify the modeline as:
 ;; [ status | name (primary)                               secondary ]
 ;;
-;; It can be displayed on bottom (mode-line) or top (header-line)
+;; It can be displayed at the bottom (mode-line) or at the top (header-line)
 ;; depending on nano-modeline-position custom setting.
 ;;
 ;; There are two sets of faces (for active and inactive modelines) that
@@ -43,13 +43,17 @@
 ;;
 ;; Usage example:
 ;;
-;; M-x: nano-modeline
+;; M-x: nano-modeline-mode
 ;;
 ;;; NEWS:
+;;
+;; Vesrion 0.2
+;; - Implements modeline as minor mode
 ;;
 ;; Version 0.1
 ;; - Submission to ELPA
 ;;
+
 ;;; Code:
 (defgroup nano nil
   "N Λ N O"
@@ -261,7 +265,6 @@ Modeline is composed as:
                          (concat "(" (elfeed-search--header)  ")")
                          ""))
 
-;; Elfeed (regular header)
 (defun nano-modeline-elfeed-setup-header ()
   (setq header-line-format (default-value 'header-line-format)))
 
