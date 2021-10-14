@@ -8,7 +8,7 @@ It can be displayed at the bottom (mode-line) or at the top (header-line)
 depending on nano-modeline-position custom setting.
 
 There are two sets of faces (for active and inactive modelines) that
-can be customized (M-x: customize-group + nano-modeline)
+can be customized `M-x: customize-face RET nano-modeline`
 
 - `nano-modeline-active-name`      / `nano-modeline-inactive-name`
 - `nano-modeline-active-primary`   / `nano-modeline-inactive-primary`
@@ -17,13 +17,19 @@ can be customized (M-x: customize-group + nano-modeline)
 - `nano-modeline-active-status-RW` / `nano-modeline-inactive-status-RW`
 - `nano-modeline-active-status-**` / `nano-modeline-inactive-status-**`
 
-### Installation
+### Installation and Usage
 
-Install with `M-: (package-install 'nano-modeline)`
+Install with `M-x: package-install RET nano-modeline`
 
-### Usage example:
+Activate with ` M-x: nano-modeline-mode RET`
 
-Activate with ` M-x: nano-modeline-mode`
+Or if you use `use-package`:
+
+``` elisp
+(use-package nano-modeline
+  :hook (after-init . nano-modeline-mode)
+  :config (setq nano-modeline-position 'bottom)) ;; Displayed at the bottom (mode-line)
+```
 
 ### Screenshots (using [N Λ N O theme](https://github.com/rougier/nano-theme)):
 
