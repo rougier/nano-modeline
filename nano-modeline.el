@@ -359,6 +359,16 @@ Modeline is composed as:
                                  ")")
                          ""))
 
+
+;; ---------------------------------------------------------------------
+(defun nano-modeline-enlarge-ispell-choices-buffer (buffer)
+  (when (string= (buffer-name buffer) "*Choices*")
+    (with-current-buffer buffer
+      ;; (enlarge-window +2)
+      (setq-local header-line-format nil)
+      (setq-local mode-line-format nil))))
+
+
 ;; ---------------------------------------------------------------------
 (defun nano-modeline-org-agenda-mode-p ()
   (derived-mode-p 'org-agenda-mode))
@@ -729,6 +739,10 @@ depending on the version of mu4e."
     (add-hook 'calendar-initial-window-hook
               #'nano-modeline-calendar-setup-header))
 
+  (with-eval-after-load 'ispell
+    (advice-add #'ispell-display-buffer :after
+                #'nano-modeline-enlarge-ispell-choices-buffer))
+
   (with-eval-after-load 'org-clock
     (add-hook 'org-clock-out-hook #'nano-modeline-org-clock-out))
   
@@ -786,7 +800,8 @@ depending on the version of mu4e."
                #'nano-modeline-org-clock-out)
   (remove-hook 'post-command-hook
                #'nano-modeline--update-selected-window)
-  (advice-remove 'mu4e~header-line-format #'nano-modeline)
+  (advice-remove #'mu4e~header-line-format #'nano-modeline)
+  (advice-remove #'ispell-display-buffer #'nano-modeline-enlarge-ispell-choices-buffer)
 
   (setq         mode-line-format nano-modeline--saved-mode-line-format)
   (setq-default mode-line-format nano-modeline--saved-mode-line-format)
