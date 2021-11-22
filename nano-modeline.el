@@ -505,7 +505,7 @@ depending on the version of mu4e."
 
 (defun nano-modeline-org-clock-mode-p ()
   (and (boundp 'org-mode-line-string)
-       (not org-mode-line-string)))
+       (stringp org-mode-line-string)))
 
 (defun nano-modeline-org-clock-mode ()
     (let ((buffer-name (format-mode-line "%b"))
