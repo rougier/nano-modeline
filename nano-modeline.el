@@ -60,7 +60,7 @@
   :group 'convenience)
 
 (defgroup nano-modeline nil
-  "N Λ N O modeline"
+  "N Λ N O Modeline"
   :group 'nano)
 
 (defgroup nano-modeline-active nil
@@ -400,7 +400,7 @@ Modeline is composed as:
 (defun nano-modeline-mu4e-server-props ()
   "Encapsulates the call to the variable mu4e-/~server-props
 depending on the version of mu4e."
-  (if (string> mu4e-mu-version "1.6.5")
+  (if (string> mu4e-mu-version "1.6.8")
       mu4e--server-props
     mu4e~server-props))
 
@@ -797,7 +797,7 @@ depending on the version of mu4e."
 ;;;###autoload
 (define-minor-mode nano-modeline-mode
   "Toggle nano-modeline minor mode"
-  :group 'nano
+  :group 'nano-modeline
   :global t
   :init-value nil
 
