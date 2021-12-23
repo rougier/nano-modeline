@@ -695,22 +695,10 @@ depending on the version of mu4e."
           (mode-name   (nano-modeline-mode-name))
           (branch      (nano-modeline-vc-branch))
           (position    (format-mode-line "%l:%c")))
-      (nano-modeline-compose (nano-modeline-status)
-                             buffer-name
-                             (concat "(" mode-name
-                                     (if branch (concat ", "
-                                            (propertize branch 'face 'italic)))
-                                     ")" )
-                             position)))
-
-;; ---------------------------------------------------------------------
-(defun nano-modeline-status ()
-  "Return buffer status: read-only (RO), modified (**) or read-write (RW)"
-  
-  (let ((read-only   buffer-read-only)
-        (modified    (and buffer-file-name (buffer-modified-p))))
-    (cond (modified  "**") (read-only "RO") (t "RW"))))
-  
+      (nano-modeline-render (upcase  mode-name)
+                            buffer-name
+                            (if branch (concat "(" branch ")") "")
+                            position)))
 
 ;; ---------------------------------------------------------------------
 (defun nano-modeline-face-clear (face)
