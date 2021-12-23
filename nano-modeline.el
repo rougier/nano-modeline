@@ -270,10 +270,30 @@ Modeline is composed as:
   (derived-mode-p 'elfeed-search-mode))
 
 (defun nano-modeline-elfeed-search-mode ()
-  (nano-modeline-compose (nano-modeline-status)
-                         "Elfeed"
-                         (concat "(" (elfeed-search--header)  ")")
-                         ""))
+  (let* ((prefix "NEWS")
+        (no-database (zerop (elfeed-db-last-update)))
+        (update      (> (elfeed-queue-count-total) 0))
+        
+        (name  (cond (no-database "No database")
+                     (update      "Update:") 
+                     (t           "Search:")))
+        (primary (cond  (no-database "")
+                        (update
+                         (let ((total (elfeed-queue-count-total))
+                               (in-process (elfeed-queue-count-active)))
+                           (format "%d jobs pending, %d active..."
+                                   (- total in-process) in-process)))
+                        (t  (let* ((db-time (seconds-to-time (elfeed-db-last-update)))
+                                   (unread ))
+                              (cond (elfeed-search-filter-active "")
+                                    ((string-match-p "[^ ]" elfeed-search-filter)
+                                     elfeed-search-filter)
+                                    (""))))))
+        (secondary (cond
+                    ((zerop (elfeed-db-last-update)) "")
+                    ((> (elfeed-queue-count-total) 0) "")
+                    (t (elfeed-search--count-unread)))))
+    (nano-modeline-render prefix name primary secondary)))
 
 (defun nano-modeline-elfeed-setup-header ()
   (setq header-line-format (default-value 'header-line-format)))
