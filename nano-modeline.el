@@ -260,10 +260,13 @@ Modeline is composed as:
 ;; ---------------------------------------------------------------------
 (defun nano-modeline-ein-notebook-mode ()
   (let ((buffer-name (format-mode-line "%b")))
-    (nano-modeline-compose (if (ein:notebook-modified-p) "**" "RW")
+    (nano-modeline-render "EIN"
                            buffer-name
                            ""
-                           (ein:header-line))))
+                           (ein:header-line)
+                           (if (ein:notebook-modified-p)
+                               'modified
+                             'read-write))))
 
 ;; ---------------------------------------------------------------------
 (defun nano-modeline-elfeed-search-mode-p ()
