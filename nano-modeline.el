@@ -342,10 +342,10 @@ Modeline is composed as:
   (bound-and-true-p org-capture-mode))
 
 (defun nano-modeline-org-capture-mode ()
-  (nano-modeline-compose (nano-modeline-status)
-                         "Capture"
-                         "(org)"
-                         ""))
+  (nano-modeline-render "ORG" 
+                        "Capture"
+                        (concat "(" (org-capture-get :description) ")")
+                        ""))
 
 (defun nano-modeline-org-capture-turn-off-header-line ()
   (setq-local header-line-format (default-value 'header-line-format))
