@@ -624,7 +624,7 @@ depending on the version of mu4e."
           (mode-name   (nano-modeline-mode-name))
           (position    (format-mode-line "%l:%c")))
 
-      (nano-modeline-compose (nano-modeline-status)
+      (nano-modeline-render "BUFFERS"
                              buffer-name "" position)))
 ;;(defun buffer-menu-mode-header-line ()
 ;;  (face-remap-add-relative
