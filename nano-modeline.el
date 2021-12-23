@@ -571,7 +571,7 @@ depending on the version of mu4e."
           (mode-name   (nano-modeline-mode-name))
           (branch      (nano-modeline-vc-branch))
           (position    (format-mode-line "%l:%c")))
-      (nano-modeline-compose (nano-modeline-status)
+      (nano-modeline-render "ORG-CLOCK"
                              buffer-name 
                              (concat "(" mode-name
                                      (if branch (concat ", "
