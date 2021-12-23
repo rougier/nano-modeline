@@ -164,9 +164,11 @@ Modeline is composed as:
   :type '(choice (const nil) function)
   :group 'nano-modeline)
 
-(defun nano-modeline-user-mode-p ()
-  "Should the user supplied mode be called for modeline?"
-  nano-modeline-user-mode)
+(defcustom nano-modeline-user-mode-p nil
+  "Function to indicate whether the user supplied mode should be used instead f the default one. This function will be dynamically called and can return t or nil depending on some user conditions. If the provied function always return t, this fully overrides the nano-modeline."
+  :type '(choice (const nil) function)
+  :group 'nano-modeline)
+
 
 (defun nano-modeline-truncate (str size &optional ellipsis)
   "If STR is longer than SIZE, truncate it and add ELLIPSIS."
@@ -733,7 +735,9 @@ depending on the version of mu4e."
     (let* ((format
           '((:eval
              (cond
-              ((nano-modeline-user-mode-p)            (funcall nano-modeline-user-mode))
+              ((and nano-modeline-user-mode
+                    nano-modeline-user-mode-p
+                    (funcall nano-modeline-user-mode-p)) (funcall nano-modeline-user-mode))
               ((nano-modeline-elpher-mode-p)          (nano-modeline-elpher-mode))
               ((nano-modeline-prog-mode-p)            (nano-modeline-default-mode))
               ((nano-modeline-messages-mode-p)        (nano-modeline-messages-mode))
