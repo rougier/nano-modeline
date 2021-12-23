@@ -615,14 +615,10 @@ depending on the version of mu4e."
               (or (ignore-errors
                 (number-to-string (pdf-cache-number-of-pages)))
               "???"))))
-    (nano-modeline-compose
-     "RW"
-     buffer-name
-     (concat "(" mode-name
-         (if branch (concat ", "
-                (propertize branch 'face 'italic)))
-         ")" )
-     page-number)))
+    (nano-modeline-render "PDF"
+                          buffer-name
+                          (if branch (concat "(" branch ")") "")
+                          page-number)))
 
 ;; ---------------------------------------------------------------------
 (defun nano-modeline-buffer-menu-mode-p ()
