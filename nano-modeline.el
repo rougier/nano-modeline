@@ -728,7 +728,7 @@ depending on the version of mu4e."
     (let* ((format
           '((:eval
              (cond
-              ((nano-modeline-user-mode-p)            (funcall ,nano-modeline-user-mode))
+              ((nano-modeline-user-mode-p)            (funcall nano-modeline-user-mode))
               ((nano-modeline-elpher-mode-p)          (nano-modeline-elpher-mode))
               ((nano-modeline-prog-mode-p)            (nano-modeline-default-mode))
               ((nano-modeline-messages-mode-p)        (nano-modeline-messages-mode))
