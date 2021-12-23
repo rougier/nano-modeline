@@ -679,12 +679,12 @@ depending on the version of mu4e."
 (defun nano-modeline-deft-mode ()
   (let ((prefix (nano-modeline-status))
         (primary "Notes")
-        (filter  (if deft-filter-regexp
-                     (deft-whole-filter-regexp) "<filter>"))
+        (filter  (concat (if deft-filter-regexp
+                             (deft-whole-filter-regexp)) "_"))
         (matches (if deft-filter-regexp
                      (format "%d matches" (length deft-current-files))
                    (format "%d notes" (length deft-all-files)))))
-    (nano-modeline-compose prefix primary filter matches)))
+    (nano-modeline-render "NOTES" "Search:" filter matches 'read-only)))
 
 ;; ---------------------------------------------------------------------
 (defun nano-modeline-prog-mode-p ()
