@@ -419,9 +419,11 @@ Modeline is composed as:
   (derived-mode-p 'vterm-mode))
 
 (defun nano-modeline-term-mode ()
-  (nano-modeline-compose " >_ "
-                         "Terminal"
-                         (concat "(" shell-file-name ")")
+  (nano-modeline-render "TERM"
+                         shell-file-name
+                         (if (term-in-char-mode)
+                             "(char mode)"
+                           "(line mode)")
                          (nano-modeline-shorten-directory default-directory 32)))
 
 
