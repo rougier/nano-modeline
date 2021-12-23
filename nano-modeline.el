@@ -313,8 +313,9 @@ Modeline is composed as:
          (feed         (elfeed-entry-feed elfeed-show-entry))
          (feed-title   (plist-get (elfeed-feed-meta feed) :title))
          (entry-author (elfeed-meta elfeed-show-entry :author)))
-    (nano-modeline-compose (nano-modeline-status)
-                           (nano-modeline-truncate title 40)
+    (nano-modeline-render "POST"
+                          title
+                          ;;(nano-modeline-truncate title 40)
                            (concat "(" tags-str ")")
                            feed-title)))
 
