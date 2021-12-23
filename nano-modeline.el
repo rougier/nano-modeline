@@ -26,7 +26,7 @@
 ;;; Commentary:
 ;; 
 ;; Nano modeline is a minor mode that modify the modeline as:
-;; [ status | name (primary)                               secondary ]
+;; [ prefix | name (primary)                      secondary ]
 ;;
 ;; It can be displayed at the bottom (mode-line) or at the top (header-line)
 ;; depending on nano-modeline-position custom setting.
@@ -198,54 +198,63 @@ Modeline is composed as:
     output))
 
 
-(defun nano-modeline-compose (status name primary secondary)
+;; ---------------------------------------------------------------------
+(defun nano-modeline-status ()
+  "Return buffer status, one of 'read-only, 'modified or 'read-write."
+  
+  (let ((read-only   buffer-read-only)
+        (modified    (and buffer-file-name (buffer-modified-p))))
+    (cond (modified  'modified)
+          (read-only 'read-only)
+          (t         'read-write))))
+
+
+(defun nano-modeline-render (prefix name primary secondary &optional status)
   "Compose a string with provided information"
-  (let* ((char-width    (window-font-width nil 'header-line))
-         (window        (get-buffer-window (current-buffer)))
-         (active        (eq window nano-modeline--selected-window))
-         (space-up       +0.20)
-         (space-down     -0.25)
-         (prefix (cond ((string= status "RO")
-                        (propertize (if (window-dedicated-p)"•RO " " RO ")
-                                    'face (if active
-                                              'nano-modeline-active-status-RO
-                                            'nano-modeline-inactive-status-RO)))
-                       ((string= status "**")
-                        (propertize (if (window-dedicated-p)"•** " " ** ")
-                                    'face (if active
-                                              'nano-modeline-active-status-**
-                                            'nano-modeline-inactive-status-**)))
-                       ((string= status "RW")
-                        (propertize (if (window-dedicated-p) "•RW " " RW ")
-                                    'face (if active 'nano-modeline-active-status-RW
-                                            'nano-modeline-inactive-status-RW)))
-                       (t (propertize status
-                                      'face (if active 'nano-modeline-active-status-**
-                                              'nano-modeline-inactive-status-**)))))
-         (left (concat
-                (propertize " "  'face (if active 'nano-modeline-active
-                                         'nano-modeline-inactive)
-                            'display `(raise ,space-up))
-                (propertize name 'face (if active 'nano-modeline-active-name
-                                         'nano-modeline-inactive-name))
-                (propertize " "  'face (if active 'nano-modeline-active
-                                         'nano-modeline-inactive)
-                            'display `(raise ,space-down))
-                (propertize primary 'face (if active 'nano-modeline-active-primary
-                                            'nano-modeline-inactive-primary))))
-         (right (concat secondary " "))
-         
-         (available-width (- (window-total-width) 
-                             (length prefix) (length left) (length right)
-                             (/ (window-right-divider-width) char-width)))
-     (available-width (max 1 available-width)))
-    (concat prefix
-            left
-            (propertize (make-string available-width ?\ )
-                        'face (if active 'nano-modeline-active
-                                'nano-modeline-inactive))
-            (propertize right 'face (if active 'nano-modeline-active-secondary
-                                      'nano-modeline-inactive-secondary)))))
+  (let* ((window (get-buffer-window (current-buffer)))
+         (name-max-width (- (window-body-width)
+                            1
+                            (length prefix)
+                            1
+                            (length primary)
+                            5
+                            (length secondary)
+                            1))
+         (name (if (and (stringp name) (> (length name) name-max-width))
+                   (format "%s…" (substring name 0 (- name-max-width 1)))
+                 name))
+         (status (or status (nano-modeline-status)))
+         (active (eq window nano-modeline--selected-window))
+         (prefix-face (cond ((eq status 'read-only) (if active
+                                                        'nano-modeline-active-status-RO
+                                                      'nano-modeline-inactive-status-RO))
+                            ((eq status 'modified) (if active
+                                                       'nano-modeline-active-status-**
+                                                     'nano-modeline-inactive-status-**))
+                            ((eq status 'read-write) (if active
+                                                         'nano-modeline-active-status-RW
+                                                       'nano-modeline-inactive-status-RW))
+                            ((facep status) status)
+                            ((listp status) (if active (car status)
+                                              (cadr status)))
+                            (t (if active 'nano-modeline-active
+                                 'nano-modeline-inactive))))
+         (left (concat (if (stringp prefix)
+                           (propertize (format " %s " prefix)
+                                       'face `(:inherit ,prefix-face)))
+                       (propertize " " 'display '(raise +0.100))
+                       (propertize name 'face (if active 'nano-modeline-active-name
+                                                'nano-modeline-inactive-name))
+                       (if (length name) " ")
+                       (propertize primary 'face (if active 'nano-modeline-active-primary
+                                                   'nano-modeline-inactive-primary))))
+         (right (concat (propertize secondary 'face (if active 'nano-modeline-active-secondary
+                                                      'nano-modeline-inactive-secondary))
+                        (propertize " " 'display '(raise -0.125)))))
+    (concat
+     left 
+     (propertize " " 'display `(space :align-to (- right ,(+ (length secondary) 1))))
+     right)))
 
 
 ;; ---------------------------------------------------------------------
