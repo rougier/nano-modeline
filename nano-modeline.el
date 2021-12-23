@@ -4,7 +4,7 @@
 
 ;; Maintainer: Nicolas P. Rougier <Nicolas.Rougier@inria.fr>
 ;; URL: https://github.com/rougier/nano-modeline
-;; Version: 0.2
+;; Version: 0.3
 ;; Package-Requires: ((emacs "27.1"))
 ;; Keywords: convenience, mode-line, header-line
 
@@ -47,7 +47,12 @@
 ;;
 ;;; NEWS:
 ;;
-;; Vesrion 0.2
+;; Version 0.3
+;; - Usage of :align-to: properties for better alignment
+;; - Added elpher mode
+;; - Fix user mode
+;;
+;; Version 0.2
 ;; - Implements modeline as minor mode
 ;;
 ;; Version 0.1
