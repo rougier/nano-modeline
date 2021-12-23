@@ -659,8 +659,10 @@ depending on the version of mu4e."
           (mode-name   (nano-modeline-mode-name))
           (position    (format-mode-line "%l:%c")))
 
-      (nano-modeline-compose (nano-modeline-status)
-                             buffer-name "" position)))
+      (nano-modeline-render "COMPLETION"
+                            buffer-name
+                            ""
+                            position)))
 
 ;; ---------------------------------------------------------------------
 (with-eval-after-load 'deft
