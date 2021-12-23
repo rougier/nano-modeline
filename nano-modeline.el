@@ -444,7 +444,7 @@ Modeline is composed as:
 (defun nano-modeline-mu4e-server-props ()
   "Encapsulates the call to the variable mu4e-/~server-props
 depending on the version of mu4e."
-  (if (string> mu4e-mu-version "1.6.8")
+  (if (version< "1.6.10" mu4e-mu-version)
       mu4e--server-props
     mu4e~server-props))
 
@@ -453,18 +453,19 @@ depending on the version of mu4e."
   (bound-and-true-p mu4e-dashboard-mode))
 
 (defun nano-modeline-mu4e-dashboard-mode ()
-  (nano-modeline-compose (nano-modeline-status)
-                         "Mail"
-                         (nano-modeline-mu4e-context)
-                         (format "%d messages" (plist-get (nano-modeline-mu4e-server-props) :doccount))))
+  (nano-modeline-render "MAILBOXES"
+                         (format "%d messages"
+                                 (plist-get (nano-modeline-mu4e-server-props) :doccount))
+                         ""
+                         ""))
 
 ;; ---------------------------------------------------------------------
 (defun nano-modeline-mu4e-loading-mode-p ()
   (derived-mode-p 'mu4e-loading-mode))
 
 (defun nano-modeline-mu4e-loading-mode ()
-  (nano-modeline-compose (nano-modeline-status)
-                         "Mail"
+  (nano-modeline-render "MAIL" 
+                         "Loading…"
                          (nano-modeline-mu4e-context)
                          (format-time-string "%A %d %B %Y, %H:%M")))
 
@@ -473,14 +474,27 @@ depending on the version of mu4e."
   (derived-mode-p 'mu4e-main-mode))
 
 (defun nano-modeline-mu4e-main-mode ()
-  (nano-modeline-compose (nano-modeline-status)
-                         "Mail"
-                         (nano-modeline-mu4e-context)
-                         (format-time-string "%A %d %B %Y, %H:%M")))
+  (nano-modeline-render "MAIL"
+                        (nano-modeline-mu4e-context)
+                        ""
+                        (format-time-string "%A %d %B %Y, %H:%M")))
+
+;; ---------------------------------------------------------------------
+(defun nano-modeline-mu4e-compose-mode-p ()
+  (derived-mode-p 'mu4e-compose-mode))
+
+(defun nano-modeline-mu4e-compose-mode ()
+  (nano-modeline-render "COMPOSE"
+                        (format-mode-line "%b")
+                        ""
+                        (format "[%s]"
+                                (nano-modeline-mu4e-quote
+                                 (mu4e-context-name (mu4e-context-current))))))
+
 
 ;; ---------------------------------------------------------------------
 (defun nano-modeline-mu4e-quote (str)
-  (if (string> mu4e-mu-version "1.6.5")
+  (if (version< "1.6.5" mu4e-mu-version)
       (mu4e~quote-for-modeline str)
     (mu4e-quote-for-modeline str)))
 
@@ -489,9 +503,10 @@ depending on the version of mu4e."
 
 (defun nano-modeline-mu4e-headers-mode ()
   (let ((mu4e-modeline-max-width 80))
-    (nano-modeline-compose (nano-modeline-status)
-                           (nano-modeline-mu4e-quote (nano-modeline-mu4e-last-query))
-                           ""
+    (nano-modeline-render "MAIL"
+                          "Search:"
+                          (or (nano-modeline-mu4e-quote
+                               (nano-modeline-mu4e-last-query)) "")
                            (format "[%s]"
                                    (nano-modeline-mu4e-quote
                                     (mu4e-context-name (mu4e-context-current)))))))
@@ -505,10 +520,11 @@ depending on the version of mu4e."
          (subject (mu4e-message-field msg :subject))
          (from    (mu4e~headers-contact-str (mu4e-message-field msg :from)))
          (date     (mu4e-message-field msg :date)))
-    (nano-modeline-compose (nano-modeline-status)
-                           (nano-modeline-truncate subject 60)
-                           ""
-                           from)))
+    (nano-modeline-render "MAIL" 
+                          (or subject "")
+                          ""
+                          (or from "")
+                          'read-only)))
 
 (defun nano-modeline-mu4e-view-hook ()
   (setq header-line-format "%-")
