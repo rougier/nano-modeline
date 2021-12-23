@@ -547,12 +547,11 @@ depending on the version of mu4e."
                          ""))
 
 ;; ---------------------------------------------------------------------
-(defun nano-modeline-message-mode-p ()
-  (derived-mode-p 'message-mode))
+(defun nano-modeline-messages-mode-p ()
+  (derived-mode-p 'messages-buffer-mode))
 
-(defun nano-modeline-message-mode ()
-  (nano-modeline-compose (nano-modeline-status)
-                         "Message" "(draft)" ""))
+(defun nano-modeline-messages-mode ()
+  (nano-modeline-render "LOG" "Messages" "" ""))
 
 ;; ---------------------------------------------------------------------
 ;; (defvar org-mode-line-string nil)
