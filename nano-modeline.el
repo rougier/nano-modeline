@@ -541,8 +541,8 @@ depending on the version of mu4e."
   (derived-mode-p 'nano-help-mode))
 
 (defun nano-modeline-nano-help-mode ()
-  (nano-modeline-compose (nano-modeline-status)
-                         "GNU Emacs / N Λ N O"
+  (nano-modeline-render "HELP"
+                         "Emacs / N Λ N O"
                          "(help)"
                          ""))
 
