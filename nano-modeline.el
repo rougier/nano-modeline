@@ -592,14 +592,10 @@ depending on the version of mu4e."
               (or (ignore-errors
                 (number-to-string (doc-view-last-page-number)))
               "???"))))
-    (nano-modeline-compose
-     (nano-modeline-status)
-     buffer-name
-     (concat "(" mode-name
-         (if branch (concat ", "
-                (propertize branch 'face 'italic)))
-         ")" )
-     page-number)))
+    (nano-modeline-render "DOC"
+                           buffer-name
+                           (if branch (concat "(" branch ")") "")
+                           page-number)))
 
 ;; ---------------------------------------------------------------------
 (defun nano-modeline-pdf-view-mode-p ()
