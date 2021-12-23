@@ -638,6 +638,24 @@ depending on the version of mu4e."
 ;;          #'buffer-menu-mode-header-line)
 
 ;; ---------------------------------------------------------------------
+(defun nano-modeline-elpher-mode-p ()
+  (derived-mode-p 'elpher-mode))
+
+(defun nano-modeline-elpher-mode ()
+  (let* ((display-string (elpher-page-display-string elpher-current-page))
+         (sanitized-display-string (replace-regexp-in-string "%" "%%" display-string))
+         (address (elpher-page-address elpher-current-page))
+         (tls-string (if (and (not (elpher-address-about-p address))
+                              (member (elpher-address-protocol address)
+                                      '("gophers" "gemini")))
+                         "(TLS encryption)"
+                       "")))
+    (nano-modeline-render "GEM"
+                          sanitized-display-string
+                          tls-string
+                          "")))
+
+;; ---------------------------------------------------------------------
 (defun nano-modeline-completion-list-mode-p ()
   (derived-mode-p 'completion-list-mode))
 
