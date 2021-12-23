@@ -728,9 +728,10 @@ depending on the version of mu4e."
     (let* ((format
           '((:eval
              (cond
-              ((nano-modeline-user-mode-p)            (funcall ,nano-modeline-user-mode)) 
+              ((nano-modeline-user-mode-p)            (funcall ,nano-modeline-user-mode))
+              ((nano-modeline-elpher-mode-p)          (nano-modeline-elpher-mode))
               ((nano-modeline-prog-mode-p)            (nano-modeline-default-mode))
-              ((nano-modeline-message-mode-p)         (nano-modeline-message-mode))
+              ((nano-modeline-messages-mode-p)        (nano-modeline-messages-mode))
               ((nano-modeline-elfeed-search-mode-p)   (nano-modeline-elfeed-search-mode))
               ((nano-modeline-elfeed-show-mode-p)     (nano-modeline-elfeed-show-mode))
               ((nano-modeline-deft-mode-p)            (nano-modeline-deft-mode))
@@ -738,7 +739,6 @@ depending on the version of mu4e."
               ((nano-modeline-calendar-mode-p)        (nano-modeline-calendar-mode))
               ((nano-modeline-org-capture-mode-p)     (nano-modeline-org-capture-mode))
               ((nano-modeline-org-agenda-mode-p)      (nano-modeline-org-agenda-mode))
-              ((nano-modeline-org-clock-mode-p)       (nano-modeline-org-clock-mode))
               ((nano-modeline-term-mode-p)            (nano-modeline-term-mode))
               ((nano-modeline-vterm-mode-p)           (nano-modeline-term-mode))
               ((nano-modeline-mu4e-dashboard-mode-p)  (nano-modeline-mu4e-dashboard-mode))
@@ -746,12 +746,14 @@ depending on the version of mu4e."
               ((nano-modeline-mu4e-loading-mode-p)    (nano-modeline-mu4e-loading-mode))
               ((nano-modeline-mu4e-headers-mode-p)    (nano-modeline-mu4e-headers-mode))
               ((nano-modeline-mu4e-view-mode-p)       (nano-modeline-mu4e-view-mode))
+              ((nano-modeline-mu4e-compose-mode-p)    (nano-modeline-mu4e-compose-mode))
               ((nano-modeline-text-mode-p)            (nano-modeline-default-mode))
               ((nano-modeline-pdf-view-mode-p)        (nano-modeline-pdf-view-mode))
               ((nano-modeline-docview-mode-p)         (nano-modeline-docview-mode))
               ;; ((nano-modeline-buffer-menu-mode-p)     (nano-modeline-buffer-menu-mode))
               ((nano-modeline-completion-list-mode-p) (nano-modeline-completion-list-mode))
               ((nano-modeline-nano-help-mode-p)       (nano-modeline-nano-help-mode))
+;;              ((nano-modeline-org-clock-mode-p)       (nano-modeline-org-clock-mode))
               (t                                      (nano-modeline-default-mode)))))))
     
       (if (eq nano-modeline-position 'top)
@@ -762,6 +764,19 @@ depending on the version of mu4e."
           (setq mode-line-format format)
           (setq-default mode-line-format format)))))
 
+
+(defun nano-modeline-update-windows ()
+  "Hide the mode line depending on the presence of a window
+below or a buffer local variable 'no-mode-line'."
+  (dolist (window (window-list))
+    (with-selected-window window
+          (with-current-buffer (window-buffer window)
+        (if (or (not (boundp 'no-mode-line)) (not no-mode-line))
+            (setq mode-line-format
+                  (cond ((one-window-p t) (list ""))
+                        ((eq (window-in-direction 'below) (minibuffer-window)) (list ""))
+                        ((not (window-in-direction 'below)) (list ""))
+                        (t nil))))))))
 
 (defun nano-modeline-mode--activate ()
   "Activate nano modeline"
@@ -802,6 +817,9 @@ depending on the version of mu4e."
   (with-eval-after-load 'esh-mode
     (setq eshell-status-in-mode-line nil))
 
+  (with-eval-after-load 'elpher
+    (setq elpher-use-header nil))
+  
   (with-eval-after-load 'mu4e
     (advice-add 'mu4e~header-line-format :override #'nano-modeline))
 
@@ -826,6 +844,9 @@ depending on the version of mu4e."
   ;;  a modeline is evaluated, the corresponding window is always selected.
   (add-hook 'post-command-hook #'nano-modeline--update-selected-window)
 
+  ;; This hooks hide the modeline for windows having a window below them
+  (add-hook 'window-configuration-change-hook #'nano-modeline-update-windows)
+
   (force-mode-line-update t))
 
 
@@ -849,6 +870,9 @@ depending on the version of mu4e."
                #'nano-modeline-org-clock-out)
   (remove-hook 'post-command-hook
                #'nano-modeline--update-selected-window)
+  (remove-hook 'window-configuration-change-hook
+               #'nano-modeline-update-windows)
+
   (advice-remove #'mu4e~header-line-format #'nano-modeline)
   (advice-remove #'ispell-display-buffer #'nano-modeline-enlarge-ispell-choices-buffer)
 
