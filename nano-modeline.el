@@ -384,11 +384,9 @@ Modeline is composed as:
   (derived-mode-p 'Info-mode))
 
 (defun nano-modeline-info-mode ()
-  (nano-modeline-compose (nano-modeline-status)
-                         "Info"
-                         (concat "("
-                                 (nano-modeline-info-breadcrumbs)
-                                 ")")
+  (nano-modeline-render "INFO" 
+                        (nano-modeline-info-breadcrumbs)
+                        ""
                          ""))
 
 
