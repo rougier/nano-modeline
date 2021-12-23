@@ -404,9 +404,10 @@ Modeline is composed as:
   (derived-mode-p 'org-agenda-mode))
 
 (defun nano-modeline-org-agenda-mode ()
-  (nano-modeline-compose (nano-modeline-status)
+  (nano-modeline-render "ORG" 
                          "Agenda"
                          ""
+;;                         (format "%s" org-agenda-span-name)
                          (format-time-string "%A %-e %B %Y")))
 
 ;; ---------------------------------------------------------------------
