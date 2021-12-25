@@ -115,6 +115,11 @@ Negative is downwards."
   "Modeline face for active modeline"
   :group 'nano-modeline-active)
 
+(defface nano-modeline-active-spacer
+  '((t (:inherit nano-modeline-active)))
+  "Modeline face for active modeline sapcing element"
+  :group 'nano-modeline-active)
+
 (defface nano-modeline-active-name
   '((t (:inherit (mode-line bold))))
   "Modeline face for active name element"
@@ -148,6 +153,11 @@ Negative is downwards."
 (defface nano-modeline-inactive
   '((t (:inherit mode-line-inactive)))
   "Modeline face for inactive window"
+  :group 'nano-modeline-inactive)
+
+(defface nano-modeline-inactive-spacer
+  '((t (:inherit nano-modeline-inactive)))
+  "Modeline face for inactive spacing element"
   :group 'nano-modeline-inactive)
 
 (defface nano-modeline-inactive-name
@@ -361,7 +371,7 @@ KEY mode name, for reference only. Easier to do lookups and/or replacements.
                                   ((eq status 'read-write) "RW")
                                   ((eq status 'modified)   "**")
                                   (t                       "--"))))
-         
+
          (prefix-face (cond ((eq status 'read-only) (if active
                                                         'nano-modeline-active-status-RO
                                                       'nano-modeline-inactive-status-RO))
@@ -379,19 +389,27 @@ KEY mode name, for reference only. Easier to do lookups and/or replacements.
          (left (concat (if (stringp prefix)
                            (propertize (format " %s " prefix)
                                        'face `(:inherit ,prefix-face)))
-                       (propertize " " 'display `(raise ,nano-modeline-space-top))
+                       (propertize " " 'display `(raise ,nano-modeline-space-top)
+                                   'face (if active 'nano-modeline-active-spacer
+                                           'nano-modeline-inactive-spacer))
                        (propertize name 'face (if active 'nano-modeline-active-name
                                                 'nano-modeline-inactive-name))
-                       (if (length name) " ")
+                       (when (length name)
+                	 (propertize " " 'face (if active 'nano-modeline-active-spacer
+						 'nano-modeline-inactive-spacer)))
                        (propertize primary 'face (if active 'nano-modeline-active-primary
                                                    'nano-modeline-inactive-primary))))
          (right (concat (propertize secondary 'face (if active 'nano-modeline-active-secondary
                                                       'nano-modeline-inactive-secondary))
-                        (propertize " " 'display `(raise ,nano-modeline-space-bottom))))
+                        (propertize " " 'display `(raise ,nano-modeline-space-bottom)
+				    'face (if active 'nano-modeline-active-spacer
+                                            'nano-modeline-inactive-spacer))))
 	 (right-len (length (format-mode-line right))))
     (concat
-     left 
-     (propertize " " 'display `(space :align-to (- right ,(- right-len 0))))
+     left
+     (propertize " " 'display `(space :align-to (- right ,(- right-len right-margin-width)))
+		 'face (if active 'nano-modeline-active-spacer
+                         'nano-modeline-inactive-spacer))
      right)))
 
 ;; ---------------------------------------------------------------------
