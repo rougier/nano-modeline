@@ -67,6 +67,9 @@
 ;;
 
 ;;; Code:
+(eval-when-compile
+  (require 'term))
+
 (defgroup nano nil
   "N Λ N O"
   :group 'convenience)
