@@ -82,7 +82,6 @@ Modeline is composed as:
 [ status | name (primary)                        secondary ]"
   :group 'nano-modeline)
 
-
 (defcustom nano-modeline-position 'top
   "Default position (top or bottom)"
   :type '(choice (const :tag "Top"    top)
@@ -159,6 +158,59 @@ Modeline is composed as:
   "Modeline face for inactive MODIFIED element"
   :group 'nano-modeline-inactive)
 
+(defcustom nano-modeline-mode-formats
+  '(
+    (elfeed-search-mode :mode-p nano-modeline-elfeed-search-mode-p
+			:format nano-modeline-elfeed-search-mode
+			:add-hook nano-modeline-elfeed-search-add)
+    (elpher-mode        :mode-p nano-modeline-elpher-mode-p
+		        :format nano-modeline-elpher-mode)
+    (ein-notebook-note  :add-hook nano-modeline-ein-notebook-mode-add)
+    (prog-mode          :mode-p nano-modeline-prog-mode-p
+			:format nano-modeline-prog-mode)
+     )
+  "Modes to be evalued for modeline.
+"
+  :type '(alist :key-type symbol
+		:value-type (plist :key-type (choice (const :mode-p)
+						     (const :format)
+						     (const :add-hook)
+						     (const :remove-hook))
+				   :value-type function))
+  :group 'nano-modeline)
+
+(defcustom nano-modeline-special-modes-add-hook nil
+  "Add hooks on activiation of the mode, for those modes that do tehir own mode-line magine"
+  :type 'hook
+  :options '(turn-on-auto-fill flyspell-mode)
+  :group 'nano-modeline)
+
+(defcustom nano-modeline-special-modes-remove-hook nil
+  "Remove hooks on de-activiation of the mode, for those modes that do tehir own mode-line magine"
+  :type 'hook
+  :options '(turn-on-auto-fill flyspell-mode)
+  :group 'nano-modeline)
+
+(defcustom nano-modeline-default-mode-format 'nano-modeline-default-mode
+  "Default mode to evaluate if no match could be found in `nano-modelines-mode-formats'"
+  :type 'function
+  :group 'nano-modeline)
+
+(defun my/nano-modeline-test-format ()
+  (let ((buffer-name (format-mode-line "%b"))
+          (mode-name   (nano-modeline-mode-name))
+          (branch      (nano-modeline-vc-branch))
+          (position    (format-mode-line "%l:%c")))
+  (nano-modeline-render "XYZ"
+                            buffer-name
+                            (if branch (concat "(" branch ")") "")
+                            position)))
+(defun my/nano-modeline-test-format-p ()
+  t
+  )
+;; (add-to-list 'nano-modeline-mode-formats '(my/nano-modeline-test-format-p .  my/nano-modeline-test-format))
+
+
 (defcustom nano-modeline-user-mode nil
   "User supplied mode to be evaluated for modeline."
   :type '(choice (const nil) function)
@@ -168,7 +220,6 @@ Modeline is composed as:
   "Function to indicate whether the user supplied mode should be used instead f the default one. This function will be dynamically called and can return t or nil depending on some user conditions. If the provied function always return t, this fully overrides the nano-modeline."
   :type '(choice (const nil) function)
   :group 'nano-modeline)
-
 
 (defun nano-modeline-truncate (str size &optional ellipsis)
   "If STR is longer than SIZE, truncate it and add ELLIPSIS."
@@ -275,6 +326,16 @@ Modeline is composed as:
                                'modified
                              'read-write))))
 
+;; since the EIN library itself is constantly re-rendering the notebook, and thus
+;; re-setting the header-line-format, we cannot use the nano-modeline function to set
+;; the header format in a notebook buffer. Fortunately, EIN exposes the
+;; ein:header-line-format variable for just this purpose.
+
+(defun nano-modeline-ein-notebook-mode-add ()
+    (with-eval-after-load 'ein
+      (if (eq nano-modeline-position 'top)
+	  (setq ein:header-line-format '((:eval (nano-modeline-ein-notebook-mode)))))))
+
 ;; ---------------------------------------------------------------------
 (defun nano-modeline-elfeed-search-mode-p ()
   (derived-mode-p 'elfeed-search-mode))
@@ -283,7 +344,7 @@ Modeline is composed as:
   (let* ((prefix "NEWS")
         (no-database (zerop (elfeed-db-last-update)))
         (update      (> (elfeed-queue-count-total) 0))
-        
+
         (name  (cond (no-database "No database")
                      (update      "Update:") 
                      (t           "Search:")))
@@ -305,8 +366,15 @@ Modeline is composed as:
                     (t (elfeed-search--count-unread)))))
     (nano-modeline-render prefix name primary secondary)))
 
+
+;; Elfeed uses header-line, we need to tell it to use our own format
 (defun nano-modeline-elfeed-setup-header ()
   (setq header-line-format (default-value 'header-line-format)))
+
+(defun nano-modeline-elfeed-search-add ()
+  (with-eval-after-load 'elfeed
+    (if (eq nano-modeline-position 'top)
+        (setq elfeed-search-header-function #'nano-modeline-elfeed-setup-header))))
 
 ;; ---------------------------------------------------------------------
 (defun nano-modeline-elfeed-show-mode-p ()
@@ -694,6 +762,9 @@ depending on the version of mu4e."
 (defun nano-modeline-prog-mode-p ()
   (derived-mode-p 'prog-mode))
 
+(defun nano-modeline-prog-mode ()
+  (nano-modeline-default-mode))
+
 (defun nano-modeline-text-mode-p ()
   (derived-mode-p 'text-mode))
 
@@ -727,21 +798,36 @@ depending on the version of mu4e."
   "Update selected window (before mode-line is active)"
   (setq nano-modeline--selected-window (selected-window)))
 
-
-
 (defun nano-modeline ()
   "Build and set the modeline."
-  
-    (let* ((format
+  (message "check mode")
+  (let* ((fn (or (catch 'found
+		   (dolist (elt nano-modeline-mode-formats)
+		     (let* ((config (cdr elt))
+			    (mode-p (plist-get config :mode-p))
+			    (format (plist-get config :format)))
+		       (when mode-p
+			 (when (funcall mode-p)
+			  (throw 'found format))))))
+		 nano-modeline-default-mode-format))
+	 (format3 (funcall fn))
+	 (format '((:eval (funcall (or (catch 'found
+		   (dolist (elt nano-modeline-mode-formats)
+		     (let* ((config (cdr elt))
+			    (mode-p (plist-get config :mode-p))
+			    (format (plist-get config :format)))
+		       (when mode-p
+			 (when (funcall mode-p)
+			  (throw 'found format))))))
+		 nano-modeline-default-mode-format))
+			   )))
+	 (format2
           '((:eval
              (cond
               ((and nano-modeline-user-mode
                     nano-modeline-user-mode-p
                     (funcall nano-modeline-user-mode-p)) (funcall nano-modeline-user-mode))
-              ((nano-modeline-elpher-mode-p)          (nano-modeline-elpher-mode))
-              ((nano-modeline-prog-mode-p)            (nano-modeline-default-mode))
               ((nano-modeline-messages-mode-p)        (nano-modeline-messages-mode))
-              ((nano-modeline-elfeed-search-mode-p)   (nano-modeline-elfeed-search-mode))
               ((nano-modeline-elfeed-show-mode-p)     (nano-modeline-elfeed-show-mode))
               ((nano-modeline-deft-mode-p)            (nano-modeline-deft-mode))
               ((nano-modeline-info-mode-p)            (nano-modeline-info-mode))
@@ -764,9 +850,11 @@ depending on the version of mu4e."
               ((nano-modeline-nano-help-mode-p)       (nano-modeline-nano-help-mode))
 ;;              ((nano-modeline-org-clock-mode-p)       (nano-modeline-org-clock-mode))
               (t                                      (nano-modeline-default-mode)))))))
+
     
+    (message "xx: %s | %s | %s" fn format format2)
       (if (eq nano-modeline-position 'top)
-          (progn 
+          (progn
             (setq header-line-format format)
             (setq-default header-line-format format))
         (progn
@@ -795,18 +883,7 @@ below or a buffer local variable 'no-mode-line'."
     (setq nano-modeline--saved-mode-line-format mode-line-format)
     (setq nano-modeline--saved-header-line-format header-line-format))
 
-  ;; since the EIN library itself is constantly re-rendering the notebook, and thus
-  ;; re-setting the header-line-format, we cannot use the nano-modeline function to set
-  ;; the header format in a notebook buffer. Fortunately, EIN exposes the
-  ;; ein:header-line-format variable for just this purpose.
-  (with-eval-after-load 'ein
-    (if (eq nano-modeline-position 'top)
-        (setq ein:header-line-format '((:eval (nano-modeline-ein-notebook-mode))))))
-
-  ;; Elfeed uses header-line, we need to tell it to use our own format
-  (with-eval-after-load 'elfeed
-    (if (eq nano-modeline-position 'top)
-        (setq elfeed-search-header-function #'nano-modeline-elfeed-setup-header)))
+  ;;(run-hooks 'nano-modeline-special-modes-add-hook)
   
   (with-eval-after-load 'calendar
     (add-hook 'calendar-initial-window-hook
@@ -866,6 +943,8 @@ below or a buffer local variable 'no-mode-line'."
   (custom-reevaluate-setting 'Buffer-menu-use-header-line)
   (custom-reevaluate-setting 'eshell-status-in-mode-line)
 
+  (run-hooks 'nano-modeline-special-modes-remove-hook)
+  
   (if (boundp 'ein:header-line-format)
       (setq ein:header-line-format '(:eval (ein:header-line))))
   (if (boundp 'elfeed-search-header-function)
