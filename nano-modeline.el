@@ -702,8 +702,8 @@ depending on the version of mu4e."
           (mode-name   (nano-modeline-mode-name))
           (branch      (nano-modeline-vc-branch))
           (position    (format-mode-line "%l:%c")))
-      (nano-modeline-render (upcase  mode-name)
-                            buffer-name
+      (nano-modeline-render (buffer-name)
+                            mode-name
                             (if branch (concat "(" branch ")") "")
                             position)))
 
