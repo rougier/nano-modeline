@@ -159,24 +159,34 @@ Modeline is composed as:
   :group 'nano-modeline-inactive)
 
 (defcustom nano-modeline-mode-formats
-  '(
-    ;; with :mode-p first
-    (calender-mode          :mode-p nano-modeline-calendar-mode-p
+  '(;; with :mode-p first
+    (buffer-menu-mode       :mode-p nano-modeline-buffer-menu-mode-p
+		            :format nano-modeline-buffer-menu-mode
+			    :add-hook nano-modeline-buffer-menu-add
+			    :remove-hook nano-modeline-buffer-menu-remove)
+    (calendar-mode          :mode-p nano-modeline-calendar-mode-p
 			    :format nano-modeline-calendar-mode
+			    :add-hook nano-modeline-calendar-add
+			    :remove-hook nano-modeline-calendar-remove)
+    (completion-list-mode   :mode-p nano-modeline-completion-list-mode-p
+		            :format nano-modeline-completion-list-mode)
+    (deft-mode              :mode-p nano-modeline-deft-mode-p
+		            :format nano-modeline-deft-mode)
+    (doc-view-mode          :mode-p nano-modeline-doc-view-mode-p
+		            :format nano-modeline-doc-view-mode)
+    (elfeed-search-mode     :mode-p nano-modeline-elfeed-search-mode-p
+			    :format nano-modeline-elfeed-search-mode
 			    :add-hook nano-modeline-elfeed-search-add
 			    :remove-hook nano-modeline-elfeed-search-remove)
-    (elfeed-search-mode     :mode-p nano-modeline-elfeed-search-mode-p
-			    :format nano-modeline-elfeed-search-mode
-			    :add-hook nano-modeline-elfeed-search-add)
-    (elfeed-search-mode     :mode-p nano-modeline-elfeed-search-mode-p
-			    :format nano-modeline-elfeed-search-mode
-			    :add-hook nano-modeline-elfeed-search-add)
     (elfeed-show-mode       :mode-p nano-modeline-elfeed-show-mode-p
 			    :format nano-modeline-elfeed-show-mode)
     (elpher-mode            :mode-p nano-modeline-elpher-mode-p
-		            :format nano-modeline-elpher-mode)
-    (info-breadcrumbs-mode  :mode-p nano-modeline-info-breadcrumbs-mode-p
-			    :format nano-modeline-info-breadcrumbs-mode)
+		            :format nano-modeline-elpher-mode
+			    :add-hook nano-modeline-elpher-add)
+    (info-mode              :mode-p nano-modeline-info-mode-p
+			    :format nano-modeline-info-mode
+			    :add-hook nano-modeline-info-add
+			    :remove-hook nano-modeline-info-remove)
     (messages-mode          :mode-p nano-modeline-messages-mode-p
 			    :format nano-modeline-messages-mode)
     (mu4e-compose-mode      :mode-p nano-modeline-mu4e-compose-mode-p
@@ -203,19 +213,26 @@ Modeline is composed as:
 			    :format nano-modeline-org-clock-mode
     			    :add-hook nano-modeline-org-clock-add
 			    :remove-hook nano-modeline-org-clock-remove)
+    (pdf-view-mode          :mode-p nano-modeline-pdf-view-mode-p
+		            :format nano-modeline-pdf-view-mode)
     (prog-mode              :mode-p nano-modeline-prog-mode-p
 			    :format nano-modeline-prog-mode)
     (term-mode              :mode-p nano-modeline-term-mode-p
 			    :format nano-modeline-term-mode)
+    (text-mode              :mode-p nano-modeline-text-mode-p
+			    :format nano-modeline-text-mode)
     (vterm-mode             :mode-p nano-modeline-vterm-mode-p
 			    :format nano-modeline-term-mode)
 
     ;; hooks only last
-    (ein-notebook-note      :add-hook nano-modeline-ein-notebook-mode-add)
-    (ispell-note            :add-hook nano-modeline-ispell-mode-add
+    (ein-notebook-mode      :add-hook nano-modeline-ein-notebook-add
+			    :remove-hook nano-modeline-ein-notebook-remove)
+    (esh-mode               :add-hook nano-modeline-esh-add
+			    :remove-hook nano-modeline-esh-remove)
+    (ispell-mode            :add-hook nano-modeline-ispell-mode-add
 			    :remove-hook nano-modeline-ispell-mode-remove)
-
-     )
+    (mu4e-mode              :add-hook nano-modeline-mu4e-add
+			    :remove-hook nano-modeline-mu4e-remove))
   "Modes to be evalued for modeline.
 "
   :type '(alist :key-type symbol
@@ -378,10 +395,14 @@ Modeline is composed as:
 ;; the header format in a notebook buffer. Fortunately, EIN exposes the
 ;; ein:header-line-format variable for just this purpose.
 
-(defun nano-modeline-ein-notebook-mode-add ()
-    (with-eval-after-load 'ein
-      (if (eq nano-modeline-position 'top)
-	  (setq ein:header-line-format '((:eval (nano-modeline-ein-notebook-mode)))))))
+(defun nano-modeline-ein-notebook-add ()
+  (with-eval-after-load 'ein
+    (if (eq nano-modeline-position 'top)
+	(setq ein:header-line-format '((:eval (nano-modeline-ein-notebook-mode)))))))
+
+(defun nano-modeline-ein-notebook-remove ()
+  (if (boundp 'ein:header-line-format)
+      (setq ein:header-line-format '(:eval (ein:header-line)))))
 
 ;; ---------------------------------------------------------------------
 (defun nano-modeline-elfeed-search-mode-p ()
@@ -422,6 +443,10 @@ Modeline is composed as:
   (with-eval-after-load 'elfeed
     (if (eq nano-modeline-position 'top)
         (setq elfeed-search-header-function #'nano-modeline-elfeed-setup-header))))
+
+(defun nano-modeline-elfeed-search-remove ()
+  (if (boundp 'elfeed-search-header-function)
+      (setq elfeed-search-header-function #'elfeed-search--header)))
 
 ;; ---------------------------------------------------------------------
 (defun nano-modeline-elfeed-show-mode-p ()
@@ -530,6 +555,13 @@ Modeline is composed as:
                         ""
                          ""))
 
+(defun nano-modeline-info-add ()
+  (if (eq nano-modeline-position 'top)
+      (setq Info-use-header-line nil)))
+
+(defun nano-modeline-info-remove ()
+  (custom-reevaluate-setting 'Info-use-header-line))
+
 ;; ---------------------------------------------------------------------
 (defun nano-modeline-enlarge-ispell-choices-buffer (buffer)
   (when (string= (buffer-name buffer) "*Choices*")
@@ -596,6 +628,13 @@ depending on the version of mu4e."
   (if (version< "1.6.10" mu4e-mu-version)
       mu4e--server-props
     mu4e~server-props))
+
+(defun nano-modeline-mu4e-add ()
+  (with-eval-after-load 'mu4e
+    (advice-add 'mu4e~header-line-format :override #'nano-modeline)))
+
+(defun nano-modeline-mu4e-remove ()
+  (advice-remove #'mu4e~header-line-format #'nano-modeline))
 
 ;; ---------------------------------------------------------------------
 (defun nano-modeline-mu4e-dashboard-mode-p ()
@@ -733,10 +772,18 @@ depending on the version of mu4e."
                #'nano-modeline-org-clock-out))
 
 ;; ---------------------------------------------------------------------
-(defun nano-modeline-docview-mode-p ()
+(defun nano-modeline-esh-add ()
+  (with-eval-after-load 'esh-mode
+    (setq eshell-status-in-mode-line nil)))
+
+(defun nano-modeline-esh-remove ()
+  (custom-reevaluate-setting 'eshell-status-in-mode-line))
+
+;; ---------------------------------------------------------------------
+(defun nano-modeline-doc-view-mode-p ()
   (derived-mode-p 'doc-view-mode))
 
-(defun nano-modeline-docview-mode ()
+(defun nano-modeline-doc-view-mode ()
   (let ((buffer-name (format-mode-line "%b"))
     (mode-name   (nano-modeline-mode-name))
     (branch      (nano-modeline-vc-branch))
@@ -785,6 +832,13 @@ depending on the version of mu4e."
 ;;(add-hook 'Buffer-menu-mode-hook
 ;;          #'buffer-menu-mode-header-line)
 
+(defun nano-modeline-buffer-menu-add ()
+  (if (eq nano-modeline-position 'top)
+      (setq Buffer-menu-use-header-line nil)))
+
+(defun nano-modeline-buffer-menu-remove ()
+  (custom-reevaluate-setting 'Buffer-menu-use-header-line))
+
 ;; ---------------------------------------------------------------------
 (defun nano-modeline-elpher-mode-p ()
   (derived-mode-p 'elpher-mode))
@@ -802,6 +856,10 @@ depending on the version of mu4e."
                           sanitized-display-string
                           tls-string
                           "")))
+
+(defun nano-modedline-elpher-add ()
+  (with-eval-after-load 'elpher
+    (setq elpher-use-header nil)))
 
 ;; ---------------------------------------------------------------------
 (defun nano-modeline-completion-list-mode-p ()
@@ -846,6 +904,9 @@ depending on the version of mu4e."
 (defun nano-modeline-text-mode-p ()
   (derived-mode-p 'text-mode))
 
+(defun nano-modeline-text-mode ()
+  (nano-modeline-default-mode))
+
 (defun nano-modeline-default-mode ()
     (let ((buffer-name (format-mode-line "%b"))
           (mode-name   (nano-modeline-mode-name))
@@ -879,66 +940,25 @@ depending on the version of mu4e."
 (defun nano-modeline ()
   "Build and set the modeline."
   (message "check mode")
-  (let* ((fn (or (catch 'found
-		   (dolist (elt nano-modeline-mode-formats)
-		     (let* ((config (cdr elt))
-			    (mode-p (plist-get config :mode-p))
-			    (format (plist-get config :format)))
-		       (when mode-p
-			 (when (funcall mode-p)
-			  (throw 'found format))))))
-		 nano-modeline-default-mode-format))
-	 (format3 (funcall fn))
-	 (format '((:eval (funcall (or (catch 'found
-		   (dolist (elt nano-modeline-mode-formats)
-		     (let* ((config (cdr elt))
-			    (mode-p (plist-get config :mode-p))
-			    (format (plist-get config :format)))
-		       (when mode-p
-			 (when (funcall mode-p)
-			  (throw 'found format))))))
-		 nano-modeline-default-mode-format))
-			   )))
-	 (format2
-          '((:eval
-             (cond
-              ((and nano-modeline-user-mode
-                    nano-modeline-user-mode-p
-                    (funcall nano-modeline-user-mode-p)) (funcall nano-modeline-user-mode))
-              ((nano-modeline-messages-mode-p)        (nano-modeline-messages-mode))
-              ((nano-modeline-elfeed-show-mode-p)     (nano-modeline-elfeed-show-mode))
-              ((nano-modeline-deft-mode-p)            (nano-modeline-deft-mode))
-              ((nano-modeline-info-mode-p)            (nano-modeline-info-mode))
-              ((nano-modeline-calendar-mode-p)        (nano-modeline-calendar-mode))
-              ((nano-modeline-org-capture-mode-p)     (nano-modeline-org-capture-mode))
-              ((nano-modeline-org-agenda-mode-p)      (nano-modeline-org-agenda-mode))
-              ((nano-modeline-term-mode-p)            (nano-modeline-term-mode))
-              ((nano-modeline-vterm-mode-p)           (nano-modeline-term-mode))
-              ((nano-modeline-mu4e-dashboard-mode-p)  (nano-modeline-mu4e-dashboard-mode))
-              ((nano-modeline-mu4e-main-mode-p)       (nano-modeline-mu4e-main-mode))
-              ((nano-modeline-mu4e-loading-mode-p)    (nano-modeline-mu4e-loading-mode))
-              ((nano-modeline-mu4e-headers-mode-p)    (nano-modeline-mu4e-headers-mode))
-              ((nano-modeline-mu4e-view-mode-p)       (nano-modeline-mu4e-view-mode))
-              ((nano-modeline-mu4e-compose-mode-p)    (nano-modeline-mu4e-compose-mode))
-              ((nano-modeline-text-mode-p)            (nano-modeline-default-mode))
-              ((nano-modeline-pdf-view-mode-p)        (nano-modeline-pdf-view-mode))
-              ((nano-modeline-docview-mode-p)         (nano-modeline-docview-mode))
-              ;; ((nano-modeline-buffer-menu-mode-p)     (nano-modeline-buffer-menu-mode))
-              ((nano-modeline-completion-list-mode-p) (nano-modeline-completion-list-mode))
-              ((nano-modeline-nano-help-mode-p)       (nano-modeline-nano-help-mode))
-;;              ((nano-modeline-org-clock-mode-p)       (nano-modeline-org-clock-mode))
-              (t                                      (nano-modeline-default-mode)))))))
-
-    
-    (message "xx: %s | %s | %s" fn format format2)
-      (if (eq nano-modeline-position 'top)
-          (progn
-            (setq header-line-format format)
-            (setq-default header-line-format format))
+  (let* ((format
+	  '((:eval
+	     (funcall
+	      (or (catch 'found
+		    (dolist (elt nano-modeline-mode-formats)
+		      (let* ((config (cdr elt))
+			     (mode-p (plist-get config :mode-p))
+			     (format (plist-get config :format)))
+			(when mode-p
+			  (when (funcall mode-p)
+			    (throw 'found format))))))
+		  nano-modeline-default-mode-format))))))
+    (if (eq nano-modeline-position 'top)
         (progn
-          (setq mode-line-format format)
-          (setq-default mode-line-format format)))))
-
+          (setq header-line-format format)
+          (setq-default header-line-format format))
+      (progn
+        (setq mode-line-format format)
+        (setq-default mode-line-format format)))))
 
 (defun nano-modeline-update-windows ()
   "Hide the mode line depending on the presence of a window
@@ -961,26 +981,8 @@ below or a buffer local variable 'no-mode-line'."
     (setq nano-modeline--saved-mode-line-format mode-line-format)
     (setq nano-modeline--saved-header-line-format header-line-format))
 
-  (run-hooks 'nano-modeline-special-modes-add-hook)
+  (run-hooks 'nano-modeline-special-modes-add-hook)  
   
-
-  
-
-  (with-eval-after-load 'esh-mode
-    (setq eshell-status-in-mode-line nil))
-
-  (with-eval-after-load 'elpher
-    (setq elpher-use-header nil))
-  
-  (with-eval-after-load 'mu4e
-    (advice-add 'mu4e~header-line-format :override #'nano-modeline))
-
-  (if (eq nano-modeline-position 'top)
-      (setq Info-use-header-line nil))
-
-  (if (eq nano-modeline-position 'top)
-      (setq Buffer-menu-use-header-line nil))
-
   ;; Update selected window
   (nano-modeline--update-selected-window)
   ;; (setq nano-modeline--selected-window (selected-window))
@@ -1001,33 +1003,20 @@ below or a buffer local variable 'no-mode-line'."
 
   (force-mode-line-update t))
 
-
 (defun nano-modeline-mode--inactivate ()
   "Inactivate nano mode line and restored default mode-line"
-  
-  (custom-reevaluate-setting 'Info-use-header-line)
-  (custom-reevaluate-setting 'Buffer-menu-use-header-line)
-  (custom-reevaluate-setting 'eshell-status-in-mode-line)
 
   (run-hooks 'nano-modeline-special-modes-remove-hook)
-  
-  (if (boundp 'ein:header-line-format)
-      (setq ein:header-line-format '(:eval (ein:header-line))))
-  (if (boundp 'elfeed-search-header-function)
-      (setq elfeed-search-header-function #'elfeed-search--header))
-  
+
   (remove-hook 'post-command-hook
                #'nano-modeline--update-selected-window)
   (remove-hook 'window-configuration-change-hook
                #'nano-modeline-update-windows)
 
-  (advice-remove #'mu4e~header-line-format #'nano-modeline)
-
   (setq         mode-line-format nano-modeline--saved-mode-line-format)
   (setq-default mode-line-format nano-modeline--saved-mode-line-format)
   (setq         header-line-format nano-modeline--saved-header-line-format)
   (setq-default header-line-format nano-modeline--saved-header-line-format))
-
 
 ;;;###autoload
 (define-minor-mode nano-modeline-mode
