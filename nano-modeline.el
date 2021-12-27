@@ -838,7 +838,7 @@ depending on the version of mu4e."
                           tls-string
                           "")))
 
-(defun nano-modedline-elpher-activate ()
+(defun nano-modeline-elpher-activate ()
   (with-eval-after-load 'elpher
     (setq elpher-use-header nil)))
 
