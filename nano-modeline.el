@@ -931,7 +931,7 @@ depending on the version of mu4e."
 			(when mode-p
 			  (when (funcall mode-p)
 			    (throw 'found format))))))
-		  Nano-modeline-default-mode-format))))))
+		  nano-modeline-default-mode-format))))))
     (if (eq nano-modeline-position 'top)
         (progn
           (setq header-line-format format)
