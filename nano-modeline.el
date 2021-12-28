@@ -169,6 +169,14 @@ Modeline is composed as:
   :type '(choice (const nil) function)
   :group 'nano-modeline)
 
+(defcustom nano-modeline-status-text '((read-only  . "RO")
+				       (read-write . "RW")
+				       (modified   . "**"))
+  "Translation of the buffer status in text"
+  :type '(alist :key-type (choide (const read-only)
+				  (const read-write)
+				  (modified)))
+  :group 'nano-modeline)
 
 (defun nano-modeline-truncate (str size &optional ellipsis)
   "If STR is longer than SIZE, truncate it and add ELLIPSIS."
@@ -702,9 +710,10 @@ depending on the version of mu4e."
           (mode-name   (nano-modeline-mode-name))
           (branch      (nano-modeline-vc-branch))
           (position    (format-mode-line "%l:%c")))
-      (nano-modeline-render (buffer-name)
-                            mode-name
-                            (if branch (concat "(" branch ")") "")
+      (nano-modeline-render (cdr
+			     (assoc (nano-modeline-status) nano-modeline-status-text))
+			    (buffer-name)
+                            (concat (if branch (concat branch " / ") "")  mode-name)
                             position)))
 
 ;; ---------------------------------------------------------------------
