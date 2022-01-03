@@ -418,7 +418,7 @@ Modeline is composed as:
   (derived-mode-p 'org-agenda-mode))
 
 (defun nano-modeline-org-agenda-mode ()
-  (nano-modeline-render "ORG" 
+  (nano-modeline-render nil
                          "Agenda"
                          ""
 ;;                         (format "%s" org-agenda-span-name)
