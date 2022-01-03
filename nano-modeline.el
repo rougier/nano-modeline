@@ -860,7 +860,9 @@ below or a buffer local variable 'no-mode-line'."
   (add-hook 'post-command-hook #'nano-modeline--update-selected-window)
 
   ;; This hooks hide the modeline for windows having a window below them
-  (add-hook 'window-configuration-change-hook #'nano-modeline-update-windows)
+  ;; Disabled for the time being,
+  ;;  -> see https://github.com/rougier/nano-modeline/issues/24
+  ;; (add-hook 'window-configuration-change-hook #'nano-modeline-update-windows)
 
   (force-mode-line-update t))
 
