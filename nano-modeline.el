@@ -89,6 +89,18 @@ Modeline is composed as:
                  (const :tag "Bottom" bottom))
   :group 'nano-modeline)
 
+(defcustom nano-modeline-space-top +0.100
+  "Space adjustment for top of modeline
+Possitive is upwards"
+  :type 'float
+  :group 'nano-modeline)
+
+(defcustom nano-modeline-space-bottom -0.125
+  "Space adjustment for bottom of modeline
+Negative is downwards."
+  :type 'float
+  :group 'nano-modeline)
+
 (defface nano-modeline-active
   '((t (:inherit mode-line)))
   "Modeline face for active modeline"
@@ -255,7 +267,7 @@ Modeline is composed as:
          (left (concat (if (stringp prefix)
                            (propertize (format " %s " prefix)
                                        'face `(:inherit ,prefix-face)))
-                       (propertize " " 'display '(raise +0.100))
+                       (propertize " " 'display `(raise ,nano-modeline-space-top))
                        (propertize name 'face (if active 'nano-modeline-active-name
                                                 'nano-modeline-inactive-name))
                        (if (length name) " ")
@@ -263,7 +275,7 @@ Modeline is composed as:
                                                    'nano-modeline-inactive-primary))))
          (right (concat (propertize secondary 'face (if active 'nano-modeline-active-secondary
                                                       'nano-modeline-inactive-secondary))
-                        (propertize " " 'display '(raise -0.125)))))
+                        (propertize " " 'display `(raise ,nano-modeline-space-bottom)))))
     (concat
      left 
      (propertize " " 'display `(space :align-to (- right ,(+ (length secondary) 1))))
