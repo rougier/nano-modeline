@@ -848,7 +848,9 @@ below or a buffer local variable 'no-mode-line'."
     (setq elpher-use-header nil))
   
   (with-eval-after-load 'mu4e
-    (advice-add 'mu4e~header-line-format :override #'nano-modeline))
+    (if (eq nano-modeline-position 'top)
+        (advice-add 'mu4e~header-line-format :override #'nano-modeline)
+      (advice-add 'mu4e~header-line-format :override #'(lambda () nil))))
 
   (if (eq nano-modeline-position 'top)
       (setq Info-use-header-line nil))
