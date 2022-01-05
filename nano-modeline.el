@@ -919,7 +919,6 @@ depending on the version of mu4e."
 
 (defun nano-modeline ()
   "Build and set the modeline."
-  (message "check mode")
   (let* ((format
           '((:eval
              (funcall
