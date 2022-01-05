@@ -161,89 +161,89 @@ Modeline is composed as:
 (defcustom nano-modeline-mode-formats
   '(;; with :mode-p first
     (buffer-menu-mode       :mode-p nano-modeline-buffer-menu-mode-p
-		            :format nano-modeline-buffer-menu-mode
-			    :on-activate nano-modeline-buffer-menu-activate
-			    :on-inactivate nano-modeline-buffer-menu-inactivate)
+                            :format nano-modeline-buffer-menu-mode
+                            :on-activate nano-modeline-buffer-menu-activate
+                            :on-inactivate nano-modeline-buffer-menu-inactivate)
     (calendar-mode          :mode-p nano-modeline-calendar-mode-p
-			    :format nano-modeline-calendar-mode
-			    :on-activate nano-modeline-calendar-activate
-			    :on-inactivate nano-modeline-calendar-inactivate)
+                            :format nano-modeline-calendar-mode
+                            :on-activate nano-modeline-calendar-activate
+                            :on-inactivate nano-modeline-calendar-inactivate)
     (completion-list-mode   :mode-p nano-modeline-completion-list-mode-p
-		            :format nano-modeline-completion-list-mode)
+                            :format nano-modeline-completion-list-mode)
     (deft-mode              :mode-p nano-modeline-deft-mode-p
-		            :format nano-modeline-deft-mode)
+                            :format nano-modeline-deft-mode)
     (doc-view-mode          :mode-p nano-modeline-doc-view-mode-p
-		            :format nano-modeline-doc-view-mode)
+                            :format nano-modeline-doc-view-mode)
     (elfeed-search-mode     :mode-p nano-modeline-elfeed-search-mode-p
-			    :format nano-modeline-elfeed-search-mode
-			    :on-activate nano-modeline-elfeed-search-activate
-			    :on-inactivate nano-modeline-elfeed-search-inactivate)
+                            :format nano-modeline-elfeed-search-mode
+                            :on-activate nano-modeline-elfeed-search-activate
+                            :on-inactivate nano-modeline-elfeed-search-inactivate)
     (elfeed-show-mode       :mode-p nano-modeline-elfeed-show-mode-p
-			    :format nano-modeline-elfeed-show-mode)
+                            :format nano-modeline-elfeed-show-mode)
     (elpher-mode            :mode-p nano-modeline-elpher-mode-p
-		            :format nano-modeline-elpher-mode
-			    :on-activate nano-modeline-elpher-activate)
+                            :format nano-modeline-elpher-mode
+                            :on-activate nano-modeline-elpher-activate)
     (info-mode              :mode-p nano-modeline-info-mode-p
-			    :format nano-modeline-info-mode
-			    :on-activate nano-modeline-info-activate
-			    :on-inactivate nano-modeline-info-inactivate)
+                            :format nano-modeline-info-mode
+                            :on-activate nano-modeline-info-activate
+                            :on-inactivate nano-modeline-info-inactivate)
     (messages-mode          :mode-p nano-modeline-messages-mode-p
-			    :format nano-modeline-messages-mode)
+                            :format nano-modeline-messages-mode)
     (mu4e-compose-mode      :mode-p nano-modeline-mu4e-compose-mode-p
-			    :format nano-modeline-mu4e-compose-mode)
+                            :format nano-modeline-mu4e-compose-mode)
     (mu4e-dashboard-mode    :mode-p nano-modeline-mu4e-dashboard-mode-p
-			    :format nano-modeline-mu4e-dashboard-mode)
+                            :format nano-modeline-mu4e-dashboard-mode)
     (mu4e-headers-mode      :mode-p nano-modeline-mu4e-headers-mode-p
-			    :format nano-modeline-mu4e-headers-mode)
+                            :format nano-modeline-mu4e-headers-mode)
     (mu4e-loading-mode      :mode-p nano-modeline-mu4e-loading-mode-p
-			    :format nano-modeline-mu4e-loading-mode)
+                            :format nano-modeline-mu4e-loading-mode)
     (mu4e-main-mode         :mode-p nano-modeline-mu4e-main-mode-p
-			    :format nano-modeline-mu4e-main-mode)
+                            :format nano-modeline-mu4e-main-mode)
     (mu4e-view-mode         :mode-p nano-modeline-mu4e-view-mode-p
-			    :format nano-modeline-mu4e-view-mode)
+                            :format nano-modeline-mu4e-view-mode)
     (nano-help-mode         :mode-p nano-modeline-nano-help-mode-p
-			    :format nano-modeline-nano-help-mode)
+                            :format nano-modeline-nano-help-mode)
     (org-agenda-mode        :mode-p nano-modeline-org-agenda-mode-p
-			    :format nano-modeline-org-agenda-mode)
+                            :format nano-modeline-org-agenda-mode)
     (org-capture-mode       :mode-p nano-modeline-org-capture-mode-p
-			    :format nano-modeline-org-capture-mode
-    			    :on-activate nano-modeline-org-capture-activate
-			    :on-inactivate nano-modeline-org-capture-inactivate)
+                            :format nano-modeline-org-capture-mode
+                            :on-activate nano-modeline-org-capture-activate
+                            :on-inactivate nano-modeline-org-capture-inactivate)
     (org-clock-mode         :mode-p nano-modeline-org-clock-mode-p
-			    :format nano-modeline-org-clock-mode
-    			    :on-activate nano-modeline-org-clock-activate
-			    :on-inactivate nano-modeline-org-clock-inactivate)
+                            :format nano-modeline-org-clock-mode
+                            :on-activate nano-modeline-org-clock-activate
+                            :on-inactivate nano-modeline-org-clock-inactivate)
     (pdf-view-mode          :mode-p nano-modeline-pdf-view-mode-p
-		            :format nano-modeline-pdf-view-mode)
+                            :format nano-modeline-pdf-view-mode)
     (prog-mode              :mode-p nano-modeline-prog-mode-p
-			    :format nano-modeline-prog-mode)
+                            :format nano-modeline-prog-mode)
     (term-mode              :mode-p nano-modeline-term-mode-p
-			    :format nano-modeline-term-mode)
+                            :format nano-modeline-term-mode)
     (text-mode              :mode-p nano-modeline-text-mode-p
-			    :format nano-modeline-text-mode)
+                            :format nano-modeline-text-mode)
     (vterm-mode             :mode-p nano-modeline-vterm-mode-p
-			    :format nano-modeline-term-mode)
+                            :format nano-modeline-term-mode)
 
     ;; hooks only last
     (ein-notebook-mode      :on-activate nano-modeline-ein-notebook-activate
-			    :on-inactivate nano-modeline-ein-notebook-inactivate)
+                            :on-inactivate nano-modeline-ein-notebook-inactivate)
     (esh-mode               :on-activate nano-modeline-esh-activate
-			    :on-inactivate nano-modeline-esh-inactivate)
+                            :on-inactivate nano-modeline-esh-inactivate)
     (ispell-mode            :on-activate nano-modeline-ispell-activate
-			    :on-inactivate nano-modeline-ispell-inactivate)
+                            :on-inactivate nano-modeline-ispell-inactivate)
     (mu4e-mode              :on-activate nano-modeline-mu4e-activate
-			    :on-inactivate nano-modeline-mu4e-inactivate))
+                            :on-inactivate nano-modeline-mu4e-inactivate))
   "Modes to be evalued for modeline.
 KEY mode name, for reference only. Easier to do lookups and/or replacements.
 :MODE-P the function to check if :FORMAT needs to be used, first one wins.
 :ON-ACTIVATE and :ON-INACTIVATE do hook magic on enabling/disabling the mode.
 "
   :type '(alist :key-type symbol
-		:value-type (plist :key-type (choice (const :mode-p)
-						     (const :format)
-						     (const :on-activate)
-						     (const :on-inactivate))
-				   :value-type function))
+                :value-type (plist :key-type (choice (const :mode-p)
+                                                     (const :format)
+                                                     (const :on-activate)
+                                                     (const :on-inactivate))
+                                   :value-type function))
   :group 'nano-modeline)
 
 (defcustom nano-modeline-mode-format-activate-hook nil
@@ -384,7 +384,7 @@ KEY mode name, for reference only. Easier to do lookups and/or replacements.
 (defun nano-modeline-ein-notebook-activate ()
   (with-eval-after-load 'ein
     (if (eq nano-modeline-position 'top)
-	(setq ein:header-line-format '((:eval (nano-modeline-ein-notebook-mode)))))))
+        (setq ein:header-line-format '((:eval (nano-modeline-ein-notebook-mode)))))))
 
 (defun nano-modeline-ein-notebook-inactivate ()
   (if (boundp 'ein:header-line-format)
@@ -562,7 +562,7 @@ KEY mode name, for reference only. Easier to do lookups and/or replacements.
 
 (defun nano-modeline-ispell-inactivate ()
   (advice-remove #'ispell-display-buffer
-		 #'nano-modeline-enlarge-ispell-choices-buffer))
+                 #'nano-modeline-enlarge-ispell-choices-buffer))
 
 ;; ---------------------------------------------------------------------
 (defun nano-modeline-org-agenda-mode-p ()
@@ -921,17 +921,17 @@ depending on the version of mu4e."
   "Build and set the modeline."
   (message "check mode")
   (let* ((format
-	  '((:eval
-	     (funcall
-	      (or (catch 'found
-		    (dolist (elt nano-modeline-mode-formats)
-		      (let* ((config (cdr elt))
-			     (mode-p (plist-get config :mode-p))
-			     (format (plist-get config :format)))
-			(when mode-p
-			  (when (funcall mode-p)
-			    (throw 'found format))))))
-		  nano-modeline-default-mode-format))))))
+          '((:eval
+             (funcall
+              (or (catch 'found
+                    (dolist (elt nano-modeline-mode-formats)
+                      (let* ((config (cdr elt))
+                             (mode-p (plist-get config :mode-p))
+                             (format (plist-get config :format)))
+                        (when mode-p
+                          (when (funcall mode-p)
+                            (throw 'found format))))))
+                  nano-modeline-default-mode-format))))))
     (if (eq nano-modeline-position 'top)
         (progn
           (setq header-line-format format)
@@ -963,7 +963,7 @@ below or a buffer local variable 'no-mode-line'."
 
   (dolist (elt nano-modeline-mode-formats)
     (let* ((config (cdr elt))
-	   (fn (plist-get config :on-activate)))
+           (fn (plist-get config :on-activate)))
       (when fn (funcall fn))))
 
   (run-hooks 'nano-modeline-mode-format-activate-hook)
@@ -993,7 +993,7 @@ below or a buffer local variable 'no-mode-line'."
 
   (dolist (elt nano-modeline-mode-formats)
     (let* ((config (cdr elt))
-	   (fn (plist-get config :on-inactivate)))
+           (fn (plist-get config :on-inactivate)))
       (when fn (funcall fn))))
 
   (run-hooks 'nano-modeline-mode-format-inactivate-hook)
