@@ -4,7 +4,7 @@
 
 ;; Maintainer: Nicolas P. Rougier <Nicolas.Rougier@inria.fr>
 ;; URL: https://github.com/rougier/nano-modeline
-;; Version: 0.4
+;; Version: 0.5
 ;; Package-Requires: ((emacs "27.1"))
 ;; Keywords: convenience, mode-line, header-line
 
@@ -46,6 +46,13 @@
 ;; M-x: nano-modeline-mode
 ;;
 ;;; NEWS:
+;;
+;; Version 0.5
+;; - Dynamic version that is now configurable thanks to the wonderful
+;;   contribution of Hans Donner (@hans-d)
+;;
+;; Version 0.4
+;; - Reverted to RO/RW/** default prefix
 ;;
 ;; Version 0.3
 ;; - Usage of :align-to: properties for better alignment
@@ -259,13 +266,13 @@ KEY mode name, for reference only. Easier to do lookups and/or replacements.
   :group 'nano-modeline)
 
 (defcustom nano-modeline-mode-format-activate-hook nil
-  "Add hooks on activiation of the mode, for those modes that do tehir own mode-line magine"
+  "Add hooks on activation of the mode, for those modes that do their own mode-line magic"
   :type 'hook
   :options '(turn-on-auto-fill flyspell-mode)
   :group 'nano-modeline)
 
 (defcustom nano-modeline-mode-format-inactivate-hook nil
-  "Remove hooks on de-activiation of the mode, for those modes that do tehir own mode-line magine"
+  "Remove hooks on de-activation of the mode, for those modes that do their own mode-line magic"
   :type 'hook
   :options '(turn-on-auto-fill flyspell-mode)
   :group 'nano-modeline)
