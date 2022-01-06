@@ -95,13 +95,13 @@ Modeline is composed as:
                  (const :tag "Bottom" bottom))
   :group 'nano-modeline)
 
-(defcustom nano-modeline-space-top +0.100
+(defcustom nano-modeline-space-top +0.15
   "Space adjustment for top of modeline
 Possitive is upwards"
   :type 'float
   :group 'nano-modeline)
 
-(defcustom nano-modeline-space-bottom -0.125
+(defcustom nano-modeline-space-bottom -0.20
   "Space adjustment for bottom of modeline
 Negative is downwards."
   :type 'float
@@ -388,7 +388,7 @@ KEY mode name, for reference only. Easier to do lookups and/or replacements.
 	 (right-len (length (format-mode-line right))))
     (concat
      left 
-     (propertize " " 'display `(space :align-to (- right ,(- right-len 2))))
+     (propertize " " 'display `(space :align-to (- right ,(- right-len 0))))
      right)))
 
 ;; ---------------------------------------------------------------------
