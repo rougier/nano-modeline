@@ -286,13 +286,13 @@ KEY mode name, for reference only. Easier to do lookups and/or replacements.
   "User supplied mode to be evaluated for modeline."
   :type '(choice (const nil) function)
   :group 'nano-modeline)
-(make-obsolete-variable nano-modeline-user-mode "Add to `nano-modeline-mode-formats' instead")
+(make-obsolete-variable nano-modeline-user-mode "Add to `nano-modeline-mode-formats' instead" "0.5")
 
 (defcustom nano-modeline-user-mode-p nil
   "Function to indicate whether the user supplied mode should be used instead f the default one. This function will be dynamically called and can return t or nil depending on some user conditions. If the provied function always return t, this fully overrides the nano-modeline."
   :type '(choice (const nil) function)
   :group 'nano-modeline)
-(make-obsolete-variable nano-modeline-user-mode-p "Add to `nano-modeline-mode-formats' instead")
+(make-obsolete-variable nano-modeline-user-mode-p "Add to `nano-modeline-mode-formats' instead" "0.5")
 
 (defun nano-modeline-truncate (str size &optional ellipsis)
   "If STR is longer than SIZE, truncate it and add ELLIPSIS."
