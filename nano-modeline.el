@@ -384,10 +384,11 @@ KEY mode name, for reference only. Easier to do lookups and/or replacements.
                                                    'nano-modeline-inactive-primary))))
          (right (concat (propertize secondary 'face (if active 'nano-modeline-active-secondary
                                                       'nano-modeline-inactive-secondary))
-                        (propertize " " 'display `(raise ,nano-modeline-space-bottom)))))
+                        (propertize " " 'display `(raise ,nano-modeline-space-bottom))))
+	 (right-len (length (format-mode-line right))))
     (concat
      left 
-     (propertize " " 'display `(space :align-to (- right ,(+ (length secondary) 1))))
+     (propertize " " 'display `(space :align-to (- right ,(- right-len 2))))
      right)))
 
 ;; ---------------------------------------------------------------------
