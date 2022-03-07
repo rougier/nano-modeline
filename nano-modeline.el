@@ -47,6 +47,10 @@
 ;;
 ;;; NEWS:
 ;;
+;; Version 0.5.1
+;; - Bug fix (make-obsolete-variable)
+;; - Added marker for dedicated window
+;;
 ;; Version 0.5
 ;; - Dynamic version that is now configurable thanks to the wonderful
 ;;   contribution of Hans Donner (@hans-d)
@@ -922,14 +926,14 @@ depending on the version of mu4e."
   (nano-modeline-default-mode))
 
 (defun nano-modeline-default-mode ()
-    (let ((buffer-name (format-mode-line "%b"))
-          (mode-name   (nano-modeline-mode-name))
-          (branch      (nano-modeline-vc-branch))
-          (position    (format-mode-line "%l:%c")))
-      (nano-modeline-render nil ;; (upcase  mode-name)
-                            buffer-name
-                            (if branch (concat "(" branch ")") "")
-                            position)))
+  (let ((buffer-name (format-mode-line "%b"))
+        (mode-name   (nano-modeline-mode-name))
+        (branch      (nano-modeline-vc-branch))
+        (position    (format-mode-line "%l:%c")))
+    (nano-modeline-render nil ;; (upcase  mode-name)
+                          buffer-name
+                          (if branch (concat "(" branch ")") "")
+                          position)))
 
 ;; ---------------------------------------------------------------------
 (defun nano-modeline-face-clear (face)
@@ -971,6 +975,7 @@ depending on the version of mu4e."
       (progn
         (setq mode-line-format format)
         (setq-default mode-line-format format)))))
+
 
 (defun nano-modeline-update-windows ()
   "Hide the mode line depending on the presence of a window
