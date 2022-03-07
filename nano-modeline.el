@@ -439,7 +439,7 @@ KEY mode name, for reference only. Easier to do lookups and/or replacements.
                         (update
                          (let ((total (elfeed-queue-count-total))
                                (in-process (elfeed-queue-count-active)))
-                           (format "%d jobs pending, %d active..."
+                           (format "%d jobs pending, %d active"
                                    (- total in-process) in-process)))
                         (t  (let* ((db-time (seconds-to-time (elfeed-db-last-update)))
                                    (unread ))
