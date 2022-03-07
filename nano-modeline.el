@@ -377,9 +377,13 @@ KEY mode name, for reference only. Easier to do lookups and/or replacements.
                             (t (if active 'nano-modeline-active
                                  'nano-modeline-inactive))))
          (left (concat (if (stringp prefix)
-                           (propertize (format " %s " prefix)
-                                       'face `(:inherit ,prefix-face)))
-                       (propertize " " 'display `(raise ,nano-modeline-space-top))
+                           (concat
+                            (propertize (if (window-dedicated-p) "•" " ")
+                                        'face `(:inherit ,prefix-face))
+                            (propertize (format "%s" prefix)
+                                        'face `(:inherit ,prefix-face))
+                            (propertize " " 'face `(:inherit ,prefix-face))))
+                         (propertize " " 'display `(raise ,nano-modeline-space-top))
                        (propertize name 'face (if active 'nano-modeline-active-name
                                                 'nano-modeline-inactive-name))
                        (if (length name) " ")
