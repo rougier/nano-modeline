@@ -384,24 +384,33 @@ KEY mode name, for reference only. Easier to do lookups and/or replacements.
                                  'nano-modeline-inactive))))
          (left (concat (if (stringp prefix)
                            (concat
-                            (propertize (if (window-dedicated-p) "•" " ")
+                            (propertize (if (window-dedicated-p) "[" " ")
                                         'face `(:inherit ,prefix-face))
-                            (propertize (format "%s" prefix)
-                                        'face `(:inherit ,prefix-face))
-                            (propertize " " 'face `(:inherit ,prefix-face))))
-                         (propertize " " 'display `(raise ,nano-modeline-space-top))
+                                (propertize (format "%s" prefix)
+                                            'face `(:inherit ,prefix-face))
+                            (propertize (if (window-dedicated-p) "]" " ")
+                                        'face `(:inherit ,prefix-face))))
+                       (propertize " "  'face (if active 'nano-modeline-active
+                                                'nano-modeline-inactive)
+                                   'display `(raise ,nano-modeline-space-top))
                        (propertize name 'face (if active 'nano-modeline-active-name
                                                 'nano-modeline-inactive-name))
-                       (if (length name) " ")
+                       (if (length name)
+                           (propertize " " 'face (if active 'nano-modeline-active
+                                                   'nano-modeline-inactive)))
                        (propertize primary 'face (if active 'nano-modeline-active-primary
                                                    'nano-modeline-inactive-primary))))
          (right (concat (propertize secondary 'face (if active 'nano-modeline-active-secondary
                                                       'nano-modeline-inactive-secondary))
-                        (propertize " " 'display `(raise ,nano-modeline-space-bottom))))
+                        (propertize " "  'face (if active 'nano-modeline-active
+                                                 'nano-modeline-inactive)
+                                         'display `(raise ,nano-modeline-space-bottom))))
 	 (right-len (length (format-mode-line right))))
     (concat
      left 
-     (propertize " " 'display `(space :align-to (- right ,(- right-len 0))))
+     (propertize " "  'face (if active 'nano-modeline-active
+                              'nano-modeline-inactive)
+                      'display `(space :align-to (- right ,(- right-len 0))))
      right)))
 
 ;; ---------------------------------------------------------------------
