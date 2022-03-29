@@ -4,7 +4,7 @@
 
 ;; Maintainer: Nicolas P. Rougier <Nicolas.Rougier@inria.fr>
 ;; URL: https://github.com/rougier/nano-modeline
-;; Version: 0.5
+;; Version: 0.5.2
 ;; Package-Requires: ((emacs "27.1"))
 ;; Keywords: convenience, mode-line, header-line
 
@@ -46,6 +46,12 @@
 ;; M-x: nano-modeline-mode
 ;;
 ;;; NEWS:
+;;
+;; Version 0.5.2
+;; - Spaces have face that enforce active/inactive
+;; - Better marker for dedicated windows
+;; - Internal reordering of modes, most frequent first
+;;    (educated guess, might vary greatly with users)
 ;;
 ;; Version 0.5.1
 ;; - Bug fix (make-obsolete-variable)
@@ -945,6 +951,7 @@ depending on the version of mu4e."
                           buffer-name
                           (if branch (concat "(" branch ")") "")
                           position)))
+
 
 ;; ---------------------------------------------------------------------
 (defun nano-modeline-face-clear (face)
