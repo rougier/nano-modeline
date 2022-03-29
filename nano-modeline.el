@@ -4,7 +4,7 @@
 
 ;; Maintainer: Nicolas P. Rougier <Nicolas.Rougier@inria.fr>
 ;; URL: https://github.com/rougier/nano-modeline
-;; Version: 0.5.2
+;; Version: 0.6
 ;; Package-Requires: ((emacs "27.1"))
 ;; Keywords: convenience, mode-line, header-line
 
@@ -34,6 +34,7 @@
 ;; There are two sets of faces (for active and inactive modelines) that
 ;; can be customized (M-x: customize-group + nano-modeline)
 ;;
+;; - nano-modeline-active           / nano-modeline-inactive
 ;; - nano-modeline-active-name      / nano-modeline-inactive-name
 ;; - nano-modeline-active-primary   / nano-modeline-inactive-primary
 ;; - nano-modeline-active-secondary / nano-modeline-inactive-secondary
@@ -47,7 +48,7 @@
 ;;
 ;;; NEWS:
 ;;
-;; Version 0.5.2
+;; Version 0.6
 ;; - Spaces have face that enforce active/inactive
 ;; - Better marker for dedicated windows
 ;; - Internal reordering of modes, most frequent first
