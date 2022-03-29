@@ -186,6 +186,18 @@ Negative is downwards."
 
 (defcustom nano-modeline-mode-formats
   '(;; with :mode-p first
+    (prog-mode              :mode-p nano-modeline-prog-mode-p
+                            :format nano-modeline-prog-mode)
+    (mu4e-dashboard-mode    :mode-p nano-modeline-mu4e-dashboard-mode-p
+                            :format nano-modeline-mu4e-dashboard-mode)
+;;    (text-mode              :mode-p nano-modeline-text-mode-p
+;;                            :format nano-modeline-text-mode)
+    (messages-mode          :mode-p nano-modeline-messages-mode-p
+                            :format nano-modeline-messages-mode)
+    (term-mode              :mode-p nano-modeline-term-mode-p
+                            :format nano-modeline-term-mode)
+    (vterm-mode             :mode-p nano-modeline-vterm-mode-p
+                            :format nano-modeline-term-mode)
     (buffer-menu-mode       :mode-p nano-modeline-buffer-menu-mode-p
                             :format nano-modeline-buffer-menu-mode
                             :on-activate nano-modeline-buffer-menu-activate
@@ -213,12 +225,8 @@ Negative is downwards."
                             :format nano-modeline-info-mode
                             :on-activate nano-modeline-info-activate
                             :on-inactivate nano-modeline-info-inactivate)
-    (messages-mode          :mode-p nano-modeline-messages-mode-p
-                            :format nano-modeline-messages-mode)
     (mu4e-compose-mode      :mode-p nano-modeline-mu4e-compose-mode-p
                             :format nano-modeline-mu4e-compose-mode)
-    (mu4e-dashboard-mode    :mode-p nano-modeline-mu4e-dashboard-mode-p
-                            :format nano-modeline-mu4e-dashboard-mode)
     (mu4e-headers-mode      :mode-p nano-modeline-mu4e-headers-mode-p
                             :format nano-modeline-mu4e-headers-mode)
     (mu4e-loading-mode      :mode-p nano-modeline-mu4e-loading-mode-p
@@ -241,14 +249,6 @@ Negative is downwards."
                             :on-inactivate nano-modeline-org-clock-inactivate)
     (pdf-view-mode          :mode-p nano-modeline-pdf-view-mode-p
                             :format nano-modeline-pdf-view-mode)
-    (prog-mode              :mode-p nano-modeline-prog-mode-p
-                            :format nano-modeline-prog-mode)
-    (term-mode              :mode-p nano-modeline-term-mode-p
-                            :format nano-modeline-term-mode)
-    (text-mode              :mode-p nano-modeline-text-mode-p
-                            :format nano-modeline-text-mode)
-    (vterm-mode             :mode-p nano-modeline-vterm-mode-p
-                            :format nano-modeline-term-mode)
 
     ;; hooks only last
     (ein-notebook-mode      :on-activate nano-modeline-ein-notebook-activate
