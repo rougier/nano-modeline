@@ -10,6 +10,7 @@ depending on nano-modeline-position custom setting.
 There are two sets of faces (for active and inactive modelines) that
 can be customized (M-x: customize-group + nano-modeline)
 
+- `nano-modeline-active`           / `nano-modeline-inactive`
 - `nano-modeline-active-name`      / `nano-modeline-inactive-name`
 - `nano-modeline-active-primary`   / `nano-modeline-inactive-primary`
 - `nano-modeline-active-secondary` / `nano-modeline-inactive-secondary`
@@ -28,14 +29,20 @@ Activate with ` M-x: nano-modeline-mode`
 ### Screenshots (using [N Λ N O theme](https://github.com/rougier/nano-theme)):
 
 ![](images/nano-modeline.png)
+![](images/nano-modeline-light.png)
+![](images/nano-modeline-dark.png)
 
-![](images/text.png)
-![](images/mu4e.png)
-![](images/deft.png)
-![](images/org-agenda.png)
-![](images/org-capture.png)
-![](images/term.png)
-![](images/elfeed.png)
-![](images/docview.png)
+![](images/nano-modeline-RW-focused.png)
+![](images/nano-modeline-RW-unfocused.png)
+![](images/nano-modeline-RO-focused.png)
+![](images/nano-modeline-RO-unfocused.png)
+![](images/nano-modeline-**-focused.png)
+![](images/nano-modeline-**-unfocused.png)
+![](images/nano-modeline-mail.png)
+![](images/nano-modeline-term.png)
+![](images/nano-modeline-elfeed.png)
+![](images/nano-modeline-deft.png)
+![](images/nano-modeline-docview.png)
+![](images/nano-modeline-agenda.png)
 
 
