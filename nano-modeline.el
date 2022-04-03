@@ -34,13 +34,22 @@
 ;; There are two sets of faces (for active and inactive modelines) that
 ;; can be customized (M-x: customize-group + nano-modeline)
 ;;
-;; - nano-modeline-active           / nano-modeline-inactive
-;; - nano-modeline-active-name      / nano-modeline-inactive-name
-;; - nano-modeline-active-primary   / nano-modeline-inactive-primary
-;; - nano-modeline-active-secondary / nano-modeline-inactive-secondary
-;; - nano-modeline-active-status-RO / nano-modeline-inactive-status-RO
-;; - nano-modeline-active-status-RW / nano-modeline-inactive-status-RW
-;; - nano-modeline-active-status-** / nano-modeline-inactive-status-**
+;; - nano-modeline-active              / nano-modeline-inactive
+;;
+;; - nano-modeline-active-name         / nano-modeline-inactive-name
+;; - nano-modeline-active-name-RW      / nano-modeline-inactive-name-RW
+;; - nano-modeline-active-name-RO      / nano-modeline-inactive-name-RO
+;; - nano-modeline-active-name-**      / nano-modeline-inactive-name-**
+;;
+;; - nano-modeline-active-primary      / nano-modeline-inactive-primary
+;; - nano-modeline-active-primary-RW   / nano-modeline-inactive-primary-RW
+;; - nano-modeline-active-primary-RO   / nano-modeline-inactive-primary-RO
+;; - nano-modeline-active-primary-**   / nano-modeline-inactive-primary-**
+;;
+;; - nano-modeline-active-secondary    / nano-modeline-inactive-secondary
+;; - nano-modeline-active-secondary-RW / nano-modeline-inactive-secondary-RW
+;; - nano-modeline-active-secondary-RO / nano-modeline-inactive-secondary-RO
+;; - nano-modeline-active-secondary-** / nano-modeline-inactive-secondary-**
 ;;
 ;; Usage example:
 ;;
@@ -92,6 +101,7 @@
 (defgroup nano-modeline-active nil
   "Active modeline faces.
 
+
 Modeline is composed as:
 [ status | name (primary)                        secondary ]"
   :group 'nano-modeline)
@@ -109,13 +119,13 @@ Modeline is composed as:
                  (const :tag "Bottom" bottom))
   :group 'nano-modeline)
 
-(defcustom nano-modeline-space-top +0.15
+(defcustom nano-modeline-space-top +0.20
   "Space adjustment for top of modeline
 Possitive is upwards"
   :type 'float
   :group 'nano-modeline)
 
-(defcustom nano-modeline-space-bottom -0.20
+(defcustom nano-modeline-space-bottom -0.25
   "Space adjustment for bottom of modeline
 Negative is downwards."
   :type 'float
@@ -127,69 +137,130 @@ Negative is downwards."
   :group 'nano-modeline-active)
 
 (defface nano-modeline-active-name
-  '((t (:inherit (mode-line bold))))
-  "Modeline face for active name element"
+  '((t (:inherit (nano-modeline-active bold))))
+  "Modeline face for active name element (default)"
+  :group 'nano-modeline-active)
+
+(defface nano-modeline-active-name-**
+  '((t (:inherit (nano-modeline-active-name warning))))
+  "Modeline face for active name element (modified)"
+  :group 'nano-modeline-active)
+
+(defface nano-modeline-active-name-RW
+  '((t (:inherit (nano-modeline-active-name))))
+  "Modeline face for active name element (read-write)"
+  :group 'nano-modeline-active)
+
+(defface nano-modeline-active-name-RO
+  '((t (:inherit (nano-modeline-active-name))))
+  "Modeline face for active name element (read-only)"
   :group 'nano-modeline-active)
 
 (defface nano-modeline-active-primary
-  '((t (:inherit mode-line)))
-  "Modeline face for active primary element"
+  '((t (:inherit nano-modeline-active)))
+  "Modeline face for active primary element (default)"
+  :group 'nano-modeline-active)
+
+(defface nano-modeline-active-primary-**
+  '((t (:inherit nano-modeline-active)))
+  "Modeline face for active primary element (modified)"
+  :group 'nano-modeline-active)
+
+(defface nano-modeline-active-primary-RW
+  '((t (:inherit nano-modeline-active)))
+  "Modeline face for active primary element (read-write)"
+  :group 'nano-modeline-active)
+
+(defface nano-modeline-active-primary-RO
+  '((t (:inherit nano-modeline-active)))
+  "Modeline face for active primary element (read-only)"
   :group 'nano-modeline-active)
 
 (defface nano-modeline-active-secondary
-  '((t (:inherit mode-line)))
+  '((t (:inherit nano-modeline-active)))
   "Modeline face for active secondary element"
   :group 'nano-modeline-active)
 
-(defface nano-modeline-active-status-RO
-  '((t (:inherit mode-line)))
-  "Modeline face for active READ-ONLY element"
+(defface nano-modeline-active-secondary-**
+  '((t (:inherit nano-modeline-active)))
+  "Modeline face for active secondary element (modified)"
   :group 'nano-modeline-active)
 
-(defface nano-modeline-active-status-RW
-  '((t (:inherit mode-line)))
-  "Modeline face for active READ-WRITE element"
+(defface nano-modeline-active-secondary-RW
+  '((t (:inherit nano-modeline-active)))
+  "Modeline face for active secondary element (read-write)"
   :group 'nano-modeline-active)
 
-(defface nano-modeline-active-status-**
-  '((t (:inherit mode-line)))
-  "Modeline face for active MODIFIED element"
+(defface nano-modeline-active-secondary-RO
+  '((t (:inherit nano-modeline-active)))
+  "Modeline face for active secondary element (read-only)"
   :group 'nano-modeline-active)
 
 (defface nano-modeline-inactive
-  '((t (:inherit mode-line-inactive)))
+  '((t (:inherit mode-line-inactive font-lock-comment-face)))
   "Modeline face for inactive window"
   :group 'nano-modeline-inactive)
 
 (defface nano-modeline-inactive-name
-  '((t (:inherit mode-line-inactive)))
+  '((t (:inherit nano-modeline-inactive bold)))
   "Modeline face for inactive name element"
   :group 'nano-modeline-inactive)
 
+(defface nano-modeline-inactive-name-**
+  '((t (:inherit nano-modeline-inactive-name)))
+  "Modeline face for inactive name element (modified)"
+  :group 'nano-modeline-inactive)
+
+(defface nano-modeline-inactive-name-RW
+  '((t (:inherit nano-modeline-inactive-name)))
+  "Modeline face for inactive name element (read-write)"
+  :group 'nano-modeline-inactive)
+
+(defface nano-modeline-inactive-name-RO
+  '((t (:inherit nano-modeline-inactive-name)))
+  "Modeline face for inactive name element (read-only)"
+  :group 'nano-modeline-inactive)
+
 (defface nano-modeline-inactive-primary
-  '((t (:inherit mode-line-inactive)))
+  '((t (:inherit nano-modeline-inactive)))
   "Modeline face for inactive primary element"
+  :group 'nano-modeline-inactive)
+
+(defface nano-modeline-inactive-primary-**
+  '((t (:inherit nano-modeline-inactive)))
+  "Modeline face for inactive primary element (modified)"
+  :group 'nano-modeline-inactive)
+
+(defface nano-modeline-inactive-primary-RW
+  '((t (:inherit nano-modeline-inactive)))
+  "Modeline face for inactive primary element (read-write)"
+  :group 'nano-modeline-inactive)
+
+(defface nano-modeline-inactive-primary-RO
+  '((t (:inherit nano-modeline-inactive)))
+  "Modeline face for inactive primary element (read-only)"
   :group 'nano-modeline-inactive)
 
 (defface nano-modeline-inactive-secondary
-  '((t (:inherit mode-line-inactive)))
+  '((t (:inherit nano-modeline-inactive)))
   "Modeline face for inactive primary element"
   :group 'nano-modeline-inactive)
 
-(defface nano-modeline-inactive-status-RO
-  '((t (:inherit mode-line-inactive)))
-  "Modeline face for inactive READ-ONLY element"
+(defface nano-modeline-inactive-secondary-**
+  '((t (:inherit nano-modeline-inactive)))
+  "Modeline face for inactive primary element (modified)"
   :group 'nano-modeline-inactive)
 
-(defface nano-modeline-inactive-status-RW
-  '((t (:inherit mode-line-inactive)))
-  "Modeline face for inactive READ-WRITE element"
+(defface nano-modeline-inactive-secondary-RW
+  '((t (:inherit nano-modeline-inactive)))
+  "Modeline face for inactive primary element (read-write)"
   :group 'nano-modeline-inactive)
 
-(defface nano-modeline-inactive-status-**
-  '((t (:inherit mode-line-inactive)))
-  "Modeline face for inactive MODIFIED element"
+(defface nano-modeline-inactive-secondary-RO
+  '((t (:inherit nano-modeline-inactive)))
+  "Modeline face for inactive primary element (read-only)"
   :group 'nano-modeline-inactive)
+
 
 (defcustom nano-modeline-mode-formats
   '(;; with :mode-p first
@@ -356,69 +427,75 @@ KEY mode name, for reference only. Easier to do lookups and/or replacements.
 (defun nano-modeline-render (prefix name primary secondary &optional status)
   "Compose a string with provided information"
   (let* ((window (get-buffer-window (current-buffer)))
-         (name-max-width (- (window-body-width)
-                            1
-                            (length prefix)
-                            1
-                            (length primary)
-                            5
-                            (length secondary)
-                            1))
+         (name-max-width (- (window-body-width) 1
+                            (length prefix)     1
+                            (length primary)    5
+                            (length secondary)  1))
          (name (if (and (stringp name) (> (length name) name-max-width))
                    (format "%s…" (substring name 0 (- name-max-width 1)))
                  name))
          (status (or status (nano-modeline-status)))
          (active (eq window nano-modeline--selected-window))
+         (face-modeline nil)
+         (face-name nil)
+         (face-primary nil)
+         (face-secondary nil))
 
-         (prefix (or prefix (cond ((eq status 'read-only)  "RO")
-                                  ((eq status 'read-write) "RW")
-                                  ((eq status 'modified)   "**")
-                                  (t                       "--"))))
-         
-         (prefix-face (cond ((eq status 'read-only) (if active
-                                                        'nano-modeline-active-status-RO
-                                                      'nano-modeline-inactive-status-RO))
-                            ((eq status 'modified) (if active
-                                                       'nano-modeline-active-status-**
-                                                     'nano-modeline-inactive-status-**))
-                            ((eq status 'read-write) (if active
-                                                         'nano-modeline-active-status-RW
-                                                       'nano-modeline-inactive-status-RW))
-                            ((facep status) status)
-                            ((listp status) (if active (car status)
-                                              (cadr status)))
-                            (t (if active 'nano-modeline-active
-                                 'nano-modeline-inactive))))
-         (left (concat (if (stringp prefix)
-                           (concat
-                            (propertize (if (window-dedicated-p) "[" " ")
-                                        'face `(:inherit ,prefix-face))
-                                (propertize (format "%s" prefix)
-                                            'face `(:inherit ,prefix-face))
-                            (propertize (if (window-dedicated-p) "]" " ")
-                                        'face `(:inherit ,prefix-face))))
-                       (propertize " "  'face (if active 'nano-modeline-active
-                                                'nano-modeline-inactive)
+    (when active
+      (setq face-modeline 'nano-modeline-active)
+      (cond ((eq status 'read-write)
+             (setq face-name      'nano-modeline-active-name-RW
+                   face-primary   'nano-modeline-active-primary-RW
+                   face-secondary 'nano-modeline-active-secondary-RW))
+            ((eq status 'read-only)
+             (setq face-name      'nano-modeline-active-name-RO
+                   face-primary   'nano-modeline-active-primary-RO
+                   face-secondary 'nano-modeline-active-secondary-RO))
+            ((eq status 'modified)
+             (setq face-name      'nano-modeline-active-name-**
+                   face-primary   'nano-modeline-active-primary-**
+                   face-secondary 'nano-modeline-active-secondary-**))
+            (t
+             (setq face-name      'nano-modeline-active-name
+                   face-primary   'nano-modeline-active-primary
+                   face-secondary 'nano-modeline-active-secondary))))
+
+    (when (not active)
+      (setq face-modeline 'nano-modeline-inactive)
+      (cond ((eq status 'read-write)
+             (setq face-name      'nano-modeline-inactive-name-RW
+                   face-primary   'nano-modeline-inactive-primary-RW
+                   face-secondary 'nano-modeline-inactive-secondary-RW))
+            ((eq status 'read-only)
+             (setq face-name      'nano-modeline-inactive-name-RO
+                   face-primary   'nano-modeline-inactive-primary-RO
+                   face-secondary 'nano-modeline-inactive-secondary-RO))
+            ((eq status 'modified)
+             (setq face-name      'nano-modeline-inactive-name-**
+                   face-primary   'nano-modeline-inactive-primary-**
+                   face-secondary 'nano-modeline-inactive-secondary-**))
+            (t
+             (setq face-name      'nano-modeline-inactive-name
+                   face-primary   'nano-modeline-inactive-primary
+                   face-secondary 'nano-modeline-inactive-secondary))))
+
+    (let* ((left (concat
+                  (propertize " "  'face face-modeline
                                    'display `(raise ,nano-modeline-space-top))
-                       (propertize name 'face (if active 'nano-modeline-active-name
-                                                'nano-modeline-inactive-name))
-                       (if (length name)
-                           (propertize " " 'face (if active 'nano-modeline-active
-                                                   'nano-modeline-inactive)))
-                       (propertize primary 'face (if active 'nano-modeline-active-primary
-                                                   'nano-modeline-inactive-primary))))
-         (right (concat (propertize secondary 'face (if active 'nano-modeline-active-secondary
-                                                      'nano-modeline-inactive-secondary))
-                        (propertize " "  'face (if active 'nano-modeline-active
-                                                 'nano-modeline-inactive)
-                                         'display `(raise ,nano-modeline-space-bottom))))
-	 (right-len (length (format-mode-line right))))
-    (concat
-     left 
-     (propertize " "  'face (if active 'nano-modeline-active
-                              'nano-modeline-inactive)
-                      'display `(space :align-to (- right ,(- right-len 0))))
-     right)))
+                  (propertize name 'face face-name)
+                  (if (length name)
+                      (propertize " " 'face face-modeline))
+                  (propertize primary 'face face-primary)))
+           (right (concat (propertize secondary 'face face-secondary)
+                          (propertize " "  'face face-modeline
+                                           'display `(raise ,nano-modeline-space-bottom))))
+	       (right-len (length (format-mode-line right))))
+      (concat
+       left 
+       (propertize " "  'face face-modeline
+                        'display `(space :align-to (- right ,(- right-len 0))))
+       right))))
+
 
 ;; ---------------------------------------------------------------------
 (defun nano-modeline-ein-notebook-mode ()
