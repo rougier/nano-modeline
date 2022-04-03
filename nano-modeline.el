@@ -136,13 +136,14 @@ Negative is downwards."
   "Modeline face for active modeline"
   :group 'nano-modeline-active)
 
+
 (defface nano-modeline-active-name
   '((t (:inherit (nano-modeline-active bold))))
   "Modeline face for active name element (default)"
   :group 'nano-modeline-active)
 
 (defface nano-modeline-active-name-**
-  '((t (:inherit (nano-modeline-active-name error))))
+  '((t (:inherit (nano-modeline-active-name warning))))
   "Modeline face for active name element (modified)"
   :group 'nano-modeline-active)
 
@@ -202,7 +203,7 @@ Negative is downwards."
   :group 'nano-modeline-inactive)
 
 (defface nano-modeline-inactive-name
-  '((t (:inherit (nano-modeline-inactive bold))))
+  '((t (:inherit (nano-modeline-inactive))))
   "Modeline face for inactive name element"
   :group 'nano-modeline-inactive)
 
@@ -480,6 +481,11 @@ KEY mode name, for reference only. Easier to do lookups and/or replacements.
                    face-secondary 'nano-modeline-inactive-secondary))))
 
     (let* ((left (concat
+                  (if (window-dedicated-p)
+                      (propertize " "
+                                  'face `(:height 0.25
+                                          :background
+                              ,(face-foreground face-name nil 'default))))
                   (propertize " "  'face face-modeline
                                    'display `(raise ,nano-modeline-space-top))
                   (propertize name 'face face-name)
