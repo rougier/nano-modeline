@@ -142,7 +142,7 @@ Negative is downwards."
   :group 'nano-modeline-active)
 
 (defface nano-modeline-active-name-**
-  '((t (:inherit (nano-modeline-active-name warning))))
+  '((t (:inherit (nano-modeline-active-name error))))
   "Modeline face for active name element (modified)"
   :group 'nano-modeline-active)
 
@@ -162,52 +162,52 @@ Negative is downwards."
   :group 'nano-modeline-active)
 
 (defface nano-modeline-active-primary-**
-  '((t (:inherit nano-modeline-active)))
+  '((t (:inherit nano-modeline-active-primary)))
   "Modeline face for active primary element (modified)"
   :group 'nano-modeline-active)
 
 (defface nano-modeline-active-primary-RW
-  '((t (:inherit nano-modeline-active)))
+  '((t (:inherit nano-modeline-active-primary)))
   "Modeline face for active primary element (read-write)"
   :group 'nano-modeline-active)
 
 (defface nano-modeline-active-primary-RO
-  '((t (:inherit nano-modeline-active)))
+  '((t (:inherit nano-modeline-active-primary)))
   "Modeline face for active primary element (read-only)"
   :group 'nano-modeline-active)
 
 (defface nano-modeline-active-secondary
-  '((t (:inherit nano-modeline-active)))
+  '((t (:inherit (nano-modeline-active font-lock-comment-face))))
   "Modeline face for active secondary element"
   :group 'nano-modeline-active)
 
 (defface nano-modeline-active-secondary-**
-  '((t (:inherit nano-modeline-active)))
+  '((t (:inherit nano-modeline-active-secondary)))
   "Modeline face for active secondary element (modified)"
   :group 'nano-modeline-active)
 
 (defface nano-modeline-active-secondary-RW
-  '((t (:inherit nano-modeline-active)))
+  '((t (:inherit nano-modeline-active-secondary)))
   "Modeline face for active secondary element (read-write)"
   :group 'nano-modeline-active)
 
 (defface nano-modeline-active-secondary-RO
-  '((t (:inherit nano-modeline-active)))
+  '((t (:inherit nano-modeline-active-secondary)))
   "Modeline face for active secondary element (read-only)"
   :group 'nano-modeline-active)
 
 (defface nano-modeline-inactive
-  '((t (:inherit mode-line-inactive font-lock-comment-face)))
+  '((t (:inherit (mode-line-inactive font-lock-comment-face))))
   "Modeline face for inactive window"
   :group 'nano-modeline-inactive)
 
 (defface nano-modeline-inactive-name
-  '((t (:inherit nano-modeline-inactive bold)))
+  '((t (:inherit (nano-modeline-inactive bold))))
   "Modeline face for inactive name element"
   :group 'nano-modeline-inactive)
 
 (defface nano-modeline-inactive-name-**
-  '((t (:inherit nano-modeline-inactive-name)))
+  '((t (:inherit (warning nano-modeline-inactive-name))))
   "Modeline face for inactive name element (modified)"
   :group 'nano-modeline-inactive)
 
@@ -227,17 +227,17 @@ Negative is downwards."
   :group 'nano-modeline-inactive)
 
 (defface nano-modeline-inactive-primary-**
-  '((t (:inherit nano-modeline-inactive)))
+  '((t (:inherit nano-modeline-inactive-primary)))
   "Modeline face for inactive primary element (modified)"
   :group 'nano-modeline-inactive)
 
 (defface nano-modeline-inactive-primary-RW
-  '((t (:inherit nano-modeline-inactive)))
+  '((t (:inherit nano-modeline-inactive-primary)))
   "Modeline face for inactive primary element (read-write)"
   :group 'nano-modeline-inactive)
 
 (defface nano-modeline-inactive-primary-RO
-  '((t (:inherit nano-modeline-inactive)))
+  '((t (:inherit nano-modeline-inactive-primary)))
   "Modeline face for inactive primary element (read-only)"
   :group 'nano-modeline-inactive)
 
@@ -247,17 +247,17 @@ Negative is downwards."
   :group 'nano-modeline-inactive)
 
 (defface nano-modeline-inactive-secondary-**
-  '((t (:inherit nano-modeline-inactive)))
+  '((t (:inherit nano-modeline-inactive-secondary)))
   "Modeline face for inactive primary element (modified)"
   :group 'nano-modeline-inactive)
 
 (defface nano-modeline-inactive-secondary-RW
-  '((t (:inherit nano-modeline-inactive)))
+  '((t (:inherit nano-modeline-inactive-secondary)))
   "Modeline face for inactive primary element (read-write)"
   :group 'nano-modeline-inactive)
 
 (defface nano-modeline-inactive-secondary-RO
-  '((t (:inherit nano-modeline-inactive)))
+  '((t (:inherit nano-modeline-inactive-secondary)))
   "Modeline face for inactive primary element (read-only)"
   :group 'nano-modeline-inactive)
 
