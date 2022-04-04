@@ -292,7 +292,7 @@ KEY mode name, for reference only. Easier to do lookups and/or replacements.
   :group 'nano-modeline)
 
 (defcustom nano-modeline-default-mode-format 'nano-modeline-default-mode
-  "Default mode to evaluate if no match could be found in `nano-modelines-mode-formats'"
+  "Default mode to evaluate if no match could be found in `nano-modeline-mode-formats'"
   :type 'function
   :group 'nano-modeline)
 
