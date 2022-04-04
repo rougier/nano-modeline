@@ -57,6 +57,10 @@
 ;;
 ;;; NEWS:
 ;;
+;; Version 0.7
+;; - Removed prefix on the left (not too much informative)
+;; - Put back symbol as prefix for menu access
+;;
 ;; Version 0.6
 ;; - Spaces have face that enforce active/inactive
 ;; - Better marker for dedicated windows
@@ -135,7 +139,6 @@ Negative is downwards."
   '((t (:inherit mode-line)))
   "Modeline face for active modeline"
   :group 'nano-modeline-active)
-
 
 (defface nano-modeline-active-name
   '((t (:inherit (nano-modeline-active bold))))
@@ -271,6 +274,16 @@ Negative is downwards."
                             :format nano-modeline-mu4e-dashboard-mode)
 ;;    (text-mode              :mode-p nano-modeline-text-mode-p
 ;;                            :format nano-modeline-text-mode)
+    (mu4e-compose-mode      :mode-p nano-modeline-mu4e-compose-mode-p
+                            :format nano-modeline-mu4e-compose-mode)
+    (mu4e-headers-mode      :mode-p nano-modeline-mu4e-headers-mode-p
+                            :format nano-modeline-mu4e-headers-mode)
+    (mu4e-loading-mode      :mode-p nano-modeline-mu4e-loading-mode-p
+                            :format nano-modeline-mu4e-loading-mode)
+    (mu4e-main-mode         :mode-p nano-modeline-mu4e-main-mode-p
+                            :format nano-modeline-mu4e-main-mode)
+    (mu4e-view-mode         :mode-p nano-modeline-mu4e-view-mode-p
+                            :format nano-modeline-mu4e-view-mode)
     (messages-mode          :mode-p nano-modeline-messages-mode-p
                             :format nano-modeline-messages-mode)
     (term-mode              :mode-p nano-modeline-term-mode-p
@@ -304,16 +317,6 @@ Negative is downwards."
                             :format nano-modeline-info-mode
                             :on-activate nano-modeline-info-activate
                             :on-inactivate nano-modeline-info-inactivate)
-    (mu4e-compose-mode      :mode-p nano-modeline-mu4e-compose-mode-p
-                            :format nano-modeline-mu4e-compose-mode)
-    (mu4e-headers-mode      :mode-p nano-modeline-mu4e-headers-mode-p
-                            :format nano-modeline-mu4e-headers-mode)
-    (mu4e-loading-mode      :mode-p nano-modeline-mu4e-loading-mode-p
-                            :format nano-modeline-mu4e-loading-mode)
-    (mu4e-main-mode         :mode-p nano-modeline-mu4e-main-mode-p
-                            :format nano-modeline-mu4e-main-mode)
-    (mu4e-view-mode         :mode-p nano-modeline-mu4e-view-mode-p
-                            :format nano-modeline-mu4e-view-mode)
     (nano-help-mode         :mode-p nano-modeline-nano-help-mode-p
                             :format nano-modeline-nano-help-mode)
     (org-agenda-mode        :mode-p nano-modeline-org-agenda-mode-p
@@ -427,6 +430,7 @@ KEY mode name, for reference only. Easier to do lookups and/or replacements.
 
 (defun nano-modeline-render (prefix name primary secondary &optional status)
   "Compose a string with provided information"
+
   (let* ((window (get-buffer-window (current-buffer)))
          (name-max-width (- (window-body-width) 1
                             (length prefix)     1
@@ -488,6 +492,14 @@ KEY mode name, for reference only. Easier to do lookups and/or replacements.
                               ,(face-foreground face-name nil 'default))))
                   (propertize " "  'face face-modeline
                                    'display `(raise ,nano-modeline-space-top))
+;;                  (propertize "☰ " 'face `(:inherit ,face-name
+;;                                                    :weight regular))
+                  (propertize "☰ "
+                              'face `(:inherit ,face-name :weight regular)
+                              'help-echo "Mode(s) menu"
+                              'mouse-face 'mode-line-highlight
+                              'local-map mode-line-major-mode-keymap)
+                  
                   (propertize name 'face face-name)
                   (if (length name)
                       (propertize " " 'face face-modeline))
@@ -1106,6 +1118,10 @@ below or a buffer local variable 'no-mode-line'."
       (when fn (funcall fn))))
 
   (run-hooks 'nano-modeline-mode-format-activate-hook)
+
+  ;; Should we do this only when modeline is at top ?
+  (define-key mode-line-major-mode-keymap [header-line]
+    (lookup-key mode-line-major-mode-keymap [mode-line]))
 
   ;; Update selected window
   (nano-modeline--update-selected-window)
