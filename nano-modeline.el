@@ -169,8 +169,8 @@ Negative is downwards."
                             :format nano-modeline-prog-mode)
     (mu4e-dashboard-mode    :mode-p nano-modeline-mu4e-dashboard-mode-p
                             :format nano-modeline-mu4e-dashboard-mode)
-;;    (text-mode              :mode-p nano-modeline-text-mode-p
-;;                            :format nano-modeline-text-mode)
+    (text-mode              :mode-p nano-modeline-text-mode-p
+                            :format nano-modeline-text-mode)
     (mu4e-compose-mode      :mode-p nano-modeline-mu4e-compose-mode-p
                             :format nano-modeline-mu4e-compose-mode)
     (mu4e-headers-mode      :mode-p nano-modeline-mu4e-headers-mode-p
