@@ -38,6 +38,9 @@
 ;; - nano-modeline-active-name         / nano-modeline-inactive-name
 ;; - nano-modeline-active-primary      / nano-modeline-inactive-primary
 ;; - nano-modeline-active-secondary    / nano-modeline-inactive-secondary
+;; - nano-modeline-active-status-RO    / nano-modeline-inactive-status-RO
+;; - nano-modeline-active-status-RW    / nano-modeline-inactive-status-RW
+;; - nano-modeline-active-status-**    / nano-modeline-inactive-status-**
 ;;
 ;; Usage example:
 ;;
@@ -122,6 +125,20 @@ Negative is downwards."
   :type 'float
   :group 'nano-modeline)
 
+(defcustom nano-modeline-prefix 'default
+  "Type of prefix on the left"
+  :type '(choice (const :tag "None" none)
+                 (const :tag "Default (RO/RW/**)" default)
+                 (const :tag "Icon" icon))
+  :group 'nano-modeline)
+
+(defcustom nano-modeline-prefix-padding nil
+  "Wheter to add a space after prefix part.
+
+This is useful (aesthetically) if the face of prefix uses a different background color than the rest of the modeline."
+  :type 'boolean
+  :group 'nano-modeline)
+
 (defface nano-modeline-active
   '((t (:inherit mode-line)))
   "Modeline face for active modeline"
@@ -140,6 +157,21 @@ Negative is downwards."
 (defface nano-modeline-active-secondary
   '((t (:inherit (nano-modeline-active font-lock-comment-face))))
   "Modeline face for active secondary element"
+  :group 'nano-modeline-active)
+
+(defface nano-modeline-active-status-RO
+  '((t (:inherit nano-modelinea-active)))
+  "Modeline face for active READ-ONLY element"
+  :group 'nano-modeline-active)
+
+(defface nano-modeline-active-status-RW
+  '((t (:inherit nano-modeline-active)))
+  "Modeline face for active READ-WRITE element"
+  :group 'nano-modeline-active)
+
+(defface nano-modeline-active-status-**
+  '((t (:inherit nano-modeline-active)))
+  "Modeline face for active MODIFIED element"
   :group 'nano-modeline-active)
 
 (defface nano-modeline-inactive
@@ -162,72 +194,111 @@ Negative is downwards."
   "Modeline face for inactive primary element"
   :group 'nano-modeline-inactive)
 
+(defface nano-modeline-inactive-status-RO
+  '((t (:inherit nano-modeline-inactive)))
+  "Modeline face for inactive READ-ONLY element"
+  :group 'nano-modeline-inactive)
+
+(defface nano-modeline-inactive-status-RW
+  '((t (:inherit nano-modeline-inactive)))
+  "Modeline face for inactive READ-WRITE element"
+  :group 'nano-modeline-inactive)
+
+(defface nano-modeline-inactive-status-**
+  '((t (:inherit nano-modeline-inactive)))
+  "Modeline face for inactive MODIFIED element"
+  :group 'nano-modeline-inactive)
 
 (defcustom nano-modeline-mode-formats
   '(;; with :mode-p first
     (prog-mode              :mode-p nano-modeline-prog-mode-p
-                            :format nano-modeline-prog-mode)
+                            :format nano-modeline-prog-mode
+                            :icon "") ;; nerd-font / oct-file-code
     (mu4e-dashboard-mode    :mode-p nano-modeline-mu4e-dashboard-mode-p
-                            :format nano-modeline-mu4e-dashboard-mode)
-    (text-mode              :mode-p nano-modeline-text-mode-p
-                            :format nano-modeline-text-mode)
+                            :format nano-modeline-mu4e-dashboard-mode
+                            :icon "") ;; nerd-font / oct-inbox
     (mu4e-compose-mode      :mode-p nano-modeline-mu4e-compose-mode-p
-                            :format nano-modeline-mu4e-compose-mode)
+                            :format nano-modeline-mu4e-compose-mode
+                            :icon "") ;; nerd-font / oct-pencil
     (mu4e-headers-mode      :mode-p nano-modeline-mu4e-headers-mode-p
-                            :format nano-modeline-mu4e-headers-mode)
+                            :format nano-modeline-mu4e-headers-mode
+                            :icon "") ;; nerd-font / oct-search
     (mu4e-loading-mode      :mode-p nano-modeline-mu4e-loading-mode-p
-                            :format nano-modeline-mu4e-loading-mode)
+                            :format nano-modeline-mu4e-loading-mode
+                            :icon "") ;; nerd-font / oct-gears
     (mu4e-main-mode         :mode-p nano-modeline-mu4e-main-mode-p
-                            :format nano-modeline-mu4e-main-mode)
+                            :format nano-modeline-mu4e-main-mode
+                            :icon "") ;; nerd-font / oct-inbox
     (mu4e-view-mode         :mode-p nano-modeline-mu4e-view-mode-p
-                            :format nano-modeline-mu4e-view-mode)
+                            :format nano-modeline-mu4e-view-mode
+                            :icon "") ;; nerd-font / oct-comment
     (messages-mode          :mode-p nano-modeline-messages-mode-p
-                            :format nano-modeline-messages-mode)
+                            :format nano-modeline-messages-mode
+                            :icon "") ;; nerd-font / oct-comment
+    (text-mode              :mode-p nano-modeline-text-mode-p
+                            :format nano-modeline-text-mode
+                            :icon "") ;; nerd-font / oct-file-text
     (term-mode              :mode-p nano-modeline-term-mode-p
-                            :format nano-modeline-term-mode)
+                            :format nano-modeline-term-mode
+                            :icon "") ;; nerd-font / oct-term
     (vterm-mode             :mode-p nano-modeline-vterm-mode-p
-                            :format nano-modeline-term-mode)
+                            :format nano-modeline-term-mode
+                            :icon "") ;; nerd-font / oct-term
     (buffer-menu-mode       :mode-p nano-modeline-buffer-menu-mode-p
                             :format nano-modeline-buffer-menu-mode
                             :on-activate nano-modeline-buffer-menu-activate
-                            :on-inactivate nano-modeline-buffer-menu-inactivate)
+                            :on-inactivate nano-modeline-buffer-menu-inactivate
+                            :icon "") ;; nerd-font / oct-three-bars
     (calendar-mode          :mode-p nano-modeline-calendar-mode-p
                             :format nano-modeline-calendar-mode
                             :on-activate nano-modeline-calendar-activate
-                            :on-inactivate nano-modeline-calendar-inactivate)
+                            :on-inactivate nano-modeline-calendar-inactivate
+                            :icon "") ;; nerd-font / oct-calendar
     (completion-list-mode   :mode-p nano-modeline-completion-list-mode-p
-                            :format nano-modeline-completion-list-mode)
+                            :format nano-modeline-completion-list-mode
+                            :icon "") ;; nerd-font / oct-list-unordered
     (deft-mode              :mode-p nano-modeline-deft-mode-p
-                            :format nano-modeline-deft-mode)
+                            :format nano-modeline-deft-mode
+                            :icon "") ;; nerd-font / oct-search
     (doc-view-mode          :mode-p nano-modeline-doc-view-mode-p
-                            :format nano-modeline-doc-view-mode)
+                            :format nano-modeline-doc-view-mode
+                            :icon "") ;; nerd-font / oct-
     (elfeed-search-mode     :mode-p nano-modeline-elfeed-search-mode-p
                             :format nano-modeline-elfeed-search-mode
                             :on-activate nano-modeline-elfeed-search-activate
-                            :on-inactivate nano-modeline-elfeed-search-inactivate)
+                            :on-inactivate nano-modeline-elfeed-search-inactivate
+                            :icon "") ;; nerd-font / oct-search
     (elfeed-show-mode       :mode-p nano-modeline-elfeed-show-mode-p
-                            :format nano-modeline-elfeed-show-mode)
+                            :format nano-modeline-elfeed-show-mode
+                            :icon "") ;; nerd-font / oct-comment
     (elpher-mode            :mode-p nano-modeline-elpher-mode-p
                             :format nano-modeline-elpher-mode
-                            :on-activate nano-modeline-elpher-activate)
+                            :on-activate nano-modeline-elpher-activate
+                            :icon "") ;; nerd-font / oct-browser
     (info-mode              :mode-p nano-modeline-info-mode-p
                             :format nano-modeline-info-mode
                             :on-activate nano-modeline-info-activate
-                            :on-inactivate nano-modeline-info-inactivate)
+                            :on-inactivate nano-modeline-info-inactivate
+                            :icon "") ;; nerd-font / oct-info
     (nano-help-mode         :mode-p nano-modeline-nano-help-mode-p
-                            :format nano-modeline-nano-help-mode)
+                            :format nano-modeline-nano-help-mode
+                            :icon "") ;; nerd-font / oct-info
     (org-agenda-mode        :mode-p nano-modeline-org-agenda-mode-p
-                            :format nano-modeline-org-agenda-mode)
+                            :format nano-modeline-org-agenda-mode
+                            :icon "") ;; nerd-font / oct-calendar
     (org-capture-mode       :mode-p nano-modeline-org-capture-mode-p
                             :format nano-modeline-org-capture-mode
                             :on-activate nano-modeline-org-capture-activate
-                            :on-inactivate nano-modeline-org-capture-inactivate)
+                            :on-inactivate nano-modeline-org-capture-inactivate
+                            :icon "") ;; nerd-font / oct-calendar
     (org-clock-mode         :mode-p nano-modeline-org-clock-mode-p
                             :format nano-modeline-org-clock-mode
                             :on-activate nano-modeline-org-clock-activate
-                            :on-inactivate nano-modeline-org-clock-inactivate)
+                            :on-inactivate nano-modeline-org-clock-inactivate
+                            :icon "") ;; nerd-font / oct-clock
     (pdf-view-mode          :mode-p nano-modeline-pdf-view-mode-p
-                            :format nano-modeline-pdf-view-mode)
+                            :format nano-modeline-pdf-view-mode
+                            :icon "") ;; nerd-font/ oct-file-pdf
 
     ;; hooks only last
     (ein-notebook-mode      :on-activate nano-modeline-ein-notebook-activate
@@ -248,7 +319,8 @@ KEY mode name, for reference only. Easier to do lookups and/or replacements.
                                                      (const :format)
                                                      (const :on-activate)
                                                      (const :on-inactivate))
-                                   :value-type function))
+                                   :value-type sexp))
+;;                                     :value-type function))
   :group 'nano-modeline)
 
 (defcustom nano-modeline-mode-format-activate-hook nil
@@ -325,7 +397,7 @@ KEY mode name, for reference only. Easier to do lookups and/or replacements.
           (read-only 'read-only)
           (t         'read-write))))
 
-(defun nano-modeline-render (prefix name primary secondary &optional status)
+(defun nano-modeline-render (icon name primary secondary &optional status)
   "Compose a string with provided information"
 
   (let* ((window (get-buffer-window (current-buffer)))
@@ -337,9 +409,27 @@ KEY mode name, for reference only. Easier to do lookups and/or replacements.
                  name))
          (status (or status (nano-modeline-status)))
          (active (eq window nano-modeline--selected-window))
+
+         (prefix (cond ((eq nano-modeline-prefix 'none) nil)
+                       ((eq nano-modeline-prefix 'icon) icon)
+                       (t (cond ((eq status 'read-only)  "RO")
+                                ((eq status 'read-write) "RW")
+                                ((eq status 'modified)   "**")
+                                (t                       "--")))))
+
          (face-modeline (if active
                             'nano-modeline-active
                           'nano-modeline-inactive))
+         (face-prefix (if (not prefix) face-modeline
+                        (if active
+                            (cond ((eq status 'read-only)  'nano-modeline-active-status-RO)
+                                  ((eq status 'read-write) 'nano-modeline-active-status-RW)
+                                  ((eq status 'modified)   'nano-modeline-active-status-**)
+                                  (t                       'nano-modeline-active))
+                          (cond ((eq status 'read-only)  'nano-modeline-inactive-status-RO)
+                                ((eq status 'read-write) 'nano-modeline-inactive-status-RW)
+                                ((eq status 'modified)   'nano-modeline-inactive-status-**)
+                                (t                       'nano-modeline-inactive)))))
          (face-name (if active
                          'nano-modeline-active-name
                        'nano-modeline-inactive-name))
@@ -351,16 +441,24 @@ KEY mode name, for reference only. Easier to do lookups and/or replacements.
                        'nano-modeline-inactive-secondary))
 
          (left (concat
-                (propertize " "  'face `(:inherit ,face-modeline)
-                            'display `(raise ,nano-modeline-space-top))
+                (propertize " "  'face `(:inherit ,face-prefix)
+                                 'display `(raise ,nano-modeline-space-top))
+                (if prefix
+                    (concat
+                     (propertize prefix 'face face-prefix)
+                     (propertize " " 'face face-prefix)
+                     ;; When do we add space on the left?
+                     (if nano-modeline-prefix-padding
+                         (propertize " " 'face face-modeline))))
                 (propertize name 'face face-name)
-               (if (length name)
+                (if (length name)
                     (propertize " " 'face face-modeline))
                (propertize primary 'face face-primary)))
          (right (concat
                  (propertize secondary 'face face-secondary)
-                 (if (eq status 'modified)
-                     (propertize " [M]" 'face face-name)
+                 (if (and (not (eq nano-modeline-prefix 'default))
+                          (eq status 'modified))
+                     (propertize " [M]" 'face face-secondary)
                    (if (window-dedicated-p)
                        (propertize " [•]" 'face face-secondary)))
                  (propertize " "  'face `(:inherit ,face-modeline)
@@ -368,9 +466,10 @@ KEY mode name, for reference only. Easier to do lookups and/or replacements.
 	     (right-len (length (format-mode-line right))))
     (concat
      left 
-     (propertize " "  'face face-modeline
-                 'display `(space :align-to (- right ,(- right-len 0))))
+     (propertize " "  'face face-secondary
+                      'display `(space :align-to (- right ,(- right-len 0))))
      right)))
+
 
 
 ;; ---------------------------------------------------------------------
@@ -403,30 +502,29 @@ KEY mode name, for reference only. Easier to do lookups and/or replacements.
   (derived-mode-p 'elfeed-search-mode))
 
 (defun nano-modeline-elfeed-search-mode ()
-  (let* ((prefix "NEWS")
-        (no-database (zerop (elfeed-db-last-update)))
-        (update      (> (elfeed-queue-count-total) 0))
-
-        (name  (cond (no-database "No database")
-                     (update      "Update:") 
-                     (t           "Search:")))
-        (primary (cond  (no-database "")
-                        (update
-                         (let ((total (elfeed-queue-count-total))
-                               (in-process (elfeed-queue-count-active)))
-                           (format "%d jobs pending, %d active"
-                                   (- total in-process) in-process)))
-                        (t  (let* ((db-time (seconds-to-time (elfeed-db-last-update)))
-                                   (unread ))
-                              (cond (elfeed-search-filter-active "")
-                                    ((string-match-p "[^ ]" elfeed-search-filter)
-                                     elfeed-search-filter)
-                                    (""))))))
-        (secondary (cond
-                    ((zerop (elfeed-db-last-update)) "")
-                    ((> (elfeed-queue-count-total) 0) "")
-                    (t (elfeed-search--count-unread)))))
-    (nano-modeline-render nil name primary secondary)))
+  (let* ((icon (plist-get (cdr (assoc 'elfeed-search-mode nano-modeline-mode-formats)) :icon))
+         (no-database (zerop (elfeed-db-last-update)))
+         (update      (> (elfeed-queue-count-total) 0))
+         (name  (cond (no-database "No database")
+                      (update      "Update:") 
+                      (t           "Search:")))
+         (primary (cond  (no-database "")
+                         (update
+                          (let ((total (elfeed-queue-count-total))
+                                (in-process (elfeed-queue-count-active)))
+                            (format "%d jobs pending, %d active"
+                                    (- total in-process) in-process)))
+                         (t  (let* ((db-time (seconds-to-time (elfeed-db-last-update)))
+                                    (unread ))
+                               (cond (elfeed-search-filter-active "")
+                                     ((string-match-p "[^ ]" elfeed-search-filter)
+                                      elfeed-search-filter)
+                                     (""))))))
+         (secondary (cond
+                     ((zerop (elfeed-db-last-update)) "")
+                     ((> (elfeed-queue-count-total) 0) "")
+                     (t (elfeed-search--count-unread)))))
+    (nano-modeline-render icon name primary secondary)))
 
 ;; Elfeed uses header-line, we need to tell it to use our own format
 (defun nano-modeline-elfeed-setup-header ()
@@ -446,14 +544,15 @@ KEY mode name, for reference only. Easier to do lookups and/or replacements.
   (derived-mode-p 'elfeed-show-mode))
 
 (defun nano-modeline-elfeed-show-mode ()
-  (let* ((title        (elfeed-entry-title elfeed-show-entry))
+  (let* ((icon (plist-get (cdr (assoc 'elfeed-show-mode nano-modeline-mode-formats)) :icon))
+         (title        (elfeed-entry-title elfeed-show-entry))
          (tags         (elfeed-entry-tags elfeed-show-entry))
          (tags-str     (mapconcat #'symbol-name tags ", "))
          (date         (seconds-to-time (elfeed-entry-date elfeed-show-entry)))
          (feed         (elfeed-entry-feed elfeed-show-entry))
          (feed-title   (plist-get (elfeed-feed-meta feed) :title))
          (entry-author (elfeed-meta elfeed-show-entry :author)))
-    (nano-modeline-render nil
+    (nano-modeline-render icon
                           title
                           ;;(nano-modeline-truncate title 40)
                            (concat "(" tags-str ")")
@@ -492,7 +591,7 @@ KEY mode name, for reference only. Easier to do lookups and/or replacements.
   (bound-and-true-p org-capture-mode))
 
 (defun nano-modeline-org-capture-mode ()
-  (nano-modeline-render nil
+  (nano-modeline-render (plist-get (cdr (assoc 'org-capture-mode nano-modeline-mode-formats)) :icon)
                         "Capture"
                         (concat "(" (org-capture-get :description) ")")
                         ""))
@@ -543,7 +642,7 @@ KEY mode name, for reference only. Easier to do lookups and/or replacements.
   (derived-mode-p 'Info-mode))
 
 (defun nano-modeline-info-mode ()
-  (nano-modeline-render nil
+  (nano-modeline-render (plist-get (cdr (assoc 'info-mode nano-modeline-mode-formats)) :icon)
                         (nano-modeline-info-breadcrumbs)
                         ""
                          ""))
@@ -577,7 +676,7 @@ KEY mode name, for reference only. Easier to do lookups and/or replacements.
   (derived-mode-p 'org-agenda-mode))
 
 (defun nano-modeline-org-agenda-mode ()
-  (nano-modeline-render nil
+  (nano-modeline-render  (plist-get (cdr (assoc 'org-agenda-mode nano-modeline-mode-formats)) :icon)
                          "Agenda"
                          ""
 ;;                         (format "%s" org-agenda-span-name)
@@ -592,7 +691,7 @@ KEY mode name, for reference only. Easier to do lookups and/or replacements.
   (derived-mode-p 'vterm-mode))
 
 (defun nano-modeline-term-mode ()
-  (nano-modeline-render ">_"
+  (nano-modeline-render  (plist-get (cdr (assoc 'term-mode nano-modeline-mode-formats)) :icon)
                          shell-file-name
                          (if (term-in-char-mode)
                              "(char mode)"
@@ -632,18 +731,18 @@ depending on the version of mu4e."
   (bound-and-true-p mu4e-dashboard-mode))
 
 (defun nano-modeline-mu4e-dashboard-mode ()
-  (nano-modeline-render nil
-                         (format "%d messages"
-                                 (plist-get (nano-modeline-mu4e-server-props) :doccount))
-                         ""
-                         ""))
+  (nano-modeline-render (plist-get (cdr (assoc 'mu4e-dashboard-mode nano-modeline-mode-formats)) :icon)
+                        (format "%d messages"
+                                (plist-get (nano-modeline-mu4e-server-props) :doccount))
+                        ""
+                        ""))
 
 ;; ---------------------------------------------------------------------
 (defun nano-modeline-mu4e-loading-mode-p ()
   (derived-mode-p 'mu4e-loading-mode))
 
 (defun nano-modeline-mu4e-loading-mode ()
-  (nano-modeline-render nil
+  (nano-modeline-render (plist-get (cdr (assoc 'mu4e-loading-mode nano-modeline-mode-formats)) :icon)
                          "Loading…"
                          (nano-modeline-mu4e-context)
                          (format-time-string "%A %d %B %Y, %H:%M")))
@@ -653,7 +752,7 @@ depending on the version of mu4e."
   (derived-mode-p 'mu4e-main-mode))
 
 (defun nano-modeline-mu4e-main-mode ()
-  (nano-modeline-render nil
+  (nano-modeline-render (plist-get (cdr (assoc 'mu4e-main-mode nano-modeline-mode-formats)) :icon)
                         (nano-modeline-mu4e-context)
                         ""
                         (format-time-string "%A %d %B %Y, %H:%M")))
@@ -663,7 +762,7 @@ depending on the version of mu4e."
   (derived-mode-p 'mu4e-compose-mode))
 
 (defun nano-modeline-mu4e-compose-mode ()
-  (nano-modeline-render nil
+  (nano-modeline-render (plist-get (cdr (assoc 'mu4e-compose-mode nano-modeline-mode-formats)) :icon)
                         (format-mode-line "%b")
                         ""
                         (format "[%s]"
@@ -681,7 +780,7 @@ depending on the version of mu4e."
 
 (defun nano-modeline-mu4e-headers-mode ()
   (let ((mu4e-modeline-max-width 80))
-    (nano-modeline-render nil
+    (nano-modeline-render (plist-get (cdr (assoc 'mu4e-headers-mode nano-modeline-mode-formats)) :icon)
                           "Search:"
                           (or (nano-modeline-mu4e-quote
                                (nano-modeline-mu4e-last-query)) "")
@@ -698,7 +797,7 @@ depending on the version of mu4e."
          (subject (mu4e-message-field msg :subject))
          (from    (mu4e~headers-contact-str (mu4e-message-field msg :from)))
          (date     (mu4e-message-field msg :date)))
-    (nano-modeline-render nil
+    (nano-modeline-render (plist-get (cdr (assoc 'mu4e-view-mode nano-modeline-mode-formats)) :icon)
                           (or subject "")
                           ""
                           (or from "")
@@ -718,17 +817,18 @@ depending on the version of mu4e."
   (derived-mode-p 'nano-help-mode))
 
 (defun nano-modeline-nano-help-mode ()
-  (nano-modeline-render nil
-                         "Emacs / N Λ N O"
-                         "(help)"
-                         ""))
+  (nano-modeline-render (plist-get (cdr (assoc 'nano-help-mode nano-modeline-mode-formats)) :icon)
+                        "Emacs / N Λ N O"
+                        "(help)"
+                        ""))
 
 ;; ---------------------------------------------------------------------
 (defun nano-modeline-messages-mode-p ()
   (derived-mode-p 'messages-buffer-mode))
 
 (defun nano-modeline-messages-mode ()
-  (nano-modeline-render nil "Messages" "" ""))
+  (nano-modeline-render (plist-get (cdr (assoc 'messages-mode nano-modeline-mode-formats)) :icon)
+                        "Messages" "" ""))
 
 ;; ---------------------------------------------------------------------
 (defun nano-modeline-org-clock-mode-p ()
@@ -740,7 +840,7 @@ depending on the version of mu4e."
           (mode-name   (nano-modeline-mode-name))
           (branch      (nano-modeline-vc-branch))
           (position    (format-mode-line "%l:%c")))
-      (nano-modeline-render nil
+      (nano-modeline-render (plist-get (cdr (assoc 'org-clock-mode nano-modeline-mode-formats)) :icon)
                              buffer-name 
                              (concat "(" mode-name
                                      (if branch (concat ", "
@@ -781,7 +881,7 @@ depending on the version of mu4e."
               (or (ignore-errors
                 (number-to-string (doc-view-last-page-number)))
               "???"))))
-    (nano-modeline-render nil
+    (nano-modeline-render (plist-get (cdr (assoc 'doc-view-mode nano-modeline-mode-formats)) :icon)
                            buffer-name
                            (if branch (concat "(" branch ")") "")
                            page-number)))
@@ -799,7 +899,7 @@ depending on the version of mu4e."
               (or (ignore-errors
                 (number-to-string (pdf-cache-number-of-pages)))
               "???"))))
-    (nano-modeline-render nil
+    (nano-modeline-render (plist-get (cdr (assoc 'pdf-view-mode nano-modeline-mode-formats)) :icon)
                           buffer-name
                           (if branch (concat "(" branch ")") "")
                           page-number)))
@@ -813,7 +913,7 @@ depending on the version of mu4e."
           (mode-name   (nano-modeline-mode-name))
           (position    (format-mode-line "%l:%c")))
 
-      (nano-modeline-render nil
+      (nano-modeline-render (plist-get (cdr (assoc 'buffer-menu-mode nano-modeline-mode-formats)) :icon)
                              buffer-name "" position)))
 ;;(defun buffer-menu-mode-header-line ()
 ;;  (face-remap-add-relative
@@ -841,7 +941,7 @@ depending on the version of mu4e."
                                       '("gophers" "gemini")))
                          "(TLS encryption)"
                        "")))
-    (nano-modeline-render nil
+    (nano-modeline-render (plist-get (cdr (assoc 'elpher-mode nano-modeline-mode-formats)) :icon)
                           sanitized-display-string
                           tls-string
                           "")))
@@ -859,7 +959,7 @@ depending on the version of mu4e."
           (mode-name   (nano-modeline-mode-name))
           (position    (format-mode-line "%l:%c")))
 
-      (nano-modeline-render nil
+      (nano-modeline-render (plist-get (cdr (assoc 'completion-list-mode nano-modeline-mode-formats)) :icon)
                             buffer-name
                             ""
                             position)))
@@ -874,34 +974,36 @@ depending on the version of mu4e."
   (derived-mode-p 'deft-mode))
 
 (defun nano-modeline-deft-mode ()
-  (let ((prefix (nano-modeline-status))
+  (let ((icon (plist-get (cdr (assoc 'deft-mode nano-modeline-mode-formats)) :icon))
         (primary "Notes")
         (filter  (concat (if deft-filter-regexp
                              (deft-whole-filter-regexp)) "_"))
         (matches (if deft-filter-regexp
                      (format "%d matches" (length deft-current-files))
                    (format "%d notes" (length deft-all-files)))))
-    (nano-modeline-render nil "Search:" filter matches 'read-only)))
+    (nano-modeline-render icon "Search:" filter matches 'read-only)))
 
 ;; ---------------------------------------------------------------------
 (defun nano-modeline-prog-mode-p ()
   (derived-mode-p 'prog-mode))
 
 (defun nano-modeline-prog-mode ()
-  (nano-modeline-default-mode))
+  (nano-modeline-default-mode
+   (plist-get (cdr (assoc 'prog-mode nano-modeline-mode-formats)) :icon)))
 
 (defun nano-modeline-text-mode-p ()
   (derived-mode-p 'text-mode))
 
 (defun nano-modeline-text-mode ()
-  (nano-modeline-default-mode))
+  (nano-modeline-default-mode
+   (plist-get (cdr (assoc 'text-mode nano-modeline-mode-formats)) :icon)))
 
-(defun nano-modeline-default-mode ()
+(defun nano-modeline-default-mode (&optional icon)
   (let ((buffer-name (format-mode-line "%b"))
         (mode-name   (nano-modeline-mode-name))
         (branch      (nano-modeline-vc-branch))
         (position    (format-mode-line "%l:%c")))
-    (nano-modeline-render nil ;; (upcase  mode-name)
+    (nano-modeline-render icon
                           buffer-name
                           (if branch (concat "(" branch ")") "")
                           position)))
