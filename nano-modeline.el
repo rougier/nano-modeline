@@ -1044,7 +1044,14 @@ below or a buffer local variable 'no-mode-line'."
   ;;  -> see https://github.com/rougier/nano-modeline/issues/24
   ;; (add-hook 'window-configuration-change-hook #'nano-modeline-update-windows)
 
-  (force-mode-line-update t))
+  (force-mode-line-update t)
+
+  ;; `eldoc-minibuffer-message' changes `mode-line-format' but
+  ;; nano-modeline when `nano-modeline-position' is `top' only displays
+  ;; the header-line.
+  ;; -> see https://github.com/rougier/nano-modeline/issues/36
+  (when (eq nano-modeline-position 'top)
+    (setq eldoc-message-function #'message)))
 
 (defun nano-modeline-mode--inactivate ()
   "Inactivate nano mode line and restored default mode-line"
