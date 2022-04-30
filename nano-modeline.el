@@ -49,7 +49,7 @@
 ;;; NEWS:
 ;;
 ;; Version 0.7
-;; - Removed prefix on the left (not too much informative)
+;; - Prefix is now an option (none, status or icon)
 ;;
 ;; Version 0.6
 ;; - Spaces have face that enforce active/inactive
@@ -128,7 +128,7 @@ Negative is downwards."
 (defcustom nano-modeline-prefix 'default
   "Type of prefix on the left"
   :type '(choice (const :tag "None" none)
-                 (const :tag "Default (RO/RW/**)" default)
+                 (const :tag "Status (RO/RW/**)" status)
                  (const :tag "Icon" icon))
   :group 'nano-modeline)
 
@@ -253,6 +253,7 @@ This is useful (aesthetically) if the face of prefix uses a different background
                             :on-activate nano-modeline-buffer-menu-activate
                             :on-inactivate nano-modeline-buffer-menu-inactivate
                             :icon "") ;; nerd-font / oct-three-bars
+
     (calendar-mode          :mode-p nano-modeline-calendar-mode-p
                             :format nano-modeline-calendar-mode
                             :on-activate nano-modeline-calendar-activate
@@ -321,10 +322,10 @@ KEY mode name, for reference only. Easier to do lookups and/or replacements.
   :type '(alist :key-type symbol
                 :value-type (plist :key-type (choice (const :mode-p)
                                                      (const :format)
+                                                     (const :icon)
                                                      (const :on-activate)
                                                      (const :on-inactivate))
-                                   :value-type sexp))
-;;                                     :value-type function))
+                                   :value-type (radio function string)))
   :group 'nano-modeline)
 
 (defcustom nano-modeline-mode-format-activate-hook nil
@@ -560,7 +561,7 @@ KEY mode name, for reference only. Easier to do lookups and/or replacements.
     (nano-modeline-render icon
                           title
                           ;;(nano-modeline-truncate title 40)
-                           (concat "(" tags-str ")")
+                           (concat "(" tags-str ")   ")
                            feed-title)))
 
 ;; ---------------------------------------------------------------------
