@@ -459,23 +459,24 @@ KEY mode name, for reference only. Easier to do lookups and/or replacements.
                 (propertize name 'face face-name)
                 (if (length name)
                     (propertize " " 'face face-modeline))
-               (propertize primary 'face face-primary)))
+                (propertize primary 'face face-primary)))
          (right (concat
                  (propertize secondary 'face face-secondary)
-                 (if (and (not (eq nano-modeline-prefix 'default))
+                 (if (and (not (eq nano-modeline-prefix 'status))
                           (eq status 'modified))
-                     (propertize " [M]" 'face face-secondary)
+                     (propertize " [M]" 'face face-name)
                    (if (window-dedicated-p)
-                       (propertize " [•]" 'face face-secondary)))
+                       (propertize " •" 'face face-secondary)))
                  (propertize " "  'face `(:inherit ,face-modeline)
                                   'display `(raise ,nano-modeline-space-bottom))))
 	     (right-len (length (format-mode-line right))))
     (concat
      left 
      (propertize " "  'face face-secondary
-                      'display `(space :align-to (- right ,(- right-len 0))))
+                 'display `(space :align-to (- right
+                                               (-1 . right-margin)
+                                              ,(- right-len 0))))
      right)))
-
 
 
 ;; ---------------------------------------------------------------------
@@ -850,8 +851,7 @@ depending on the version of mu4e."
       (nano-modeline-render (plist-get (cdr (assoc 'org-clock-mode nano-modeline-mode-formats)) :icon)
                              buffer-name 
                              (concat "(" mode-name
-                                     (if branch (concat ", "
-                                             (propertize branch 'face 'italic)))
+                                     (if branch (concat ", " branch))
                                      ")" )
                              org-mode-line-string)))
 
