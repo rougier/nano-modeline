@@ -1022,7 +1022,22 @@ depending on the version of mu4e."
    (plist-get (cdr (assoc 'text-mode nano-modeline-mode-formats)) :icon)))
 
 (defun nano-modeline-default-mode (&optional icon)
-  (let ((buffer-name (format-mode-line "%b"))
+  (let ((icon (or icon
+                  (plist-get (cdr (assoc 'text-mode nano-modeline-mode-formats)) :icon)))
+        ;; We take into account the case of narrowed buffers
+        (buffer-name (cond
+                      ((and (derived-mode-p 'org-mode)
+                            (buffer-narrowed-p)
+                            (buffer-base-buffer))
+                       (format"%s [%s]" (buffer-base-buffer)
+                              (substring-no-properties (or (org-get-heading 'no-tags)
+                                                       "-"))))
+                      ((and (buffer-narrowed-p)
+                            (buffer-base-buffer))
+                       (format"%s [narrow]" (buffer-base-buffer)))
+                      (t
+                       (format-mode-line "%b"))))
+        
         (mode-name   (nano-modeline-mode-name))
         (branch      (nano-modeline-vc-branch))
         (position    (format-mode-line "%l:%c")))
