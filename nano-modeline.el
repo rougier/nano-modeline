@@ -391,11 +391,12 @@ KEY mode name, for reference only. Easier to do lookups and/or replacements.
 (defun nano-modeline-status ()
   "Return buffer status, one of 'read-only, 'modified or 'read-write."
 
-  (let ((read-only   buffer-read-only)
-        (modified    (and buffer-file-name (buffer-modified-p))))
-    (cond (modified  'modified)
-          (read-only 'read-only)
-          (t         'read-write))))
+  (with-current-buffer (or (buffer-base-buffer) (current-buffer))
+    (let ((read-only   buffer-read-only)
+          (modified    (and buffer-file-name (buffer-modified-p))))
+      (cond (modified  'modified)
+            (read-only 'read-only)
+            (t         'read-write)))))
 
 (defun nano-modeline-render (icon name primary secondary &optional status)
   "Compose a string with provided information"
