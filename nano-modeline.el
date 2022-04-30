@@ -212,7 +212,7 @@ This is useful (aesthetically) if the face of prefix uses a different background
 (defcustom nano-modeline-mode-formats
   '(;; with :mode-p first
 
-    (imenu-list-mode        :mode nano-modeline-imenu-list-mode-p
+    (imenu-list-mode        :mode-p nano-modeline-imenu-list-mode-p
                             :format nano-modeline-imenu-list-mode
                             :icon "") ;; nerd-font / oct-three-bars
     (prog-mode              :mode-p nano-modeline-prog-mode-p
@@ -324,8 +324,7 @@ KEY mode name, for reference only. Easier to do lookups and/or replacements.
                                                      (const :format)
                                                      (const :icon)
                                                      (const :on-activate)
-                                                     (const :on-inactivate))
-                                   :value-type (radio function string)))
+                                                     (const :on-inactivate))))
   :group 'nano-modeline)
 
 (defcustom nano-modeline-mode-format-activate-hook nil
@@ -973,7 +972,6 @@ depending on the version of mu4e."
 
 ;; ---------------------------------------------------------------------
 (defun nano-modeline-imenu-list-mode-p ()
-  (message "imenu mode: %s"   (derived-mode-p 'imenu-list-major-mode))
   (derived-mode-p 'imenu-list-major-mode))
 
 (defun nano-modeline-imenu-list-mode (&optional icon)
