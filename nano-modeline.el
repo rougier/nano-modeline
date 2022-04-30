@@ -211,6 +211,10 @@ This is useful (aesthetically) if the face of prefix uses a different background
 
 (defcustom nano-modeline-mode-formats
   '(;; with :mode-p first
+
+    (imenu-list-mode        :mode nano-modeline-imenu-list-mode-p
+                            :format nano-modeline-imenu-list-mode
+                            :icon "") ;; nerd-font / oct-three-bars
     (prog-mode              :mode-p nano-modeline-prog-mode-p
                             :format nano-modeline-prog-mode
                             :icon "") ;; nerd-font / oct-file-code
@@ -965,6 +969,23 @@ depending on the version of mu4e."
                             buffer-name
                             ""
                             position)))
+
+;; ---------------------------------------------------------------------
+(defun nano-modeline-imenu-list-mode-p ()
+  (message "imenu mode: %s"   (derived-mode-p 'imenu-list-major-mode))
+  (derived-mode-p 'imenu-list-major-mode))
+
+(defun nano-modeline-imenu-list-mode (&optional icon)
+  (let ((icon (or icon
+                  (plist-get (cdr (assoc 'text-mode nano-imenu-list-mode-formats)) :icon)))
+        ;; We take into account the case of narrowed buffers
+        (buffer-name (buffer-name imenu-list--displayed-buffer)
+        (branch      (nano-modeline-vc-branch))
+        (position    (format-mode-line "%l:%c")))
+    (nano-modeline-render icon
+                          buffer-name
+                          "(imenu list)"
+                          ""))))
 
 ;; ---------------------------------------------------------------------
 (with-eval-after-load 'deft
