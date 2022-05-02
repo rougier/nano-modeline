@@ -1029,8 +1029,9 @@ depending on the version of mu4e."
                             (buffer-narrowed-p)
                             (buffer-base-buffer))
                        (format"%s [%s]" (buffer-base-buffer)
+                              (org-link-display-format 
                               (substring-no-properties (or (org-get-heading 'no-tags)
-                                                       "-"))))
+                                                       "-")))))
                       ((and (buffer-narrowed-p)
                             (buffer-base-buffer))
                        (format"%s [narrow]" (buffer-base-buffer)))
