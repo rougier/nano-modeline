@@ -4,7 +4,7 @@
 
 ;; Maintainer: Nicolas P. Rougier <Nicolas.Rougier@inria.fr>
 ;; URL: https://github.com/rougier/nano-modeline
-;; Version: 0.6
+;; Version: 0.7
 ;; Package-Requires: ((emacs "27.1"))
 ;; Keywords: convenience, mode-line, header-line
 
@@ -50,6 +50,11 @@
 ;;
 ;; Version 0.7
 ;; - Prefix is now an option (none, status or icon)
+;; - Prefix can be replaced by icons
+;; - Better space computation
+;; - New imenu-list mode
+;; - Indirect buffers are now handled properly
+;; - Bugfix in org-clock-mode
 ;;
 ;; Version 0.6
 ;; - Spaces have face that enforce active/inactive
