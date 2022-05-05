@@ -981,15 +981,15 @@ depending on the version of mu4e."
 
 (defun nano-modeline-imenu-list-mode (&optional icon)
   (let ((icon (or icon
-                  (plist-get (cdr (assoc 'text-mode nano-imenu-list-mode-formats)) :icon)))
+                  (plist-get (cdr (assoc 'imenu-list-mode nano-modeline-mode-formats)) :icon)))
         ;; We take into account the case of narrowed buffers
-        (buffer-name (buffer-name imenu-list--displayed-buffer)
+        (buffer-name (buffer-name imenu-list--displayed-buffer))
         (branch      (nano-modeline-vc-branch))
         (position    (format-mode-line "%l:%c")))
     (nano-modeline-render icon
                           buffer-name
                           "(imenu list)"
-                          ""))))
+                          "")))
 
 ;; ---------------------------------------------------------------------
 (with-eval-after-load 'deft
