@@ -220,6 +220,12 @@ This is useful (aesthetically) if the face of prefix uses a different background
     (imenu-list-mode        :mode-p nano-modeline-imenu-list-mode-p
                             :format nano-modeline-imenu-list-mode
                             :icon "") ;; nerd-font / oct-three-bars
+    (org-capture-mode       :mode-p nano-modeline-org-capture-mode-p
+                            :format nano-modeline-org-capture-mode
+                            :on-activate nano-modeline-org-capture-activate
+                            :on-inactivate nano-modeline-org-capture-inactivate
+                            :icon "") ;; nerd-font / oct-calendar
+
     (prog-mode              :mode-p nano-modeline-prog-mode-p
                             :format nano-modeline-prog-mode
                             :icon "") ;; nerd-font / oct-file-code
@@ -295,11 +301,6 @@ This is useful (aesthetically) if the face of prefix uses a different background
                             :icon "") ;; nerd-font / oct-info
     (org-agenda-mode        :mode-p nano-modeline-org-agenda-mode-p
                             :format nano-modeline-org-agenda-mode
-                            :icon "") ;; nerd-font / oct-calendar
-    (org-capture-mode       :mode-p nano-modeline-org-capture-mode-p
-                            :format nano-modeline-org-capture-mode
-                            :on-activate nano-modeline-org-capture-activate
-                            :on-inactivate nano-modeline-org-capture-inactivate
                             :icon "") ;; nerd-font / oct-calendar
     (org-clock-mode         :mode-p nano-modeline-org-clock-mode-p
                             :format nano-modeline-org-clock-mode
@@ -605,7 +606,7 @@ KEY mode name, for reference only. Easier to do lookups and/or replacements.
   (nano-modeline-render (plist-get (cdr (assoc 'org-capture-mode nano-modeline-mode-formats)) :icon)
                         "Capture"
                         (concat "(" (org-capture-get :description) ")")
-                        ""))
+                        "Finish: C-c C-c, refile: C-c C-w, cancel: C-c C-k "))
 
 (defun nano-modeline-org-capture-turn-off-header-line ()
   (setq-local header-line-format (default-value 'header-line-format))
