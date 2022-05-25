@@ -4,7 +4,7 @@
 
 ;; Maintainer: Nicolas P. Rougier <Nicolas.Rougier@inria.fr>
 ;; URL: https://github.com/rougier/nano-modeline
-;; Version: 0.7
+;; Version: 0.7.1
 ;; Package-Requires: ((emacs "27.1"))
 ;; Keywords: convenience, mode-line, header-line
 
@@ -47,6 +47,11 @@
 ;; M-x: nano-modeline-mode
 ;;
 ;;; NEWS:
+;;
+;; Version 0.7.1
+;; - Fix a bug with mu4e-dashboard
+;; - Fix a bug in pdf view mode
+;; - Better org-capture mode
 ;;
 ;; Version 0.7
 ;; - Prefix is now an option (none, status or icon)
