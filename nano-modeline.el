@@ -906,7 +906,7 @@ depending on the version of mu4e."
     (mode-name   (nano-modeline-mode-name))
     (branch      (nano-modeline-vc-branch))
     (page-number (concat
-              (number-to-string (pdf-view-current-page)) "/"
+              (number-to-string (image-mode-window-get 'page)) "/"
               (or (ignore-errors
                 (number-to-string (pdf-cache-number-of-pages)))
               "???"))))
