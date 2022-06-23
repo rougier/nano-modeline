@@ -634,26 +634,27 @@ KEY mode name, for reference only. Easier to do lookups and/or replacements.
         (crumbs ())
         (depth Info-breadcrumbs-depth)
     line)
-    (while  (> depth 0)
-      (setq node (nth 1 (assoc node nodes)))
-      (if node (push node crumbs))
-      (setq depth (1- depth)))
-    (setq crumbs (cons "Top" (if (member (pop crumbs) '(nil "Top"))
-                     crumbs (cons nil crumbs))))
-    (forward-line 1)
-    (dolist (node crumbs)
-      (let ((text
-         (if (not (equal node "Top")) node
-           (format "%s"
-               (if (stringp Info-current-file)
-               (file-name-sans-extension
-                (file-name-nondirectory Info-current-file))
-             Info-current-file)))))
-    (setq line (concat line (if (null line) "" " > ")
-                                (if (null node) "..." text)))))
-    (if (and cnode (not (equal cnode "Top")))
-        (setq line (concat line (if (null line) "" " > ") cnode)))
-    line))
+    (save-excursion
+      (while  (> depth 0)
+        (setq node (nth 1 (assoc node nodes)))
+        (if node (push node crumbs))
+        (setq depth (1- depth)))
+      (setq crumbs (cons "Top" (if (member (pop crumbs) '(nil "Top"))
+                       crumbs (cons nil crumbs))))
+      (forward-line 1)
+      (dolist (node crumbs)
+        (let ((text
+           (if (not (equal node "Top")) node
+             (format "%s"
+                 (if (stringp Info-current-file)
+                 (file-name-sans-extension
+                  (file-name-nondirectory Info-current-file))
+               Info-current-file)))))
+      (setq line (concat line (if (null line) "" " > ")
+                                  (if (null node) "..." text)))))
+      (if (and cnode (not (equal cnode "Top")))
+          (setq line (concat line (if (null line) "" " > ") cnode)))
+      line)))
 
 (defun nano-modeline-info-mode-p ()
   (derived-mode-p 'Info-mode))
