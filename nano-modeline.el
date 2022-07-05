@@ -733,9 +733,9 @@ KEY mode name, for reference only. Easier to do lookups and/or replacements.
 (defun nano-modeline-mu4e-server-props ()
   "Encapsulates the call to the variable mu4e-/~server-props
 depending on the version of mu4e."
-  (if (version< "1.6.10" mu4e-mu-version)
-      mu4e--server-props
-    mu4e~server-props))
+  (if (version< mu4e-mu-version "1.6.0")
+      mu4e~server-props
+    mu4e--server-props))
 
 (defun nano-modeline-mu4e-activate ()
   (with-eval-after-load 'mu4e
@@ -789,7 +789,7 @@ depending on the version of mu4e."
 
 ;; ---------------------------------------------------------------------
 (defun nano-modeline-mu4e-quote (str)
-  (if (version< mu4e-mu-version "1.6.11")
+  (if (version< mu4e-mu-version "1.8.0")
       (mu4e~quote-for-modeline str)
     (mu4e-quote-for-modeline str)))
 
