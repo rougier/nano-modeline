@@ -48,6 +48,10 @@
 ;;
 ;;; NEWS:
 ;;
+;; Version 0.7.2
+;; - Fix a bug in info mode (breadcrumbs)
+;; - Fix mu header mode for version 1.8
+;;
 ;; Version 0.7.1
 ;; - Fix a bug with mu4e-dashboard
 ;; - Fix a bug in pdf view mode
