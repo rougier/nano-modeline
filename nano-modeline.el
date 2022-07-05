@@ -789,7 +789,7 @@ depending on the version of mu4e."
 
 ;; ---------------------------------------------------------------------
 (defun nano-modeline-mu4e-quote (str)
-  (if (version< "1.6.5" mu4e-mu-version)
+  (if (version< mu4e-mu-version "1.6.11")
       (mu4e~quote-for-modeline str)
     (mu4e-quote-for-modeline str)))
 
