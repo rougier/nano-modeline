@@ -146,7 +146,7 @@ Negative is downwards."
                  (const :tag "Icon" icon))
   :group 'nano-modeline)
 
-(defcustom nano-modeline-prefix-padding nil
+(defcustom nano-modeline-prefix-padding t
   "Wheter to add a space after prefix part.
 
 This is useful (aesthetically) if the face of prefix uses a different background color than the rest of the modeline."
