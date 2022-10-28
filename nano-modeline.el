@@ -4,7 +4,7 @@
 
 ;; Maintainer: Nicolas P. Rougier <Nicolas.Rougier@inria.fr>
 ;; URL: https://github.com/rougier/nano-modeline
-;; Version: 0.7.1
+;; Version: 0.7.2
 ;; Package-Requires: ((emacs "27.1"))
 ;; Keywords: convenience, mode-line, header-line
 
@@ -51,6 +51,7 @@
 ;; Version 0.7.2
 ;; - Fix a bug in info mode (breadcrumbs)
 ;; - Fix mu header mode for version 1.8
+;; - Put back padding (for default style)
 ;;
 ;; Version 0.7.1
 ;; - Fix a bug with mu4e-dashboard
