@@ -801,7 +801,7 @@ depending on the version of mu4e."
   (derived-mode-p 'mu4e-headers-mode))
 
 (defun nano-modeline-mu4e-headers-mode ()
-  (let ((mu4e-modeline-max-width 80))
+  (let ((mu4e-modeline-max-width 120))
     (nano-modeline-render (plist-get (cdr (assoc 'mu4e-headers-mode nano-modeline-mode-formats)) :icon)
                           "Search:"
                           (or (nano-modeline-mu4e-quote
