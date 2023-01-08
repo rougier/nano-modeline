@@ -166,6 +166,12 @@ Then count is provided by `nano-modeline-unread-email-count'."
   :type 'boolean
   :group 'nano-modeline)
 
+(defcustom nano-modeline-display-misc-info nil
+  "Whether to display misc-info in the mode-line.
+Then info is provided by `nano-modeline-misc-info'."
+  :type 'boolean
+  :group 'nano-modeline)
+
 (defface nano-modeline-active
   '((t (:inherit mode-line)))
   "Modeline face for active modeline"
@@ -457,6 +463,18 @@ When return value is \"0\", then the section is hidden"
                                   (length mu4e~headers-mode-line-label))))
     (shell-command-to-string (format "echo -n $(mu find %s 2> /dev/null | wc -l)" string))))
 
+(defun nano-modeline-misc-info ()
+  "Return miscellaneous and useful info if the `major-mode' provides these.
+This is similar to the information in `mode-line-misc-info'.
+
+Information:
+- Python Virtual Environment using `pyvenv-virtual-env-name'.
+  The Venv is only shown when active and in a python buffer."
+  (let ((venv (if (and pyvenv-virtual-env-name (eq major-mode 'python-mode))
+                  (format " %s" pyvenv-virtual-env-name)
+                (format ""))))
+    (format venv)))
+
 (defun nano-modeline-render (icon name primary secondary &optional status)
   "Compose a string with provided information"
 
@@ -529,7 +547,11 @@ When return value is \"0\", then the section is hidden"
                      (if (not (equal "0" (nano-modeline-tab-number)))
                     (concat (propertize " -" 'face face-secondary)
                             (propertize (nano-modeline-tab-number) 'face face-secondary)
-                            (propertize "- " 'face face-secondary))))))
+                            (propertize "- " 'face face-secondary))))
+                 (if nano-modeline-display-misc-info
+                     (if (not (equal "" (nano-modeline-misc-info)))
+                    (concat (propertize (nano-modeline-misc-info) 'face face-primary)
+                            (propertize " " 'face face-secondary))))))
 	     (right-len (length (format-mode-line right))))
     (concat
      left
