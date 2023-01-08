@@ -392,7 +392,7 @@ KEY mode name, for reference only. Easier to do lookups and/or replacements.
   "Return current VC branch if any."
   (if vc-mode
       (let ((backend (vc-backend buffer-file-name)))
-        (concat "#" (substring-no-properties vc-mode
+        (concat " " (substring-no-properties vc-mode
                                  (+ (if (eq backend 'Hg) 2 3) 2))))  nil))
 
 (defun nano-modeline-mode-name ()
@@ -1084,7 +1084,7 @@ depending on the version of mu4e."
         (position    (format-mode-line "%l:%c")))
     (nano-modeline-render icon
                           buffer-name
-                          (if branch (concat "(" branch ")") "")
+                          (if branch (concat " " branch) "")
                           position)))
 
 
