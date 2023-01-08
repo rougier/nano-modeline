@@ -162,7 +162,7 @@ Then number is provided by `nano-modeline-tab-number'."
 
 (defcustom nano-modeline-display-mail-count nil
   "Whether to display the unread email count in the mode-line.
-Then count is provided by `nano-modeline-email-count'."
+Then count is provided by `nano-modeline-unread-email-count'."
   :type 'boolean
   :group 'nano-modeline)
 
@@ -443,12 +443,19 @@ When return value is \"0\", then the section is hidden"
          (if explicit-name tab-name (+ 1 tab-index)))
      (string-to-number "0"))))
 
-(defun nano-modeline-email-count ()
+(defun nano-modeline-unread-email-count ()
   "Return the count of unread emails and ad mail icon."
   (if mu4e-alert-mode-line
       (concat "  " (progn (string-match "[0-9]+" mu4e-alert-mode-line)
                            (match-string 0 mu4e-alert-mode-line)) " ")
     (format "")))
+
+(defun nano-modeline-maildir-email-count ()
+  "Return the count of emails in the current maildir."
+  (let ((string
+         (substring-no-properties mu4e~headers-mode-line-label 2
+                                  (length mu4e~headers-mode-line-label))))
+    (shell-command-to-string (format "echo -n $(mu find %s 2> /dev/null | wc -l)" string))))
 
 (defun nano-modeline-render (icon name primary secondary &optional status)
   "Compose a string with provided information"
@@ -517,7 +524,7 @@ When return value is \"0\", then the section is hidden"
                  (propertize " "  'face `(:inherit ,face-modeline)
                                   'display `(raise ,nano-modeline-space-bottom))
                  (if nano-modeline-display-mail-count
-                    (concat (propertize (nano-modeline-email-count) 'face face-primary)))
+                    (concat (propertize (nano-modeline-unread-email-count) 'face face-primary)))
                  (if nano-modeline-display-tab-number
                      (if (not (equal "0" (nano-modeline-tab-number)))
                     (concat (propertize " -" 'face face-secondary)
@@ -807,7 +814,7 @@ depending on the version of mu4e."
   (nano-modeline-render (plist-get (cdr (assoc 'mu4e-loading-mode nano-modeline-mode-formats)) :icon)
                          "Loading…"
                          (nano-modeline-mu4e-context)
-                         (format-time-string "%A %d %B %Y, %H:%M")))
+                         ""))
 
 ;; ---------------------------------------------------------------------
 (defun nano-modeline-mu4e-main-mode-p ()
@@ -817,7 +824,7 @@ depending on the version of mu4e."
   (nano-modeline-render (plist-get (cdr (assoc 'mu4e-main-mode nano-modeline-mode-formats)) :icon)
                         (nano-modeline-mu4e-context)
                         ""
-                        (format-time-string "%A %d %B %Y, %H:%M")))
+                        ""))
 
 ;; ---------------------------------------------------------------------
 (defun nano-modeline-mu4e-compose-mode-p ()
@@ -843,9 +850,9 @@ depending on the version of mu4e."
 (defun nano-modeline-mu4e-headers-mode ()
   (let ((mu4e-modeline-max-width 120))
     (nano-modeline-render (plist-get (cdr (assoc 'mu4e-headers-mode nano-modeline-mode-formats)) :icon)
-                          "Search:"
                           (or (nano-modeline-mu4e-quote
                                (nano-modeline-mu4e-last-query)) "")
+                          (concat "(" (nano-modeline-maildir-email-count) ")")
                            (format "[%s]"
                                    (nano-modeline-mu4e-quote
                                     (mu4e-context-name (mu4e-context-current)))))))
