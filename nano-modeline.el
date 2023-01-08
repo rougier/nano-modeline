@@ -160,6 +160,12 @@ Then number is provided by `nano-modeline-tab-number'."
   :type 'boolean
   :group 'nano-modeline)
 
+(defcustom nano-modeline-display-mail-count nil
+  "Whether to display the unread email count in the mode-line.
+Then count is provided by `nano-modeline-email-count'."
+  :type 'boolean
+  :group 'nano-modeline)
+
 (defface nano-modeline-active
   '((t (:inherit mode-line)))
   "Modeline face for active modeline"
@@ -437,6 +443,13 @@ When return value is \"0\", then the section is hidden"
          (if explicit-name tab-name (+ 1 tab-index)))
      (string-to-number "0"))))
 
+(defun nano-modeline-email-count ()
+  "Return the count of unread emails and ad mail icon."
+  (if mu4e-alert-mode-line
+      (concat "  " (progn (string-match "[0-9]+" mu4e-alert-mode-line)
+                           (match-string 0 mu4e-alert-mode-line)) " ")
+    (format "")))
+
 (defun nano-modeline-render (icon name primary secondary &optional status)
   "Compose a string with provided information"
 
@@ -503,6 +516,8 @@ When return value is \"0\", then the section is hidden"
                        (propertize " •" 'face face-secondary)))
                  (propertize " "  'face `(:inherit ,face-modeline)
                                   'display `(raise ,nano-modeline-space-bottom))
+                 (if nano-modeline-display-mail-count
+                    (concat (propertize (nano-modeline-email-count) 'face face-primary)))
                  (if nano-modeline-display-tab-number
                      (if (not (equal "0" (nano-modeline-tab-number)))
                     (concat (propertize " -" 'face face-secondary)
