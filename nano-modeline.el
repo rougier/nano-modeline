@@ -489,7 +489,7 @@ KEY mode name, for reference only. Easier to do lookups and/or replacements.
      left 
      (propertize " "  'face face-secondary
                  'display `(space :align-to (- right
-                                               (-1 . right-margin)
+                                               (-1 . right-fringe)
                                               ,(- right-len 0))))
      right)))
 
