@@ -154,6 +154,12 @@ This is useful (aesthetically) if the face of prefix uses a different background
   :type 'boolean
   :group 'nano-modeline)
 
+(defcustom nano-modeline-display-tab-number nil
+  "Whether to display the tab-number in the mode-line.
+Then number is provided by `nano-modeline-tab-number'."
+  :type 'boolean
+  :group 'nano-modeline)
+
 (defface nano-modeline-active
   '((t (:inherit mode-line)))
   "Modeline face for active modeline"
@@ -418,6 +424,19 @@ KEY mode name, for reference only. Easier to do lookups and/or replacements.
             (read-only 'read-only)
             (t         'read-write)))))
 
+(defun nano-modeline-tab-number ()
+  "Return the number of the current tab as a string if there are more than 1 tab open.
+Return \"0\" if there is only on tab open.
+When return value is \"0\", then the section is hidden"
+  (number-to-string
+   (if (length> (frame-parameter nil 'tabs) 1)
+       (let* ((current-tab (tab-bar--current-tab))
+              (tab-index (tab-bar--current-tab-index))
+              (explicit-name (alist-get 'explicit-name current-tab))
+              (tab-name (alist-get 'name current-tab)))
+         (if explicit-name tab-name (+ 1 tab-index)))
+     (string-to-number "0"))))
+
 (defun nano-modeline-render (icon name primary secondary &optional status)
   "Compose a string with provided information"
 
@@ -483,7 +502,10 @@ KEY mode name, for reference only. Easier to do lookups and/or replacements.
                    (if (window-dedicated-p)
                        (propertize " •" 'face face-secondary)))
                  (propertize " "  'face `(:inherit ,face-modeline)
-                                  'display `(raise ,nano-modeline-space-bottom))))
+                                  'display `(raise ,nano-modeline-space-bottom))
+                 (if nano-modeline-display-tab-number
+                     (if (not (equal "0" (nano-modeline-tab-number)))
+                         (propertize (format " -%s- " (nano-modeline-tab-number)) 'face face-secondary)))))
 	     (right-len (length (format-mode-line right))))
     (concat
      left 
