@@ -1079,7 +1079,10 @@ depending on the version of mu4e."
         
         (mode-name   (nano-modeline-mode-name))
         (branch      (nano-modeline-vc-branch))
-        (position    (format-mode-line "%l:%c")))
+        (position    (format-mode-line
+		      (if (bound-and-true-p column-number-mode)
+			  '("%l:%c")
+			'("%l")))))
     (nano-modeline-render icon
                           buffer-name
                           (if branch (concat "(" branch ")") "")
