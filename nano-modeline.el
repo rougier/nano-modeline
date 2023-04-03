@@ -1080,13 +1080,12 @@ depending on the version of mu4e."
         (mode-name   (nano-modeline-mode-name))
         (branch      (nano-modeline-vc-branch))
         (position    (format-mode-line
-                      (if (bound-and-true-p line-number-mode)
-                          (if (bound-and-true-p column-number-mode)
-                              '("%l:%c")
-                            '("%l"))
-                        (if (bound-and-true-p column-number-mode)
-                            '("%c")
-                          '(""))))))
+                      (cond ((and (bound-and-true-p column-number-mode)
+                                  (bound-and-true-p line-number-mode)) "%l:%c")
+                            ((bound-and-true-p column-number-mode) "%c")
+                            ((bound-and-true-p line-number-mode) "%l")
+                            (t "")))))
+       
     (nano-modeline-render icon
                           buffer-name
                           (if branch (concat "(" branch ")") "")
