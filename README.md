@@ -26,6 +26,12 @@ Install with `M-: (package-install 'nano-modeline)`
 
 Activate with ` M-x: nano-modeline-mode`
 
+### Configure column and line numbers
+
+Emacs comes with `column-number-mode` off by default.  
+If you would like to see the column number, turn it on with `M-x: column-number-mode`  
+Similarily, if you do not want to see the line number, turn it off with `M-x: line-number-mode`
+
 ### Screenshots (using [N Λ N O theme](https://github.com/rougier/nano-theme)):
 
 ![](images/nano-modeline.png)
