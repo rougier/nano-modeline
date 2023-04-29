@@ -358,8 +358,8 @@ made DEFAULT."
 (defun nano-modeline-org-agenda-date (&optional format)
   "Date at point in org agenda  using given FORMAT"
 
-  (when-let* ((day (or (org-get-at-bol 'day)
-                       (org-get-at-bol 'ts-date)))
+  (when-let* ((day (or (org-get-at-bol 'ts-date)
+                       (org-get-at-bol 'day)))
               (date (calendar-gregorian-from-absolute day))
               (day (nth 1 date))
               (month (nth 0 date))
