@@ -185,20 +185,26 @@ using the given FACE-PREFIX as the default."
                 'display `(space :align-to (- right ,(length right))))
               right))))
 
-(defun nano-modeline-header (left &optional right)
-  "Install a header line made of LEFT and RIGHT parts."
+(defun nano-modeline-header (left &optional right default)
+  "Install a header line made of LEFT and RIGHT parts. Line can be
+made DEFAULT."
 
   (set-face-attribute 'mode-line nil :height 0.1 :box nil)
   (set-face-attribute 'mode-line-inactive nil :height 0.1 :box nil)
   (setq-default mode-line-format "")
-  (setq-local header-line-format (nano-modeline--make left right 'header))
+  (if default
+      (setq-default header-line-format (nano-modeline--make left right 'header))
+    (setq-local header-line-format (nano-modeline--make left right 'header)))
   (face-remap-set-base 'header-line 'nano-modeline--empty-face)
   (add-hook 'post-command-hook #'nano-modeline--update-selected-window))
 
-(defun nano-modeline-footer (left &optional right)
-  "Install a footer line made of LEFT and RIGHT parts."
+(defun nano-modeline-footer (left &optional right default)
+  "Install a footer line made of LEFT and RIGHT parts. Line can be
+made DEFAULT."
 
-  (setq-local mode-line-format (nano-modeline--make left right 'header))
+  (if default
+      (setq-default mode-line-format (nano-modeline--make left right 'header))
+    (setq-local mode-line-format (nano-modeline--make left right 'header)))
   (setq-default header-line-format nil)
   (face-remap-set-base 'mode-line 'nano-modeline--empty-face)
   (face-remap-set-base 'mode-line-inactive 'nano-modeline-empty-face)
@@ -420,25 +426,27 @@ using the given FACE-PREFIX as the default."
                       (substring-no-properties (org-capture-get :description)))
               'face (nano-modeline--face)))
 
-(defun nano-modeline-prog-mode ()
-  "Nano line for prog mode"
+(defun nano-modeline-prog-mode (&optional default)
+  "Nano line for prog mode. Can be made DEFAULT mode."
   
   (funcall nano-modeline-position
             '((nano-modeline-buffer-status) " "
               (nano-modeline-buffer-name) " "
               (nano-modeline-git-info))
             '((nano-modeline-cursor-position)
-              (nano-modeline-window-dedicated))))
+              (nano-modeline-window-dedicated))
+            default))
 
-(defun nano-modeline-text-mode ()
-  "Nano line for text mode"
+(defun nano-modeline-text-mode (&optional default)
+  "Nano line for text mode. Can be made DEFAULT mode."
 
   (funcall nano-modeline-position
            '((nano-modeline-buffer-status) " "
              (nano-modeline-buffer-name) " "
              (nano-modeline-git-info))
            '((nano-modeline-cursor-position)
-             (nano-modeline-window-dedicated))))
+             (nano-modeline-window-dedicated))
+           default))
 
 (defun nano-modeline-org-mode ()
   "Nano line for org mode"
@@ -545,17 +553,3 @@ using the given FACE-PREFIX as the default."
 (provide 'nano-modeline)
 ;;; nano-modeline.el ends here
 
-
-;; (add-hook 'prog-mode-hook            #'nano-modeline-prog-mode)
-;; (add-hook 'text-mode-hook            #'nano-modeline-text-mode)
-;; (add-hook 'org-mode-hook             #'nano-modeline-org-mode)
-;; (add-hook 'pdf-view-mode-hook        #'nano-modeline-pdf-mode)
-;; (add-hook 'mu4e-headers-mode-hook    #'nano-modeline-mu4e-headers-mode)
-;; (add-hook 'mu4e-view-mode-hook       #'nano-modeline-mu4e-message-mode)
-;; (add-hook 'elfeed-show-mode-hook     #'nano-modeline-elfeed-entry-mode)
-;; (add-hook 'elfeed-search-mode-hook   #'nano-modeline-elfeed-search-mode)
-;; (add-hook 'term-mode-hook            #'nano-modeline-term-mode)
-;; (add-hook 'xwidget-webkit-mode-hook  #'nano-modeline-xwidget-mode)
-;; (add-hook 'messages-buffer-mode-hook #'nano-modeline-message-mode)
-;; (add-hook 'org-capture-mode-hook     #'nano-modeline-org-capture-mode)
-;; (add-hook 'org-agenda-mode-hook      #'nano-modeline-org-agenda-mode)
