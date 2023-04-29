@@ -1,22 +1,8 @@
 ## N Λ N O Modeline
 
-Nano modeline is a minor mode for GNU/Emacs that modify the modeline as:
-
-`[ status | name (primary)                               secondary ]`
-
-It can be displayed at the bottom (mode-line) or at the top (header-line)
+Nano modeline is a an alterntive to the GNU/Emacs modeline. It can be
+displayed at the bottom (mode-line) or at the top (header-line)
 depending on nano-modeline-position custom setting.
-
-There are two sets of faces (for active and inactive modelines) that
-can be customized (M-x: customize-group + nano-modeline)
-
-- `nano-modeline-active`           / `nano-modeline-inactive`
-- `nano-modeline-active-name`      / `nano-modeline-inactive-name`
-- `nano-modeline-active-primary`   / `nano-modeline-inactive-primary`
-- `nano-modeline-active-secondary` / `nano-modeline-inactive-secondary`
-- `nano-modeline-active-status-RO` / `nano-modeline-inactive-status-RO`
-- `nano-modeline-active-status-RW` / `nano-modeline-inactive-status-RW`
-- `nano-modeline-active-status-**` / `nano-modeline-inactive-status-**`
 
 ### Installation
 
@@ -24,13 +10,22 @@ Install with `M-: (package-install 'nano-modeline)`
 
 ### Usage example:
 
-Activate with ` M-x: nano-modeline-mode`
+```emacs-lisp
+(add-hook 'prog-mode-hook            #'nano-modeline-prog-mode)
+(add-hook 'text-mode-hook            #'nano-modeline-text-mode)
+(add-hook 'org-mode-hook             #'nano-modeline-org-mode)
+(add-hook 'pdf-view-mode-hook        #'nano-modeline-pdf-mode)
+(add-hook 'mu4e-headers-mode-hook    #'nano-modeline-mu4e-headers-mode)
+(add-hook 'mu4e-view-mode-hook       #'nano-modeline-mu4e-message-mode)
+(add-hook 'elfeed-show-mode-hook     #'nano-modeline-elfeed-entry-mode)
+(add-hook 'elfeed-search-mode-hook   #'nano-modeline-elfeed-search-mode)
+(add-hook 'term-mode-hook            #'nano-modeline-term-mode)
+(add-hook 'xwidget-webkit-mode-hook  #'nano-modeline-xwidget-mode)
+(add-hook 'messages-buffer-mode-hook #'nano-modeline-message-mode)
+(add-hook 'org-capture-mode-hook     #'nano-modeline-org-capture-mode)
+(add-hook 'org-agenda-mode-hook      #'nano-modeline-org-agenda-mode)
+```
 
-### Configure column and line numbers
-
-Emacs comes with `column-number-mode` off by default.  
-If you would like to see the column number, turn it on with `M-x: column-number-mode`  
-Similarily, if you do not want to see the line number, turn it off with `M-x: line-number-mode`
 
 ### Screenshots (using [N Λ N O theme](https://github.com/rougier/nano-theme)):
 
