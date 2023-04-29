@@ -262,20 +262,20 @@ made DEFAULT."
      (format-mode-line "(%l lines)")
      'face (nano-modeline--face))))
 
-(defun nano-modeline-window-dedicated ()
+(defun nano-modeline-window-dedicated (&optional symbol)
   "Pin symbol when window is dedicated"
   
-  (propertize (if (window-dedicated-p) " " "")
+  (propertize (if (window-dedicated-p) (or symbol " ") "")
               'face (nano-modeline--face)))
 
-(defun nano-modeline-git-info ()
+(defun nano-modeline-git-info (&optional symbol)
   "Git information as (branch, file status)"
   
   (if vc-mode
       (when-let* ((file (buffer-file-name))
                   (branch (substring-no-properties vc-mode 5))
                   (state (vc-state file)))
-        (propertize (format "(%s, %s)" branch state)
+        (propertize (format "(%s%s, %s)" (or symbol " ") branch state)
                     'face (nano-modeline--face)))
     (propertize "" 'face (nano-modeline--face))))
 
