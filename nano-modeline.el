@@ -104,24 +104,43 @@
                  (const :tag "Bottom" nano-modeline-footer))
   :group 'nano-modeline)
 
+(defface nano-modeline-active
+  `((t (:foreground ,(face-foreground 'default)
+        :background ,(face-background 'header-line nil t)
+        :box (:line-width 1 :color ,(face-background 'default)))))
+    "Face for when line is active")
+
+(defface nano-modeline-inactive
+  `((t (:inherit (,(when (facep 'nano-faded) 'nano-faded)
+                  nano-modeline-active))))
+  "Face for when line is inactive")
+
+(defface nano-modeline-status
+  `((t (:foreground ,(face-background 'default)
+        :background ,(face-foreground 'shadow nil t)
+        :inherit bold)))
+  "Face for line status")
 
 ;; Nano line faces
 (defcustom nano-modeline-faces
-  '((header-active      . (nano-subtle :box (:line-width 1 :color "white")))
-    (header-inactive    . (nano-subtle nano-faded :box (:line-width 1 :color "white")))
-    (footer-active      . (nano-default :overline t))
-    (footer-inactive    . (nano-faded :overline t))
+  `((header-active      . (nano-modeline-active))
+    (header-inactive    . (nano-modeline-inactive))
+    (footer-active      . (nano-modeline-active))
+    (footer-inactive    . (nano-modeline-inactive))
+    (status-RW-active   . (nano-modeline-status))
+    (status-RO-active   . (nano-modeline-status))
+    (status-**-active   . (nano-modeline-status
+                           ,(when (facep 'nano-popout-i) 'nano-popout-i)))
     (bold-active        . (bold))
-    (status-**-active   . (bold nano-popout-i))
-    (status-**-inactive . (nano-faded))
-    (status-RW-active   . (bold nano-faded-i))
-    (status-RO-active   . (bold nano-default-i)))
+    (faded-active       . (,(if (facep 'nano-faded) 'nano-faded 'default))))
   "Nano line faces"
-  :type '(alist :key-type symbol :value-type sexp))
+  :type '(alist :key-type (symbol :tag "Face")
+                :value-type (repeat :tag "inherits" face)))
 
 (defface nano-modeline--empty-face
-  `((t  (:foreground ,(face-foreground 'default))))
-  "Empty face for resetting mode-line / header-line.")
+  `((t (:foreground ,(face-foreground 'default))))
+  "Empty face for resetting mode-line / header-line."
+  :group nil)
 
 (defvar nano-modeline--selected-window nil
   "Selected window before mode-line was activated.")
@@ -140,7 +159,7 @@
          (face (cdr (assoc state nano-modeline-faces))))
     face))
 
-(defun nano-modeline--face (&optional face-prefix)
+(defun nano-modeline-face (&optional face-prefix)
   "Return the face for FACE-PREFIX according to current active state and
 make it inherit the base face."
 
@@ -189,9 +208,6 @@ using the given FACE-PREFIX as the default."
   "Install a header line made of LEFT and RIGHT parts. Line can be
 made DEFAULT."
 
-  (set-face-attribute 'mode-line nil :height 0.1 :box nil)
-  (set-face-attribute 'mode-line-inactive nil :height 0.1 :box nil)
-  (setq-default mode-line-format "")
   (if default
       (setq-default header-line-format (nano-modeline--make left right 'header))
     (setq-local header-line-format (nano-modeline--make left right 'header)))
@@ -205,7 +221,6 @@ made DEFAULT."
   (if default
       (setq-default mode-line-format (nano-modeline--make left right 'header))
     (setq-local mode-line-format (nano-modeline--make left right 'header)))
-  (setq-default header-line-format nil)
   (face-remap-set-base 'mode-line 'nano-modeline--empty-face)
   (face-remap-set-base 'mode-line-inactive 'nano-modeline-empty-face)
   (add-hook 'post-command-hook #'nano-modeline--update-selected-window))
@@ -217,7 +232,7 @@ made DEFAULT."
    (cond (name                name)
          ((buffer-narrowed-p) (format"%s [narrow]" (buffer-name)))
          (t                   (buffer-name)))
-   'face (nano-modeline--face 'bold)))
+   'face (nano-modeline-face 'bold)))
 
 (defun nano-modeline-buffer-status (&optional status padding)
   "Generic prefix to indicate buffer STATUS with vertical PADDING (top . bottom)"
@@ -227,13 +242,13 @@ made DEFAULT."
          (bot (propertize " " 'display `(raise ,(- (cdr padding))))))
     (cond (buffer-read-only
            (propertize (concat top (or status "RO") bot)
-                       'face (nano-modeline--face 'status-RO)))
+                       'face (nano-modeline-face 'status-RO)))
           ((buffer-modified-p)
            (propertize (concat top (or status "**") bot)
-                       'face (nano-modeline--face 'status-**)))
+                       'face (nano-modeline-face 'status-**)))
           (t
            (propertize (concat top (or status "RW") bot)
-                       'face (nano-modeline--face 'status-RW))))))
+                       'face (nano-modeline-face 'status-RW))))))
 
 (defun nano-modeline-file-size ()
   "File size in human readable format"
@@ -243,7 +258,7 @@ made DEFAULT."
             (file-size (file-attribute-size file-attributes))
             (file-size (file-size-human-readable file-size)))
       (propertize (format "(%s)" file-size)
-                  'face (nano-modeline--face))
+                  'face (nano-modeline-face))
     ""))
 
 (defun nano-modeline-cursor-position (&optional format)
@@ -251,7 +266,7 @@ made DEFAULT."
 
   (let ((format (or format "%l:%c ")))
     (propertize (format-mode-line format)
-                'face (nano-modeline--face))))
+                'face (nano-modeline-face 'faded))))
 
 (defun nano-modeline-buffer-line-count ()
   "Buffer total number of lines"
@@ -260,13 +275,13 @@ made DEFAULT."
     (goto-char (point-max))
     (propertize     
      (format-mode-line "(%l lines)")
-     'face (nano-modeline--face))))
+     'face (nano-modeline-face))))
 
 (defun nano-modeline-window-dedicated (&optional symbol)
   "Pin symbol when window is dedicated"
   
   (propertize (if (window-dedicated-p) (or symbol " ") "")
-              'face (nano-modeline--face)))
+              'face (nano-modeline-face)))
 
 (defun nano-modeline-git-info (&optional symbol)
   "Git information as (branch, file status)"
@@ -276,13 +291,13 @@ made DEFAULT."
                   (branch (substring-no-properties vc-mode 5))
                   (state (vc-state file)))
         (propertize (format "(%s%s, %s)" (or symbol " ") branch state)
-                    'face (nano-modeline--face)))
-    (propertize "" 'face (nano-modeline--face))))
+                    'face (nano-modeline-face)))
+    (propertize "" 'face (nano-modeline-face))))
 
 (defun nano-modeline-mu4e-search-filter ()
   "Mu4e current search"
   
-  (propertize (mu4e-last-query) 'face (nano-modeline--face 'bold)))
+  (propertize (mu4e-last-query) 'face (nano-modeline-face 'bold)))
 
 (defun nano-modeline-mu4e-context ()
   "Mu4e current context"
@@ -290,21 +305,21 @@ made DEFAULT."
   (let* ((context (mu4e-context-current))
          (name (if context (mu4e-context-name context) "none")))
     (propertize (format "[%s] " name)
-                'face (nano-modeline--face))))
+                'face (nano-modeline-face))))
 
 (defun nano-modeline-mu4e-message-subject ()
   "Mu4e message subject"
   
   (let* ((msg (mu4e-message-at-point))
          (subject (mu4e-message-field msg :subject)))
-    (propertize (format "%s" subject)  'face (nano-modeline--face 'bold))))
+    (propertize (format "%s" subject)  'face (nano-modeline-face 'bold))))
 
 (defun nano-modeline-mu4e-message-date ()
   "Mu4e message date"
   
   (let* ((msg (mu4e-message-at-point))
          (date (mu4e-message-field msg :date)))
-    (propertize (format-time-string " %d/%m " date) 'face (nano-modeline--face))))
+    (propertize (format-time-string " %d/%m " date) 'face (nano-modeline-face))))
  
 (defun nano-modeline-pdf-page ()
   "PDF view mode page number / page total"
@@ -312,7 +327,7 @@ made DEFAULT."
   (let ((page-current (image-mode-window-get 'page))
         (page-total (pdf-cache-number-of-pages)))
     (propertize (format "%d/%d " page-current page-total)
-                'face (nano-modeline--face))))
+                'face (nano-modeline-face))))
 
 (defun nano-modeline-elfeed-entry-status ()
   "Elfeed entry status"
@@ -325,7 +340,7 @@ made DEFAULT."
   "Elfeed entry title"
   
   (let* ((title (elfeed-entry-title elfeed-show-entry)))
-    (propertize title 'face (nano-modeline--face 'bold))))
+    (propertize title 'face (nano-modeline-face 'bold))))
 
 (defun nano-modeline-elfeed-search-filter ()
   "Elfeed search filter"
@@ -339,7 +354,7 @@ made DEFAULT."
      (cond (elfeed-search-filter-active "")
            ((string-match-p "[^ ]" elfeed-search-filter) elfeed-search-filter)
            (t "")))
-   'face (nano-modeline--face 'bold)))
+   'face (nano-modeline-face 'bold)))
 
 (defun nano-modeline-elfeed-search-count ()
   "Elfeed search statistics"
@@ -347,13 +362,13 @@ made DEFAULT."
   (propertize (cond ((zerop (elfeed-db-last-update)) "")
                     ((> (elfeed-queue-count-total) 0) "")
                     (t (concat (elfeed-search--count-unread) " ")))
-   'face (nano-modeline--face)))
+   'face (nano-modeline-face)))
 
 (defun nano-modeline-date (&optional date format)
   "Date using given FORMAT and DATE"
 
   (propertize (format-time-string (or format "%A %-e %B %Y") date) 
-              'face (nano-modeline--face)))
+              'face (nano-modeline-face)))
 
 (defun nano-modeline-org-agenda-date (&optional format)
   "Date at point in org agenda  using given FORMAT"
@@ -366,13 +381,13 @@ made DEFAULT."
               (year (nth 2 date))
               (date (encode-time 0 0 0 day month year)))
     (propertize (format-time-string (or format "%A %-e %B %Y") date) 
-                'face (nano-modeline--face))))
+                'face (nano-modeline-face))))
 
 (defun nano-modeline-term-shell-name ()
   "Term shell name"
 
   (propertize shell-file-name
-              'face (nano-modeline--face 'bold)))
+              'face (nano-modeline-face 'bold)))
 
 (defun nano-modeline-term-shell-mode ()
   "Term shell mode"
@@ -380,9 +395,17 @@ made DEFAULT."
   (propertize (if (term-in-char-mode)
                   "(char mode)"
                 "(line mode)")
-               'face (nano-modeline--face)))
+               'face (nano-modeline-face)))
 
-(defun nano-modeline-term-directory (&optional max-length)
+(defun nano-modeline-eat-shell-mode ()
+  "Eat shell mode"
+  
+  (propertize (if eat--char-mode
+                  "(char mode)"
+                "(line mode)")
+               'face (nano-modeline-face)))
+
+(defun nano-modeline-default-directory (&optional max-length)
   "Term current directory"
   
   (let* ((max-length (or max-length 32))
@@ -396,13 +419,13 @@ made DEFAULT."
       (setq path (cdr path)))
     (when path
       (setq output (concat "…/" output)))
-    (propertize output 'face (nano-modeline--face))))
+    (propertize output 'face (nano-modeline-face))))
 
 (defun nano-modeline-xwidget-uri ()
   "xwidget URI"
   
   (propertize (xwidget-webkit-uri (xwidget-at (point-min)))
-              'face (nano-modeline--face 'bold)))
+              'face (nano-modeline-face 'bold)))
 
 (defun nano-modeline-org-buffer-name (&optional name)
   "Org buffer name"
@@ -417,14 +440,14 @@ made DEFAULT."
                    (or (org-get-heading 'no-tags) "-")))))
           (t
            (buffer-name)))
-   'face (nano-modeline--face 'bold)))
+   'face (nano-modeline-face 'bold)))
 
 (defun nano-modeline-org-capture-description ()
   "Org capture descrioption"
   
   (propertize (format "(%s)"
                       (substring-no-properties (org-capture-get :description)))
-              'face (nano-modeline--face)))
+              'face (nano-modeline-face)))
 
 (defun nano-modeline-prog-mode (&optional default)
   "Nano line for prog mode. Can be made DEFAULT mode."
@@ -510,7 +533,17 @@ made DEFAULT."
            '((nano-modeline-buffer-status ">_") " "
              (nano-modeline-term-shell-name) " "
              (nano-modeline-term-shell-mode))
-           '((nano-modeline-term-directory) " "
+           '((nano-modeline-default-directory) " "
+             (nano-modeline-window-dedicated))))
+
+(defun nano-modeline-eat-mode ()
+  "Nano line for term mode"
+
+  (funcall nano-modeline-position
+           '((nano-modeline-buffer-status ">_") " "
+             (nano-modeline-term-shell-name) " "
+             (nano-modeline-eat-shell-mode))
+           '((nano-modeline-default-directory) " "
              (nano-modeline-window-dedicated))))
 
 (defun nano-modeline-xwidget-mode ()
