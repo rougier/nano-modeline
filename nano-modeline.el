@@ -385,6 +385,20 @@ made DEFAULT."
                     (t (concat (elfeed-search--count-unread) " ")))
    'face (nano-modeline-face)))
 
+(defun nano-modeline-elpher-protocol ()
+  "Elpher protocol"
+  
+  (propertize (format "(%s)"
+   (elpher-address-protocol (elpher-page-address elpher-current-page)))
+   'face (nano-modeline-face)))
+
+(defun nano-modeline-elpher-title ()
+  "Elpher protocol"
+
+  (propertize
+   (elpher-page-display-string elpher-current-page)
+   'face (nano-modeline-face 'bold)))
+
 (defun nano-modeline-date (&optional date format)
   "Date using given FORMAT and DATE"
 
@@ -491,6 +505,17 @@ made DEFAULT."
            '((nano-modeline-cursor-position)
              (nano-modeline-window-dedicated))
            default))
+
+(defun nano-modeline-elpher-mode ()
+  "Nano line for elpher mode"
+
+  (setq elpher-use-header nil)
+  (funcall nano-modeline-position
+           '((nano-modeline-buffer-status "GEM") " "
+             (nano-modeline-elpher-title) " "
+             (nano-modeline-elpher-protocol))
+           '((nano-modeline-cursor-position)
+             (nano-modeline-window-dedicated))))
 
 (defun nano-modeline-org-mode ()
   "Nano line for org mode"
