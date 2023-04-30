@@ -211,10 +211,16 @@ using the given FACE-PREFIX as the default."
                      (concat (truncate-string-to-width left left-max-size)
                              (propertize "…" 'face `(:inherit  ,nano-modeline-base-face)))
                    left)))
-      (concat left
+      (concat (propertize " "
+                'display `(space :align-to (+ left-margin
+                                              (0.0 . left-fringe)
+                                              (1.0 . left-margin))))
+              left
               (propertize " "
                 'face `(:inherit ,nano-modeline-base-face)
-                'display `(space :align-to (- right ,(length right))))
+                'display `(space :align-to (- right
+                                              (-1.0 . right-fringe)
+                                              ,(length right))))
               right))))
 
 (defun nano-modeline-header (left &optional right default)
