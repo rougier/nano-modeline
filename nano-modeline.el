@@ -92,7 +92,7 @@
   :group 'nano)
 
 (defcustom nano-modeline-padding '(0.20 . 0.25)
-  "Default vertical space adjustment"
+  "Default vertical space adjustment (in fraction of character height)"
   :type '(cons (float :tag "Top spacing")
                (float :tag "Bottom spacing"))
   :group 'nano-modeline)
@@ -132,7 +132,7 @@
     (status-**-active   . (nano-modeline-status
                            ,(when (facep 'nano-popout-i) 'nano-popout-i)))
     (bold-active        . (bold))
-    (faded-active       . (,(if (facep 'nano-faded) 'nano-faded 'default))))
+    (faded-active       . (,(when (facep 'nano-faded) 'nano-faded))))
   "Nano line faces"
   :type '(alist :key-type (symbol :tag "Face")
                 :value-type (repeat :tag "inherits" face)))
