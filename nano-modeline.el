@@ -206,20 +206,22 @@ using the given FACE-PREFIX as the default."
                      (apply (car element) (cdr element))))
                    ',right))
            (width (window-width))
+           (fringe (if fringes-outside-margins 0.0 -1.0))
            (left-max-size (- width (length right) 2))
            (left (if (> (length left) left-max-size)
                      (concat (truncate-string-to-width left left-max-size)
                              (propertize "…" 'face `(:inherit  ,nano-modeline-base-face)))
                    left)))
       (concat (propertize " "
-                'display `(space :align-to (+ left-margin
-                                              (0.0 . left-fringe)
-                                              (1.0 . left-margin))))
+                'display `(space :align-to (+ left
+                                              (,fringe . left-fringe)
+                                              ( 0.0 . left-margin))))
               left
               (propertize " "
                 'face `(:inherit ,nano-modeline-base-face)
                 'display `(space :align-to (- right
-                                              (-1.0 . right-fringe)
+                                              (,fringe . right-fringe)
+                                              ( 0.0 . right-margin)
                                               ,(length right))))
               right))))
 
