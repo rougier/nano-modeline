@@ -2,7 +2,12 @@
 
 Nano modeline is a an alterntive to the GNU/Emacs modeline. It can be
 displayed at the bottom (mode-line) or at the top (header-line)
-depending on nano-modeline-position custom setting.
+depending on nano-modeline-position custom setting. There are several
+modelines that can be installed on a per-mode basis or be made the
+default one. Currently, only the prog and text mode are generic enough
+to be made the default.
+
+You can also design your own modeline using the various elements composing a modeline. See sources for several example.
 
 ### Installation
 
@@ -26,24 +31,18 @@ Install with `M-: (package-install 'nano-modeline)`
 (add-hook 'org-agenda-mode-hook      #'nano-modeline-org-agenda-mode)
 ```
 
+To make a specific mode the default one, you can type:
+
+```emacs-lisp
+(nano-modeline-text-mode t)
+```
+
+Currently, only the prog and text mode are generic enough to be made the
+default.
+
 
 ### Screenshots (using [N Λ N O theme](https://github.com/rougier/nano-theme)):
 
 ![](images/nano-modeline.png)
-![](images/nano-modeline-light.png)
-![](images/nano-modeline-dark.png)
-
-![](images/nano-modeline-RW-focused.png)
-![](images/nano-modeline-RW-unfocused.png)
-![](images/nano-modeline-RO-focused.png)
-![](images/nano-modeline-RO-unfocused.png)
-![](images/nano-modeline-MD-focused.png)
-![](images/nano-modeline-MD-unfocused.png)
-![](images/nano-modeline-mail.png)
-![](images/nano-modeline-term.png)
-![](images/nano-modeline-elfeed.png)
-![](images/nano-modeline-deft.png)
-![](images/nano-modeline-docview.png)
-![](images/nano-modeline-agenda.png)
 
 

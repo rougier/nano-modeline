@@ -24,9 +24,20 @@
 ;; see <https://www.gnu.org/licenses/>.
 
 ;;; Commentary:
-;; 
+;;
+;; Nano modeline is a an alterntive to the GNU/Emacs modeline. It can
+;; be displayed at the bottom (mode-line) or at the top (header-line)
+;; depending on the nano-modeline-position custom setting. There are
+;; several modelines that can be installed on a per-mode basis or as
+;; the default one.
 ;;
 ;; Usage example:
+;;
+;; Install prog mode modeline:
+;; (add-hook 'prog-mode-hook #'nano-modeline-prog-mode)
+;;
+;; Make text mode modeline the default:
+;; (nano-modeline-text-mode t)
 ;;
 ;;
 ;;; NEWS:
@@ -133,7 +144,9 @@
                            ,(when (facep 'nano-popout-i) 'nano-popout-i)))
     (bold-active        . (bold))
     (faded-active       . (,(when (facep 'nano-faded) 'nano-faded))))
-  "Nano line faces"
+  "Nano line faces.
+
+Each face defined here is used by the modeline depending on the current state (active / inactive). It is ok to define a face for a single state. In such case, the alternative state will use defaults."
   :type '(alist :key-type (symbol :tag "Face")
                 :value-type (repeat :tag "inherits" face)))
 
