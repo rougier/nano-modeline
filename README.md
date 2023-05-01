@@ -1,13 +1,16 @@
 ## N Λ N O Modeline
 
 Nano modeline is a an alterntive to the GNU/Emacs modeline. It can be
-displayed at the bottom (mode-line) or at the top (header-line)
-depending on nano-modeline-position custom setting. There are several
-modelines that can be installed on a per-mode basis or be made the
-default one. Currently, only the prog and text mode are generic enough
-to be made the default.
+displayed at the bottom (mode-line) or at the top (header-line). It is
+roughly organized as:
 
-You can also design your own modeline using the various elements composing a modeline. See sources for several example.
+`[ status | name (primary)                               secondary ]`
+
+There are several modelines that can be installed on a per-mode basis
+or be made the default one. Currently, only the prog and text mode are
+generic enough to be made the default. You can also design your own
+modeline using the various elements composing a modeline. See sources
+for several example.
 
 ### Installation
 
