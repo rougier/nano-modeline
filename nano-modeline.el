@@ -44,6 +44,7 @@
 ;;
 ;; Version 1.0.0
 ;; - Complete rewrite to make it simpler & faster
+;; - API break: No longer a minor mode
 ;;
 ;; Version 0.7.2
 ;; - Fix a bug in info mode (breadcrumbs)
@@ -131,6 +132,40 @@
         :background ,(face-foreground 'shadow nil t)
         :inherit bold)))
   "Face for line status")
+
+(defface nano-modeline-button-active-face
+  `((t :foreground ,(face-foreground 'default)
+       :background ,(face-background 'default)
+       :family "Roboto Mono"
+       :box (:line-width 2
+             :color ,(face-foreground 'default)
+             :style none)))
+  "Active button face")
+
+(defface nano-modeline-button-inactive-face
+  `((t :foreground ,(face-foreground (when (facep 'nano-faded) 'nano-faded 'default))
+       :background ,(face-background 'header-line nil t)
+       :family "Roboto Mono"
+       :box (:line-width 2
+             :color ,(face-foreground 'default)
+             :style none)))
+  "Inactive button face.")
+
+(defface nano-modeline-button-highlight-face
+  `((t :foreground ,(face-background 'default)
+       :background ,(face-foreground 'default)
+       :family "Roboto Mono"
+       :weight bold))
+  "Highlight button face.")
+
+(defun nano-modeline--stroke-width (face)
+  "Extract the line width of the box for the given FACE."
+  
+  (let* ((box (face-attribute face ':box nil 'default))
+         (width (plist-get box ':line-width)))
+      (cond ((integerp width) width)
+            ((consp width) (car width))
+            (t 0))))
 
 ;; Nano line faces
 (defcustom nano-modeline-faces
@@ -226,6 +261,109 @@ using the given FACE-PREFIX as the default."
                                               ,(length right))))
               right))))
 
+
+
+(defun nano-modeline--stroke-color (face)
+  "Extract the line color of the box for the given FACE."
+  
+  (let* ((box (face-attribute face ':box))
+         (color (plist-get box ':color)))
+    (cond ((stringp color) color)
+          (t (face-foreground face nil 'default)))))
+
+(defun nano-modeline--make-text-button (label face)
+  "Make a text button from LABEL and FACE"
+
+  (let* ((foreground (face-foreground face nil 'default))
+         (background (face-background face nil 'default))
+         (label (concat " " label " "))
+         ;; We compensate the footer padding with an irregular outer
+         ;; box around label (vertical border with a default
+         ;; background color). If this is not made the background color
+         ;; is the height of the modeline which is not very aesthetic.
+         (padding (floor (/ (* (frame-char-height)
+                               (+ (car nano-modeline-padding)
+                                  (cdr nano-modeline-padding))) 2)))
+         (padding (+ padding 0))
+         (window (get-buffer-window (current-buffer)))
+         (active (eq window nano-modeline--selected-window))
+         (face (if active
+                   'nano-modeline-active
+                 'nano-modeline-inactive)))
+    (propertize label
+                'face `(:inherit ,face
+                        :foreground ,foreground
+                        :background ,background))))
+
+(defun nano-modeline--make-svg-button (label face)
+  "Make a svg button from LABEL and FACE"
+
+  (require 'svg-lib)
+  (let ((foreground (face-foreground face nil 'default))
+        (background (face-background face nil 'default))
+        (weight (face-attribute face ':weight nil 'default))
+        (stroke (nano-modeline--stroke-width face))
+        (family (face-attribute face ':family nil 'default)))
+    (propertize (concat label " ")
+                'display (svg-lib-tag label nil :foreground foreground
+                                                :background background
+                                                :font-weight weight
+                                                :font-family family
+                                                :stroke stroke
+                                                :padding 1
+                                                :margin 0))))
+
+(defun nano-modeline--make-button (button &optional use-svg)
+  "Make a button from a BUTTON decription. When USE-SVG is t and
+svg-lib is installed, result is a SVG button else, it is a text
+button."
+
+  (let* ((label (plist-get button :label))
+         (state (plist-get button :state))
+         (hook (plist-get button :hook))
+         (window (get-buffer-window (current-buffer)))
+         (active (eq window nano-modeline--selected-window))         
+         (face (cond ((not active)          'nano-modeline-button-inactive-face)
+                     ((eq state 'highlight) 'nano-modeline-button-highlight-face)
+                     ((eq state 'inactive)  'nano-modeline-button-inactive-face)
+                     (t                     'nano-modeline-button-active-face)))
+         (button (if (and use-svg (package-installed-p 'svg-lib))
+                     (nano-modeline--make-svg-button label face)
+                   (nano-modeline--make-text-button label face))))
+    (propertize button
+                'pointer 'hand
+                'label label
+                'keymap (let ((map (make-sparse-keymap)))
+                          (define-key map [header-line mouse-1] hook)
+                          (define-key map [mode-line mouse-1] hook)
+                          map)
+                'help-echo `(lambda (window object pos)
+                              (nano-modeline--update-button-state ,label 'highlight)))))
+
+(defun nano-modeline--reset-button-state (&rest args)
+  "Reset the state of all the buttons."
+
+  (when (boundp 'nano-modeline--buttons)
+    (dolist (button nano-modeline--buttons)
+      (unless (eq (plist-get button :state) 'inactive)
+        (plist-put button :state 'active))))
+  (force-mode-line-update))
+
+(defun nano-modeline--update-button-state (label state)
+  "Update the state of the button LABEL with new STATE and update
+other button states."
+
+  (let* ((window (get-buffer-window (current-buffer)))
+         (active (eq window nano-modeline--selected-window)))
+    
+    (when (and active (boundp 'nano-modeline--buttons))
+      (dolist (button nano-modeline--buttons)
+        (unless (eq (plist-get button :state) 'inactive)
+          (if (string-equal (plist-get button :label) label)
+              (plist-put button :state state)
+            (plist-put button :state 'active)))))
+    (force-mode-line-update)))
+
 (defun nano-modeline-header (left &optional right default)
   "Install a header line made of LEFT and RIGHT parts. Line can be
 made DEFAULT."
@@ -233,6 +371,9 @@ made DEFAULT."
   (if default
       (setq-default header-line-format (nano-modeline--make left right 'header))
     (setq-local header-line-format (nano-modeline--make left right 'header)))
+  (make-local-variable 'nano-modeline--buttons)
+  (setq nano-modeline--buttons nil)
+  (advice-add 'tooltip-hide :before #'nano-modeline--reset-button-state)
   (face-remap-set-base 'header-line 'nano-modeline--empty-face)
   (add-hook 'post-command-hook #'nano-modeline--update-selected-window))
 
@@ -243,6 +384,9 @@ made DEFAULT."
   (if default
       (setq-default mode-line-format (nano-modeline--make left right 'header))
     (setq-local mode-line-format (nano-modeline--make left right 'header)))
+  (make-local-variable 'nano-modeline--buttons)
+  (setq nano-modeline--buttons nil)
+  (advice-add 'tooltip-hide :before #'nano-modeline--reset-button-state)
   (face-remap-set-base 'mode-line 'nano-modeline--empty-face)
   (face-remap-set-base 'mode-line-inactive 'nano-modeline-empty-face)
   (add-hook 'post-command-hook #'nano-modeline--update-selected-window))
@@ -271,6 +415,30 @@ made DEFAULT."
           (t
            (propertize (concat top (or status "RW") bot)
                        'face (nano-modeline-face 'status-RW))))))
+
+
+(defun nano-modeline-buttons (buttons &optional use-svg)
+  "Clickable BUTTONS in text or svg mode depending on USE-SVG. BUTTONS is a list of cons (label. hook) where hook is an interactive dunction that is called when the button is clicked. If you want to have button highlight when the mouse hovers a button, tooltip mode needs to be active and tooltip delay needs to be  set to 0"
+  
+  (unless (and (boundp 'nano-modeline--buttons)
+               nano-modeline--buttons)
+    (make-local-variable 'nano-modeline--buttons)
+    (setq nano-modeline--buttons (mapcar (lambda (button)
+                                           (list ':label (car button)
+                                                 ':state 'active
+                                                 ':hook (cdr button)))
+                                         buttons)))
+  (let* ((buttons nano-modeline--buttons)
+         (buttons (if (and use-svg (package-installed-p 'svg-lib))
+                      (mapconcat (lambda (button)
+                                   (nano-modeline--make-button button t))
+                                 buttons (propertize " " 'face (nano-modeline-face)))
+                    (mapconcat (lambda (button)
+                                 (nano-modeline--make-button button nil))
+                               buttons (propertize " " 'face (nano-modeline-face))))))
+    (if use-svg
+        (propertize buttons 'face (nano-modeline-face))
+      buttons)))
 
 (defun nano-modeline-file-size ()
   "File size in human readable format"
@@ -479,6 +647,14 @@ made DEFAULT."
           (t
            (buffer-name)))
    'face (nano-modeline-face 'name)))
+
+(defun nano-modeline-org-outline-path ()
+  "Org outline path"
+  
+  (let ((path (org-with-point-at (org-get-at-bol 'org-marker)
+                (org-display-outline-path nil nil " » " t))))
+    (propertize (substring-no-properties path)
+                'face (nano-modeline-face 'name))))
 
 (defun nano-modeline-org-capture-description ()
   "Org capture descrioption"
