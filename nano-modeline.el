@@ -790,13 +790,15 @@ made DEFAULT."
 
 (defun nano-modeline-org-capture-mode ()
   "Nano line for org capture mode"
-  
-  (funcall nano-modeline-position
-            '((nano-modeline-buffer-status "ORG") " "
-              (nano-modeline-buffer-name "Capture") " "
-              (nano-modeline-org-capture-description))
-            '("Finish: C-c C-c, refile: C-c C-w, cancel: C-c C-k "
-              (nano-modeline-window-dedicated))))
+
+  (let ((buttons '(("CAPTURE" . org-capture-finalize)
+                   ("CANCEL" . org-capture-kill))))  
+    (funcall nano-modeline-position
+             `((nano-modeline-buffer-status "ORG") " "
+               (nano-modeline-buffer-name "Capture") " "
+               (nano-modeline-org-capture-description))
+             `((nano-modeline-buttons ,buttons t) " "
+               (nano-modeline-window-dedicated)))))
 
 (defun nano-modeline-org-agenda-mode ()
   "Nano line for org capture mode"
