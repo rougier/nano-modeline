@@ -701,7 +701,7 @@ made DEFAULT."
 
   (funcall nano-modeline-position
            '((nano-modeline-buffer-status) " "
-             (nano-modeline-buffer-name) " "
+             (nano-modeline-org-buffer-name) " "
              (nano-modeline-git-info))
            '((nano-modeline-cursor-position)
              (nano-modeline-window-dedicated))))
