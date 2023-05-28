@@ -761,6 +761,20 @@ made DEFAULT."
            '((nano-modeline-mu4e-message-date)
              (nano-modeline-window-dedicated))))
 
+(defun nano-modeline-mu4e-compose-mode ()
+  "Nano line for mu4e compose mode"
+
+  (let ((buttons '(("download:bootstrap" . save-buffer)
+                   ("paperclip:bootstrap" . mml-attach-file)
+                   ("lock:bootstrap" . mml-secure-message-encrypt)
+                   ("check:bootstrap" . mml-secure-message-sign)
+                   ("send:bootstrap" . message-send-and-exit))))
+    (funcall nano-modeline-position
+             `((nano-modeline-buffer-status "DRAFT") " "
+               (nano-modeline-buffer-name "Message"))
+             `((nano-modeline-buttons ,buttons t) " "
+               (nano-modeline-window-dedicated)))))
+
 (defun nano-modeline-elfeed-entry-mode ()
   "Nano line for elfeed entry mode"
   
