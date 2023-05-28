@@ -295,23 +295,48 @@ using the given FACE-PREFIX as the default."
                         :foreground ,foreground
                         :background ,background))))
 
+(defvar nano-modeline--cached-svg-buttons nil
+  "List of cached SVG buttons indexed with (label . face)")
+(setq nano-modeline--cached-svg-buttons nil)
+
 (defun nano-modeline--make-svg-button (label face)
   "Make a svg button from LABEL and FACE"
-
+    
   (require 'svg-lib)
-  (let ((foreground (face-foreground face nil 'default))
-        (background (face-background face nil 'default))
-        (weight (face-attribute face ':weight nil 'default))
-        (stroke (nano-modeline--stroke-width face))
-        (family (face-attribute face ':family nil 'default)))
-    (propertize (concat label " ")
-                'display (svg-lib-tag label nil :foreground foreground
-                                                :background background
-                                                :font-weight weight
-                                                :font-family family
-                                                :stroke stroke
-                                                :padding 1
-                                                :margin 0))))
+  (let* ((key (cons label face))
+         (cached (assoc key nano-modeline--cached-svg-buttons))
+         (foreground (face-foreground face nil 'default))
+         (background (face-background face nil 'default))
+         (weight (face-attribute face ':weight nil 'default))
+         (stroke (nano-modeline--stroke-width face))
+         (family (face-attribute face ':family nil 'default))
+         (button (cond (cached (cdr cached))
+                       ((string-match "\\([a-zA-Z0-9-]+\\):\\([a-zA-Z0-9]+\\)" label)
+                        (propertize "   "
+                                   'display (svg-lib-icon (match-string 1 label) nil
+                                                          :foreground foreground
+                                                          :background background
+                                                          :font-weight weight
+                                                          :font-family family
+                                                          :stroke stroke
+                                                          :height 1.
+                                                          :padding 1
+                                                          :margin 0
+                                                          :collection (match-string 2 label))))
+                       (t
+                        (propertize (concat label " ")
+                                    'display (svg-lib-tag label nil
+                                                          :foreground foreground
+                                                          :background background
+                                                          :font-weight weight
+                                                          :font-family family
+                                                          :stroke stroke
+                                                          :padding 1
+                                                          :margin 0))))))
+    (unless cached
+      (add-to-list 'nano-modeline--cached-svg-buttons (cons key button)))
+    button))
+
 
 (defun nano-modeline--make-button (button &optional use-svg)
   "Make a button from a BUTTON decription. When USE-SVG is t and
@@ -368,6 +393,8 @@ other button states."
   "Install a header line made of LEFT and RIGHT parts. Line can be
 made DEFAULT."
 
+  (require 'tooltip)
+  
   (if default
       (setq-default header-line-format (nano-modeline--make left right 'header))
     (setq-local header-line-format (nano-modeline--make left right 'header)))
