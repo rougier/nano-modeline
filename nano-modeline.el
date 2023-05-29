@@ -348,6 +348,7 @@ button."
                     (funcall label)
                   label))
          (state (plist-get button :state))
+         (help (plist-get button :help))
          (hook (plist-get button :hook))
          (window (get-buffer-window (current-buffer)))
          (active (eq window nano-modeline--selected-window))         
@@ -366,7 +367,10 @@ button."
                           (define-key map [mode-line mouse-1] hook)
                           map)
                 'help-echo `(lambda (window object pos)
-                              (nano-modeline--update-button-state ,label 'highlight)))))
+                              (nano-modeline--update-button-state ,label 'highlight)
+                              (let (message-log-max)
+                                (message ,help))
+                              nil))))
 
 (defun nano-modeline--reset-button-state (&rest args)
   "Reset the state of all the buttons."
@@ -454,7 +458,12 @@ made DEFAULT."
 
 
 (defun nano-modeline-buttons (buttons &optional use-svg)
-  "Clickable BUTTONS in text or svg mode depending on USE-SVG. BUTTONS is a list of cons (label. hook) where hook is an interactive dunction that is called when the button is clicked. If you want to have button highlight when the mouse hovers a button, tooltip mode needs to be active and tooltip delay needs to be  set to 0"
+  "Clickable BUTTONS in text or svg mode depending on
+USE-SVG. BUTTONS is a list of cons (label. (hook . help)) where
+hook is an interactive function that is called when the button is
+clicked and help is the tooltip help message. If you want to have
+button highlight when the mouse hovers a button, tooltip mode
+needs to be active and tooltip delay needs to be set to 0"
   
   (unless (and (boundp 'nano-modeline--buttons)
                nano-modeline--buttons)
@@ -462,7 +471,8 @@ made DEFAULT."
     (setq nano-modeline--buttons (mapcar (lambda (button)
                                            (list ':label (car button)
                                                  ':state 'active
-                                                 ':hook (cdr button)))
+                                                 ':help (cddr button)
+                                                 ':hook (cadr button)))
                                          buttons)))
   (let* ((buttons nano-modeline--buttons)
          (buttons (if (and use-svg (package-installed-p 'svg-lib))
@@ -783,7 +793,7 @@ made DEFAULT."
 (defun nano-modeline-mu4e-headers-mode ()
   "Nano line for mu4e headers mode with a button to change context"
 
-  (let ((buttons '((nano-modeline-mu4e-raw-context . nano-modeline-mu4e-context-next))))
+  (let ((buttons '((nano-modeline-mu4e-raw-context . (nano-modeline-mu4e-context-next . "Switch to next context")))))
   (funcall nano-modeline-position
            '((nano-modeline-buffer-status "MAIL") " "
              (nano-modeline-mu4e-search-filter))
@@ -794,13 +804,13 @@ made DEFAULT."
   "Nano line for mu4e message mode with several buttons for most
 common action"
 
-  (let ((buttons '(("archive:bootstrap" . mu4e-view-mark-for-refile)
-                   ("trash:bootstrap" . mu4e-view-mark-for-trash)
-                   ("envelope-at:bootstrap". mu4e-compose-new)
-                   ("folder:bootstrap". mu4e-headers-mark-for-move)
-                   ("tag:bootstrap". mu4e-headers-mark-for-tag)
-                   ("reply:bootstrap". mu4e-compose-reply)
-                   ("forward:bootstrap". mu4e-compose-forward))))
+  (let ((buttons '(("archive:bootstrap" . (mu4e-view-mark-for-refile . "Archive message"))
+                   ("trash:bootstrap" . (mu4e-view-mark-for-trash . "Delete message"))
+                   ("envelope-at:bootstrap". (mu4e-compose-new . "Compose new message"))
+                   ("folder:bootstrap". (mu4e-headers-mark-for-move . "Move message"))
+                   ("tag:bootstrap". (mu4e-headers-mark-for-tag . "Tag message"))
+                   ("reply:bootstrap". (mu4e-compose-reply . "Reply to message"))
+                   ("forward:bootstrap". (mu4e-compose-forward . "Forward message")))))
     (funcall nano-modeline-position
              `((nano-modeline-buffer-status "FROM") " "
                (nano-modeline-buffer-name ,(nano-mu4e-message-from)))
@@ -810,11 +820,11 @@ common action"
 (defun nano-modeline-mu4e-compose-mode ()
   "Nano line for mu4e compose mode"
 
-  (let ((buttons '(("download:bootstrap" . save-buffer)
-                   ("paperclip:bootstrap" . mml-attach-file)
-                   ("lock:bootstrap" . mml-secure-message-encrypt)
-                   ("check:bootstrap" . mml-secure-message-sign)
-                   ("send:bootstrap" . message-send-and-exit))))
+  (let ((buttons '(("download:bootstrap" . (save-buffer . "Save message"))
+                   ("paperclip:bootstrap" . (mml-attach-file . "Attach file"))
+                   ("lock:bootstrap" . (mml-secure-message-encrypt . "Encrypt message"))
+                   ("check:bootstrap" . (mml-secure-message-sign . "Sign message"))
+                   ("send:bootstrap" . (message-send-and-exit . "Send message")))))
     (funcall nano-modeline-position
              `((nano-modeline-buffer-status "DRAFT") " "
                (nano-modeline-buffer-name "Message"))
