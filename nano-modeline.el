@@ -533,6 +533,34 @@ made DEFAULT."
     (propertize (format "[%s] " name)
                 'face (nano-modeline-face 'secondary))))
 
+(defun nano-modeline-mu4e-raw-context ()
+  "Mu4e current context (raw form for button)"
+  
+  (let* ((context (mu4e-context-current))
+         (name (if context (mu4e-context-name context) "NONE")))
+    (upcase name)))
+
+(defun nano-mu4e-message-from ()
+  "Mu4e current message sender"
+  
+  (with-current-buffer "*mu4e-headers*"
+    (let ((msg (mu4e-message-at-point)))
+      (mu4e~headers-contact-str (mu4e-message-field msg :from)))))
+                         
+
+(defun nano-modeline-mu4e-context-next ()
+  "Switch to next mu4e context"
+
+  (interactive)
+  (let* ((current (mu4e-context-name (mu4e-context-current)))
+         (contexts (mapcar (lambda (context)
+                             (mu4e-context-name context))
+                           mu4e-contexts))
+         (index (mod (1+ (cl-position current contexts))
+                     (length contexts)))
+         (current (nth index contexts)))
+    (mu4e-context-switch t current)))
+
 (defun nano-modeline-mu4e-message-subject ()
   "Mu4e message subject"
   
@@ -753,22 +781,31 @@ made DEFAULT."
              (nano-modeline-window-dedicated))))
 
 (defun nano-modeline-mu4e-headers-mode ()
-  "Nano line for mu4e headers mode"
-  
+  "Nano line for mu4e headers mode with a button to change context"
+
+  (let ((buttons '((nano-modeline-mu4e-raw-context . nano-modeline-mu4e-context-next))))
   (funcall nano-modeline-position
            '((nano-modeline-buffer-status "MAIL") " "
              (nano-modeline-mu4e-search-filter))
-           '((nano-modeline-mu4e-context)
-             (nano-modeline-window-dedicated))))
+             `((nano-modeline-buttons ,buttons t) " "
+             (nano-modeline-window-dedicated)))))
 
-(defun nano-modeline-mu4e-message-mode ()
-  "Nano line for mu4e message mode"
+(defun nano-mu4e-message-mode ()
+  "Nano line for mu4e message mode with several buttons for most
+common action"
 
-  (funcall nano-modeline-position
-           '((nano-modeline-buffer-status "MAIL") " "
-             (nano-modeline-mu4e-message-subject))
-           '((nano-modeline-mu4e-message-date)
-             (nano-modeline-window-dedicated))))
+  (let ((buttons '(("archive:bootstrap" . mu4e-view-mark-for-refile)
+                   ("trash:bootstrap" . mu4e-view-mark-for-trash)
+                   ("envelope-at:bootstrap". mu4e-compose-new)
+                   ("folder:bootstrap". mu4e-headers-mark-for-move)
+                   ("tag:bootstrap". mu4e-headers-mark-for-tag)
+                   ("reply:bootstrap". mu4e-compose-reply)
+                   ("forward:bootstrap". mu4e-compose-forward))))
+    (funcall nano-modeline-position
+             `((nano-modeline-buffer-status "FROM") " "
+               (nano-modeline-buffer-name ,(nano-mu4e-message-from)))
+             `((nano-modeline-buttons ,buttons t) " "
+               (nano-modeline-window-dedicated)))))
 
 (defun nano-modeline-mu4e-compose-mode ()
   "Nano line for mu4e compose mode"
