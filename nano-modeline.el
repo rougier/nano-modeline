@@ -344,6 +344,9 @@ svg-lib is installed, result is a SVG button else, it is a text
 button."
 
   (let* ((label (plist-get button :label))
+         (label (if (functionp label)
+                    (funcall label)
+                  label))
          (state (plist-get button :state))
          (hook (plist-get button :hook))
          (window (get-buffer-window (current-buffer)))
@@ -384,9 +387,15 @@ other button states."
     (when (and active (boundp 'nano-modeline--buttons))
       (dolist (button nano-modeline--buttons)
         (unless (eq (plist-get button :state) 'inactive)
-          (if (string-equal (plist-get button :label) label)
+
+          (let* ((button-label (plist-get button :label))
+                 (button-label (if (functionp button-label)
+                                   (funcall button-label)
+                                 button-label)))
+          
+          (if (string-equal button-label label)
               (plist-put button :state state)
-            (plist-put button :state 'active)))))
+            (plist-put button :state 'active))))))
     (force-mode-line-update)))
 
 (defun nano-modeline-header (left &optional right default)
