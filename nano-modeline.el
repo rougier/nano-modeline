@@ -550,14 +550,19 @@ needs to be active and tooltip delay needs to be set to 0"
          (name (if context (mu4e-context-name context) "NONE")))
     (upcase name)))
 
-(defun nano-mu4e-message-from ()
+(defun nano-modeline-mu4e-message-from ()
   "Mu4e current message sender"
   
   (with-current-buffer "*mu4e-headers*"
     (let ((msg (mu4e-message-at-point)))
       (mu4e~headers-contact-str (mu4e-message-field msg :from)))))
                          
-
+(defun nano-modeline-mu4e-view-in-xwidget ()
+  (interactive)
+  (with-current-buffer "*mu4e-headers*"
+    (let ((msg (mu4e-message-at-point)))
+      (mu4e-action-view-in-xwidget msg))))
+ 
 (defun nano-modeline-mu4e-context-next ()
   "Switch to next mu4e context"
 
@@ -800,20 +805,20 @@ needs to be active and tooltip delay needs to be set to 0"
              `((nano-modeline-buttons ,buttons t) " "
              (nano-modeline-window-dedicated)))))
 
-(defun nano-mu4e-message-mode ()
+(defun nano-modeline-mu4e-message-mode ()
   "Nano line for mu4e message mode with several buttons for most
 common action"
 
   (let ((buttons '(("archive:bootstrap" . (mu4e-view-mark-for-refile . "Archive message"))
                    ("trash:bootstrap" . (mu4e-view-mark-for-trash . "Delete message"))
-                   ("envelope-at:bootstrap". (mu4e-compose-new . "Compose new message"))
+                   ("file-richtext:bootstrap". (nano-modeline-mu4e-view-in-xwidget . "View message as HTML"))
                    ("folder:bootstrap". (mu4e-headers-mark-for-move . "Move message"))
                    ("tag:bootstrap". (mu4e-headers-mark-for-tag . "Tag message"))
                    ("reply:bootstrap". (mu4e-compose-reply . "Reply to message"))
                    ("forward:bootstrap". (mu4e-compose-forward . "Forward message")))))
     (funcall nano-modeline-position
              `((nano-modeline-buffer-status "FROM") " "
-               (nano-modeline-buffer-name ,(nano-mu4e-message-from)))
+               (nano-modeline-buffer-name ,(nano-modeline-mu4e-message-from)))
              `((nano-modeline-buttons ,buttons t) " "
                (nano-modeline-window-dedicated)))))
 
