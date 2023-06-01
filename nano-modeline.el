@@ -45,6 +45,8 @@
 ;; Version 1.0.0
 ;; - Complete rewrite to make it simpler & faster
 ;; - API break: No longer a minor mode
+;; - Activatable buttons can be added
+;; - Modeline can be now be activated through modes hook
 ;;
 ;; Version 0.7.2
 ;; - Fix a bug in info mode (breadcrumbs)
@@ -376,9 +378,10 @@ button."
   "Reset the state of all the buttons."
 
   (when (boundp 'nano-modeline--buttons)
-    (dolist (button nano-modeline--buttons)
-      (unless (eq (plist-get button :state) 'inactive)
-        (plist-put button :state 'active))))
+    (dolist (buttons (mapcar 'cdr nano-modeline--buttons))
+      (dolist (button buttons)
+        (unless (eq (plist-get button :state) 'inactive)
+          (plist-put button :state 'active)))))
   (force-mode-line-update))
 
 (defun nano-modeline--update-button-state (label state)
@@ -387,20 +390,18 @@ other button states."
 
   (let* ((window (get-buffer-window (current-buffer)))
          (active (eq window nano-modeline--selected-window)))
-    
     (when (and active (boundp 'nano-modeline--buttons))
-      (dolist (button nano-modeline--buttons)
-        (unless (eq (plist-get button :state) 'inactive)
-
-          (let* ((button-label (plist-get button :label))
-                 (button-label (if (functionp button-label)
-                                   (funcall button-label)
-                                 button-label)))
-          
+      (dolist (buttons (mapcar 'cdr nano-modeline--buttons))
+        (dolist (button buttons)
+          (unless (eq (plist-get button :state) 'inactive)
+            (let* ((button-label (plist-get button :label))
+                   (button-label (if (functionp button-label)
+                                     (funcall button-label)
+                                   button-label)))
           (if (string-equal button-label label)
               (plist-put button :state state)
-            (plist-put button :state 'active))))))
-    (force-mode-line-update)))
+            (plist-put button :state 'active))))))))
+  (force-mode-line-update))
 
 (defun nano-modeline-header (left &optional right default)
   "Install a header line made of LEFT and RIGHT parts. Line can be
@@ -457,24 +458,33 @@ made DEFAULT."
                        'face (nano-modeline-face 'status-RW))))))
 
 
-(defun nano-modeline-buttons (buttons &optional use-svg)
+(defun nano-modeline-buttons (buttons &optional use-svg group)
   "Clickable BUTTONS in text or svg mode depending on
 USE-SVG. BUTTONS is a list of cons (label. (hook . help)) where
 hook is an interactive function that is called when the button is
-clicked and help is the tooltip help message. If you want to have
-button highlight when the mouse hovers a button, tooltip mode
-needs to be active and tooltip delay needs to be set to 0"
+clicked and help is the tooltip help message. GROUP (default to
+0) is an arbitrary optional index of the group this button
+belongs to.If you want to have button highlight when the mouse
+hovers a button, tooltip mode needs to be active and tooltip
+delay needs to be set to 0."
   
   (unless (and (boundp 'nano-modeline--buttons)
-               nano-modeline--buttons)
-    (make-local-variable 'nano-modeline--buttons)
-    (setq nano-modeline--buttons (mapcar (lambda (button)
-                                           (list ':label (car button)
-                                                 ':state 'active
-                                                 ':help (cddr button)
-                                                 ':hook (cadr button)))
-                                         buttons)))
-  (let* ((buttons nano-modeline--buttons)
+               nano-modeline--buttons
+               (assoc (or group 0) nano-modeline--buttons))
+    (unless (boundp 'nano-modeline--buttons)
+      (make-local-variable 'nano-modeline--buttons))
+    (let* ((group (or group 0))
+           (buttons (mapcar (lambda (button)
+                              (list ':label (car button)
+                                    ':state 'active
+                                    ':help (cddr button)
+                                    ':hook (cadr button)))
+                            buttons)))
+      (if (cdr (assoc group nano-modeline--buttons))
+          (setf (cdr (assoc group nano-modeline--buttons)) buttons)
+        (add-to-list 'nano-modeline--buttons (cons group buttons)))))
+
+  (let* ((buttons (cdr (assoc (or group 0) nano-modeline--buttons)))
          (buttons (if (and use-svg (package-installed-p 'svg-lib))
                       (mapconcat (lambda (button)
                                    (nano-modeline--make-button button t))
