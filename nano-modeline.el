@@ -874,7 +874,7 @@ common action"
              (nano-modeline-window-dedicated))))
 
 (defun nano-modeline-eat-mode ()
-  "Nano line for term mode"
+  "Nano line for term (eat) mode"
 
   (funcall nano-modeline-position
            '((nano-modeline-buffer-status ">_") " "
@@ -913,7 +913,7 @@ common action"
                (nano-modeline-window-dedicated)))))
 
 (defun nano-modeline-org-agenda-mode ()
-  "Nano line for org capture mode"
+  "Nano line for org agenda mode"
 
   (add-hook 'post-command-hook #'force-mode-line-update)
   (funcall nano-modeline-position
