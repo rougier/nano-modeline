@@ -4,7 +4,7 @@
 
 ;; Maintainer: Nicolas P. Rougier <Nicolas.Rougier@inria.fr>
 ;; URL: https://github.com/rougier/nano-modeline
-;; Version: 0.7.2
+;; Version: 1.0.0
 ;; Package-Requires: ((emacs "27.1"))
 ;; Keywords: convenience, mode-line, header-line
 
@@ -45,7 +45,7 @@
 ;; Version 1.0.0
 ;; - Complete rewrite to make it simpler & faster
 ;; - API break: No longer a minor mode
-;; - Activatable buttons can be added
+;; - Activatable buttons can be added and grouped
 ;; - Modeline can be now be activated through modes hook
 ;;
 ;; Version 0.7.2
