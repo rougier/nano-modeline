@@ -638,7 +638,8 @@ delay needs to be set to 0."
 (defun nano-modeline-elfeed-entry-title ()
   "Elfeed entry title"
   
-  (let* ((title (elfeed-entry-title elfeed-show-entry)))
+  (let* ((title (elfeed-entry-title elfeed-show-entry))
+         (title (string-replace "%" "%%" title)))
     (propertize title 'face (nano-modeline-face 'name))))
 
 (defun nano-modeline-elfeed-search-filter ()
