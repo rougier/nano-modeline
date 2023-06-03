@@ -163,7 +163,7 @@
   "Active button face")
 
 (defface nano-modeline-button-inactive-face
-  `((t :foreground ,(face-foreground (when (facep 'nano-faded) 'nano-faded 'default))
+  `((t :foreground ,(face-foreground (if (facep 'nano-faded) 'nano-faded 'default))
        :background ,(face-background 'header-line nil t)
        :family "Roboto Mono"
        :box (:line-width 2
