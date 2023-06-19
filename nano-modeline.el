@@ -4,7 +4,7 @@
 
 ;; Maintainer: Nicolas P. Rougier <Nicolas.Rougier@inria.fr>
 ;; URL: https://github.com/rougier/nano-modeline
-;; Version: 1.0.0
+;; Version: 1.0.1
 ;; Package-Requires: ((emacs "27.1"))
 ;; Keywords: convenience, mode-line, header-line
 
@@ -59,6 +59,10 @@
 ;;
 ;;
 ;;; NEWS:
+;;
+;;
+;; Version 1.0.1
+;; - Minor bugfix
 ;;
 ;; Version 1.0.0
 ;; - Complete rewrite to make it simpler & faster
