@@ -229,7 +229,7 @@ Each face defined here is used by the modeline depending on the current state (a
          (active (eq window nano-modeline--selected-window))
          (state (intern (concat (symbol-name face-prefix)
                                 (if active "-active" "-inactive"))))
-         (face (cdr (assoc state nano-modeline-faces))))
+         (face (cadr (assoc state nano-modeline-faces))))
     face))
 
 (defun nano-modeline-face (&optional face-prefix)
@@ -926,8 +926,8 @@ common action"
 (defun nano-modeline-org-capture-mode ()
   "Nano line for org capture mode"
 
-  (let ((buttons '(("CAPTURE" . org-capture-finalize)
-                   ("CANCEL" . org-capture-kill))))  
+  (let ((buttons '(("CAPTURE" . (org-capture-finalize))
+                   ("CANCEL" . (org-capture-kill)))))  
     (funcall nano-modeline-position
              `((nano-modeline-buffer-status "ORG") " "
                (nano-modeline-buffer-name "Capture") " "
