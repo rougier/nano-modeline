@@ -162,8 +162,7 @@
        :background ,(face-background 'default)
        :family "Roboto Mono"
        :box (:line-width 2
-             :color ,(face-foreground 'default)
-             :style none)))
+             :color ,(face-foreground 'default))))
   "Active button face")
 
 (defface nano-modeline-button-inactive-face
@@ -171,8 +170,7 @@
        :background ,(face-background 'header-line nil t)
        :family "Roboto Mono"
        :box (:line-width 2
-             :color ,(face-foreground 'default)
-             :style none)))
+             :color ,(face-foreground 'default))))
   "Inactive button face.")
 
 (defface nano-modeline-button-highlight-face
