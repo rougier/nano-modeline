@@ -163,7 +163,7 @@
        :family "Roboto Mono"
        :box (:line-width 2
              :color ,(face-foreground 'default)
-             :style none)))
+             :style flat-button)))
   "Active button face")
 
 (defface nano-modeline-button-inactive-face
@@ -172,7 +172,7 @@
        :family "Roboto Mono"
        :box (:line-width 2
              :color ,(face-foreground 'default)
-             :style none)))
+             :style flat-button)))
   "Inactive button face.")
 
 (defface nano-modeline-button-highlight-face
