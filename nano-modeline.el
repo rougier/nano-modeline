@@ -720,9 +720,10 @@ delay needs to be set to 0."
 (defun nano-modeline-eat-shell-mode ()
   "Eat shell mode"
   
-  (propertize (if eat--char-mode
-                  "(char mode)"
-                "(line mode)")
+  (propertize (cond (eat--semi-char-mode "(semi-char mode)")
+                    (eat--char-mode "(char mode)")
+                    (eat--line-mode "(line mode)")
+                    (t "(unknown mode)"))
                'face (nano-modeline-face 'primary)))
 
 (defun nano-modeline-default-directory (&optional max-length)
