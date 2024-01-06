@@ -61,6 +61,9 @@
 ;;; NEWS:
 ;;
 ;;
+;; Version 
+;; - Minor bugfix with org-capture
+;;
 ;; Version 1.0.1
 ;; - Minor bugfix
 ;;
@@ -273,10 +276,10 @@ using the given FACE-PREFIX as the default."
                              (propertize "…" 'face `(:inherit  ,nano-modeline-base-face)))
                    left)))
       (concat (propertize " "
-                'display `(space :align-to (+ left
+                'display `(space :align-to (+ left-margin
                                               (,fringe . left-fringe)
                                               ( 0.0 . left-margin))))
-              left
+              left              
               (propertize " "
                 'face `(:inherit ,nano-modeline-base-face)
                 'display `(space :align-to (- right
@@ -284,7 +287,6 @@ using the given FACE-PREFIX as the default."
                                               ( 0.0 . right-margin)
                                               ,(length right))))
               right))))
-
 
 
 (defun nano-modeline--stroke-color (face)
