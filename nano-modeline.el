@@ -182,6 +182,8 @@
        :weight bold))
   "Highlight button face.")
 
+(defvar nano-modeline-base-face nil)
+
 (defun nano-modeline--stroke-width (face)
   "Extract the line width of the box for the given FACE."
   
@@ -241,9 +243,9 @@ make it inherit the base face."
          (state (intern (concat (symbol-name face-prefix)
                                 (if active "-active" "-inactive"))))
          (face (cdr (assoc state nano-modeline-faces)))
-         (face (if (boundp 'nano-modeline-base-face)
-                           (push nano-modeline-base-face face)
-                   face))
+         (face (if nano-modeline-base-face
+                   (push nano-modeline-base-face face)
+                 face))
          (face (reverse face)))
     `(:inherit ,face)))
 
