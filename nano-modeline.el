@@ -256,6 +256,10 @@ make it inherit the base face."
          (face (reverse face)))
     `(:inherit ,face)))
 
+
+(defvar-local nano-modeline-left-fringe-width 0)
+(defvar-local nano-modeline-right-fringe-width 0)
+
 (defun nano-modeline--make (left right face-prefix)
   "Build a dynamic mode/header line made of LEFT and RIGHT part,
 using the given FACE-PREFIX as the default."
@@ -275,24 +279,71 @@ using the given FACE-PREFIX as the default."
                      (apply (car element) (cdr element))))
                    ',right))
            (width (window-width))
-           (fringe (if fringes-outside-margins 0.0 -1.0))
+           (outside fringes-outside-margins)
+           (left-fringe (if outside -1.0 0.0))
+           (left-margin (if outside 0.0 1.0))
+           (right-fringe (if outside -1.0 0.0))
+           (right-margin (if outside -1.0 0.0))
            (left-max-size (- width (length right) 2))
            (left (if (> (length left) left-max-size)
                      (concat (truncate-string-to-width left left-max-size)
                              (propertize "…" 'face `(:inherit  ,nano-modeline-base-face)))
                    left)))
-      (concat (propertize " "
-                'display `(space :align-to (+ left-margin
-                                              (,fringe . left-fringe)
-                                              ( 0.0 . left-margin))))
-              left              
-              (propertize " "
-                'face `(:inherit ,nano-modeline-base-face)
-                'display `(space :align-to (- right
-                                              (,fringe . right-fringe)
-                                              ( 0.0 . right-margin)
-                                              ,(length right))))
-              right))))
+      (concat (propertize " " 
+                        'display `(space :align-to (+ left-margin
+                                                      (,left-fringe . left-fringe)
+                                                      (,left-margin . left-margin))))
+            (propertize " " 'face 'fringe
+                        'display '(space :width (nano-modeline-left-fringe-width)))
+            left              
+            (propertize " "
+                        'face `(:inherit ,nano-modeline-base-face )
+                        'display `(space :align-to (- right-margin
+                                                      (,right-fringe . right-fringe)
+                                                      (,right-margin . right-margin)
+                                                      (nano-modeline-right-fringe-width)
+                                                      ,(length right))))
+            right
+            (propertize " " 'face 'fringe
+                        'display '(space :width (nano-modeline-right-fringe-width)))))))
+
+;; (defun nano-modeline--make (left right face-prefix)
+;;   "Build a dynamic mode/header line made of LEFT and RIGHT part,
+;; using the given FACE-PREFIX as the default."
+  
+;;   `(:eval
+;;     (let* ((nano-modeline-base-face (nano-modeline--base-face ',face-prefix))
+;;            (left (mapconcat
+;;                   (lambda (element)
+;;                     (if (stringp element)
+;;                         (propertize element 'face nano-modeline-base-face)
+;;                       (apply (car element) (cdr element))))
+;;                   ',left))
+;;            (right (mapconcat
+;;                    (lambda (element)
+;;                     (if (stringp element)
+;;                         (propertize element 'face nano-modeline-base-face)
+;;                      (apply (car element) (cdr element))))
+;;                    ',right))
+;;            (width (window-width))
+;;            (fringe (if fringes-outside-margins 0.0 -1.0))
+;;            (left-max-size (- width (length right) 2))
+;;            (left (if (> (length left) left-max-size)
+;;                      (concat (truncate-string-to-width left left-max-size)
+;;                              (propertize "…" 'face `(:inherit  ,nano-modeline-base-face)))
+;;                    left)))
+;;       (concat (propertize " "
+;;                 'display `(space :align-to (+ left-margin
+;;                                               (,fringe . left-fringe)
+;;                                               ( 0.0 . left-margin))))
+;;               left              
+;;               (propertize " "
+;;                 'face `(:inherit ,nano-modeline-base-face)
+;;                 'display `(space :align-to (- right
+;;                                               (,fringe . right-fringe)
+;;                                               ( 0.0 . right-margin)
+;;                                               ,(length right))))
+;;               right))))
 
 
 (defun nano-modeline--stroke-color (face)
