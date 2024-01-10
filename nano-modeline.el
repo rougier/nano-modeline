@@ -143,7 +143,7 @@
                  (const :tag "Bottom" nano-modeline-footer))
   :group 'nano-modeline)
 
-(defcustom nano-modeline-window-dedicated-symbol '("[D] " . "[•] ")
+(defcustom nano-modeline-window-dedicated-symbol '("● " . "")
   "Pairs of strings showing a window is dedicated or not dedicated"
   :type '(cons (string :tag "Window is dedicated" )
                (string :tag "Window is not dedicated"))
