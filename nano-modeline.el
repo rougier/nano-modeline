@@ -143,6 +143,12 @@
                  (const :tag "Bottom" nano-modeline-footer))
   :group 'nano-modeline)
 
+(defcustom nano-modeline-window-dedicated-symbol '("[D] " . "[•] ")
+  "Pairs of strings showing a window is dedicated or not dedicated"
+  :type '(cons (string :tag "Window is dedicated" )
+               (string :tag "Window is not dedicated"))
+  :group 'nano-modeline)
+
 (defface nano-modeline-active
   `((t (:foreground ,(face-foreground 'default)
         :background ,(face-background 'header-line nil t)
@@ -547,10 +553,12 @@ delay needs to be set to 0."
      (format-mode-line "(%l lines)")
      'face (nano-modeline-face 'primary))))
 
-(defun nano-modeline-window-dedicated (&optional symbol)
+(defun nano-modeline-window-dedicated (&optional dedicated not-dedicated)
   "Pin symbol when window is dedicated"
   
-  (propertize (if (window-dedicated-p) (or symbol " ") "")
+  (propertize (if (window-dedicated-p)
+                  (or dedicated (car nano-modeline-window-dedicated-symbol))
+                (or not-dedicated (cdr nano-modeline-window-dedicated-symbol)))
               'face (nano-modeline-face 'secondary)))
 
 (defun nano-modeline-git-info (&optional symbol)
