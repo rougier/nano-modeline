@@ -381,48 +381,15 @@ using the given FACE-PREFIX as the default."
                         :foreground ,foreground
                         :background ,background))))
 
-(defvar nano-modeline--cached-svg-buttons nil
-  "List of cached SVG buttons indexed with (label . face)")
-(setq nano-modeline--cached-svg-buttons nil)
-
 (defun nano-modeline--make-svg-button (label face)
   "Make a svg button from LABEL and FACE"
     
   (require 'svg-lib)
-  (let* ((key (cons label face))
-         (cached (assoc key nano-modeline--cached-svg-buttons))
-         (foreground (face-foreground face nil 'default))
-         (background (face-background face nil 'default))
-         (weight (face-attribute face ':weight nil 'default))
-         (stroke (nano-modeline--stroke-width face))
-         (family (face-attribute face ':family nil 'default))
-         (button (cond (cached (cdr cached))
-                       ((string-match "\\([a-zA-Z0-9-]+\\):\\([a-zA-Z0-9]+\\)" label)
-                        (propertize "   "
-                                   'display (svg-lib-icon (match-string 1 label) nil
-                                                          :foreground foreground
-                                                          :background background
-                                                          :font-weight weight
-                                                          :font-family family
-                                                          :stroke stroke
-                                                          :height 1.
-                                                          :padding 1
-                                                          :margin 0
-                                                          :collection (match-string 2 label))))
-                       (t
-                        (propertize (concat label " ")
-                                    'display (svg-lib-tag label nil
-                                                          :foreground foreground
-                                                          :background background
-                                                          :font-weight weight
-                                                          :font-family family
-                                                          :stroke stroke
-                                                          :padding 1
-                                                          :margin 0))))))
-    (unless cached
-      (add-to-list 'nano-modeline--cached-svg-buttons (cons key button)))
-    button))
-
+  (let* ((stroke (nano-modeline--stroke-width face))
+         (tag (svg-lib-tag label face :stroke stroke))
+         (size (image-size tag))
+         (width (ceiling (car size))))
+    (propertize (make-string width ? ) 'display tag)))        
 
 (defun nano-modeline--make-button (button &optional use-svg)
   "Make a button from a BUTTON decription. When USE-SVG is t and
@@ -946,17 +913,18 @@ delay needs to be set to 0."
              `((nano-modeline-buttons ,buttons t) " "
              (nano-modeline-window-dedicated)))))
 
+
 (defun nano-modeline-mu4e-message-mode ()
   "Nano line for mu4e message mode with several buttons for most
 common action"
 
-  (let ((buttons '(("archive:bootstrap" . (mu4e-view-mark-for-refile . "Archive message"))
-                   ("trash:bootstrap" . (mu4e-view-mark-for-trash . "Delete message"))
-                   ("file-richtext:bootstrap". (nano-modeline-mu4e-view-in-xwidget . "View message as HTML"))
-                   ("folder:bootstrap". (mu4e-headers-mark-for-move . "Move message"))
-                   ("tag:bootstrap". (mu4e-headers-mark-for-tag . "Tag message"))
-                   ("reply:bootstrap". (mu4e-compose-reply . "Reply to message"))
-                   ("forward:bootstrap". (mu4e-compose-forward . "Forward message")))))
+  (let ((buttons '(("[bootstrap:archive]" . (mu4e-view-mark-for-refile . "Archive message"))
+                   (":bootstrap:trash]" . (mu4e-view-mark-for-trash . "Delete message"))
+                   ("[bootstrap:file-richtext]". (nano-modeline-mu4e-view-in-xwidget . "View message as HTML"))
+                   ("[bootstrap:folder]". (mu4e-headers-mark-for-move . "Move message"))
+                   ("[bootstrap:tag]". (mu4e-headers-mark-for-tag . "Tag message"))
+                   ("[bootstrap:reply]". (mu4e-compose-reply . "Reply to message"))
+                   ("[bootstrap:forward]". (mu4e-compose-forward . "Forward message")))))
     (funcall nano-modeline-position
              `((nano-modeline-buffer-status "FROM") " "
                (nano-modeline-buffer-name ,(nano-modeline-mu4e-message-from)) " "
@@ -968,11 +936,11 @@ common action"
 (defun nano-modeline-mu4e-compose-mode ()
   "Nano line for mu4e compose mode"
 
-  (let ((buttons '(("download:bootstrap" . (save-buffer . "Save message"))
-                   ("paperclip:bootstrap" . (mml-attach-file . "Attach file"))
-                   ("lock:bootstrap" . (mml-secure-message-encrypt . "Encrypt message"))
-                   ("check:bootstrap" . (mml-secure-message-sign . "Sign message"))
-                   ("send:bootstrap" . (message-send-and-exit . "Send message")))))
+  (let ((buttons '(("[bootstrap:download]" . (save-buffer . "Save message"))
+                   ("[bootstrap:paperclip]" . (mml-attach-file . "Attach file"))
+                   ("[bootstrap:lock]" . (mml-secure-message-encrypt . "Encrypt message"))
+                   ("[bootstrap:check]" . (mml-secure-message-sign . "Sign message"))
+                   ("[bootstrap:send]" . (message-send-and-exit . "Send message")))))
     (funcall nano-modeline-position
              `((nano-modeline-buffer-status "DRAFT") " "
                (nano-modeline-buffer-name "Message"))
