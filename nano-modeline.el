@@ -121,6 +121,7 @@
 ;;
 
 ;;; Code:
+(require 'cl-lib)
 
 (defgroup nano nil
   "N Λ N O"
@@ -624,6 +625,15 @@ delay needs to be set to 0."
         (propertize (format "(%s%s, %s)" (or symbol " ") branch state)
                     'face (nano-modeline-face 'primary)))))
 
+(defun nano-modeline-primary-info (text)
+  "Information using primary face"
+  
+  (propertize text 'face (nano-modeline-face 'primary)))
+
+(defun nano-modeline-secondary-info (text)
+  "Information using primary face"
+  
+  (propertize text 'face (nano-modeline-face 'secondary)))
 
 (defun nano-modeline-mu4e-search-filter ()
   "Mu4e current search"
@@ -645,13 +655,47 @@ delay needs to be set to 0."
          (name (if context (mu4e-context-name context) "NONE")))
     (upcase name)))
 
-(defun nano-modeline-mu4e-message-from ()
-  "Mu4e current message sender"
+(defun nano-modeline-mu4e-message-to ()
+  "Return the recipients of a message, separating me from others"
   
   (with-current-buffer "*mu4e-headers*"
-    (let ((msg (mu4e-message-at-point)))
-      (mu4e~headers-contact-str (mu4e-message-field msg :from)))))
-                         
+    (let* ((msg (mu4e-message-at-point))
+           (list (memq 'list (plist-get msg :flags)))
+           (cc (mapcar (lambda (item)
+                         (downcase (plist-get item :email)))
+                       (plist-get msg :cc)))
+           (to (mapcar (lambda (item)
+                         (downcase (plist-get item :email)))
+                       (plist-get msg :to)))
+           (to-names (mapcar (lambda (item)
+                               (capitalize (downcase (plist-get item :name))))
+                             (plist-get msg :to)))
+           (all (cl-union to cc))  
+           (me (mapcar #'downcase (mu4e-personal-addresses)))
+           (me (cl-intersection all me :test #'string-equal))
+           (others (cl-set-difference all me :test #'string-equal)))
+      (cond (list
+             (concat "to " (car to-names)))
+            ((= (length others) 0)
+             "to me")
+            ((and (> (length others) 0) (< (length others) (length all)))
+             (format "to me (+%d recipients)" (length others)))
+            ((and (= (length others) 1))
+             (format "to %s" (car to-names)))
+            (t
+             (format "to %s (+%d recipients)" (car to-names) (1- (length others))))))))
+
+(defun nano-modeline-mu4e-message-from ()
+  "Return the sender of the message that can be me or a name"
+  
+  (with-current-buffer "*mu4e-headers*"
+    (let* ((msg (mu4e-message-at-point))
+           (from (mu4e-message-field msg :from))
+           (from-name (capitalize (downcase (plist-get (car from) :name))))
+           (from-email (plist-get (car from) :email))
+           (me (mapcar #'downcase (mu4e-personal-addresses))))
+      (if (member from-email me) "Me"from-name))))
+
 (defun nano-modeline-mu4e-view-in-xwidget ()
   (interactive)
   (with-current-buffer "*mu4e-headers*"
@@ -684,7 +728,7 @@ delay needs to be set to 0."
   
   (let* ((msg (mu4e-message-at-point))
          (date (mu4e-message-field msg :date)))
-    (propertize (format-time-string " %d/%m " date)
+    (propertize (format-time-string "%d %b %Y at %H:%M" date)
                 'face (nano-modeline-face 'secondary))))
  
 (defun nano-modeline-pdf-page ()
@@ -915,8 +959,10 @@ common action"
                    ("forward:bootstrap". (mu4e-compose-forward . "Forward message")))))
     (funcall nano-modeline-position
              `((nano-modeline-buffer-status "FROM") " "
-               (nano-modeline-buffer-name ,(nano-modeline-mu4e-message-from)))
-             `((nano-modeline-buttons ,buttons t) " "
+               (nano-modeline-buffer-name ,(nano-modeline-mu4e-message-from)) " "
+               (nano-modeline-primary-info ,(nano-modeline-mu4e-message-to)))
+             `((nano-modeline-mu4e-message-date) " "
+               ;; (nano-modeline-buttons ,buttons t) " "
                (nano-modeline-window-dedicated)))))
 
 (defun nano-modeline-mu4e-compose-mode ()
