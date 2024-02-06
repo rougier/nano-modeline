@@ -287,8 +287,8 @@ using the given FACE-PREFIX as the default."
            (left-margin (if outside 0.0 1.0))
            (right-fringe (if outside -1.0 0.0))
            (right-margin (if outside -1.0 0.0))
-           (left-max-size (- width (length right) 2))
-           (left (if (> (length left) left-max-size)
+           (left-max-size (- width (string-bytes right) 2))
+           (left (if (> (string-bytes left) left-max-size)
                      (concat (truncate-string-to-width left left-max-size)
                              (propertize "…" 'face `(:inherit  ,nano-modeline-base-face)))
                    left)))
@@ -305,7 +305,7 @@ using the given FACE-PREFIX as the default."
                                                       (,right-fringe . right-fringe)
                                                       (,right-margin . right-margin)
                                                       (nano-modeline-right-fringe-width)
-                                                      ,(length right))))
+                                                      ,(string-bytes right))))
             right
             (propertize " " 'face 'fringe
                         'display '(space :width (nano-modeline-right-fringe-width)))))))
@@ -330,8 +330,8 @@ using the given FACE-PREFIX as the default."
 ;;                    ',right))
 ;;            (width (window-width))
 ;;            (fringe (if fringes-outside-margins 0.0 -1.0))
-;;            (left-max-size (- width (length right) 2))
-;;            (left (if (> (length left) left-max-size)
+;;            (left-max-size (- width (string-bytes right) 2))
+;;            (left (if (> (string-bytes left) left-max-size)
 ;;                      (concat (truncate-string-to-width left left-max-size)
 ;;                              (propertize "…" 'face `(:inherit  ,nano-modeline-base-face)))
 ;;                    left)))
@@ -345,7 +345,7 @@ using the given FACE-PREFIX as the default."
 ;;                 'display `(space :align-to (- right
 ;;                                               (,fringe . right-fringe)
 ;;                                               ( 0.0 . right-margin)
-;;                                               ,(length right))))
+;;                                               ,(string-bytes right))))
 ;;               right))))
 
 
@@ -643,14 +643,14 @@ delay needs to be set to 0."
            (others (cl-set-difference all me :test #'string-equal)))
       (cond (list
              (concat "to " (car to-names)))
-            ((= (length others) 0)
+            ((= (string-bytes others) 0)
              "to me")
-            ((and (> (length others) 0) (< (length others) (length all)))
-             (format "to me (+%d recipients)" (length others)))
-            ((and (= (length others) 1))
+            ((and (> (string-bytes others) 0) (< (string-bytes others) (string-bytes all)))
+             (format "to me (+%d recipients)" (string-bytes others)))
+            ((and (= (string-bytes others) 1))
              (format "to %s" (car to-names)))
             (t
-             (format "to %s (+%d recipients)" (car to-names) (1- (length others))))))))
+             (format "to %s (+%d recipients)" (car to-names) (1- (string-bytes others))))))))
 
 (defun nano-modeline-mu4e-message-from ()
   "Return the sender of the message that can be me or a name"
@@ -678,7 +678,7 @@ delay needs to be set to 0."
                              (mu4e-context-name context))
                            mu4e-contexts))
          (index (mod (1+ (cl-position current contexts))
-                     (length contexts)))
+                     (string-bytes contexts)))
          (current (nth index contexts)))
     (mu4e-context-switch t current)))
 
@@ -807,7 +807,7 @@ delay needs to be set to 0."
          (output ""))
     (when (and path (equal "" (car path)))
       (setq path (cdr path)))
-    (while (and path (< (length output) (- max-length 0)))
+    (while (and path (< (string-bytes output) (- max-length 0)))
       (setq output (concat (car path) "/" output))
       (setq path (cdr path)))
     (when path
