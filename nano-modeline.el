@@ -845,10 +845,16 @@ delay needs to be set to 0."
 
 (defun nano-modeline-org-capture-description ()
   "Org capture descrioption"
-  
-  (propertize (format "(%s)"
-                      (substring-no-properties (org-capture-get :description)))
-              'face (nano-modeline-face 'primary)))
+
+  (let* ((header (nth 4 (org-heading-components)))
+         (header (or header ""))         
+         (header (org-link-display-format header))
+         (header (replace-regexp-in-string org-ts-regexp3 "" header))
+         (header (string-trim header))
+         (header (substring-no-properties header)))
+    (propertize (format "(%s)" header)
+                ;; (format "(%s)" (substring-no-properties (org-capture-get :description)))
+                'face (nano-modeline-face 'primary))))
 
 (defun nano-modeline-prog-mode (&optional default)
   "Nano line for prog mode. Can be made DEFAULT mode."
@@ -1004,8 +1010,13 @@ common action"
 (defun nano-modeline-org-capture-mode ()
   "Nano line for org capture mode"
 
-  (let ((buttons '(("CAPTURE" . (org-capture-finalize))
-                   ("CANCEL" . (org-capture-kill)))))  
+  (defun nano-modeline-org-capture-filename ()
+    (buffer-file-name (org-base-buffer (current-buffer))))
+  
+  (let* ((filename (nano-modeline-org-capture-filename))
+         (save (format "Save entry to %s" filename))
+         (buttons `(("SAVE" . (org-capture-finalize . ,save))
+                    ("CANCEL" . (org-capture-kill . "Delete entry")))))  
     (funcall nano-modeline-position
              `((nano-modeline-buffer-status "ORG") " "
                (nano-modeline-buffer-name "Capture") " "
