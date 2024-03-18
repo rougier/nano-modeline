@@ -61,8 +61,13 @@
 ;;; NEWS:
 ;;
 ;;
-;; Version 
+;; Version  1.1.0
 ;; - Minor bugfix with org-capture
+;; - Better mu4e message mode line
+;; - Fixed eat mode line
+;; - Better margin/fringe alignment
+;; - API change: button now take advantage of new svg-lib API
+;; - Fixed flat-button style
 ;;
 ;; Version 1.0.1
 ;; - Minor bugfix
