@@ -144,7 +144,7 @@
                  (const :tag "Bottom" nano-modeline-footer))
   :group 'nano-modeline)
 
-(defcustom nano-modeline-window-dedicated-symbol '("● " . "")
+(defcustom nano-modeline-window-dedicated-symbol '(" " . "")
   "Pairs of strings showing a window is dedicated or not dedicated"
   :type '(cons (string :tag "Window is dedicated" )
                (string :tag "Window is not dedicated"))
@@ -171,6 +171,7 @@
   `((t :foreground ,(face-foreground 'default)
        :background ,(face-background 'default)
        :family "Roboto Mono"
+       :weight regular
        :box (:line-width 2
              :color ,(face-foreground 'default)
              :style flat-button)))
@@ -180,6 +181,7 @@
   `((t :foreground ,(face-foreground (if (facep 'nano-faded) 'nano-faded 'default))
        :background ,(face-background 'header-line nil t)
        :family "Roboto Mono"
+       :weight regular
        :box (:line-width 2
              :color ,(face-foreground 'default)
              :style flat-button)))
