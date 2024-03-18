@@ -656,7 +656,9 @@ delay needs to be set to 0."
                          (downcase (plist-get item :email)))
                        (plist-get msg :to)))
            (to-names (mapcar (lambda (item)
-                               (capitalize (downcase (plist-get item :name))))
+                               (if (stringp (plist-get item :name))
+                                   (capitalize (downcase (plist-get item :name)))
+                                 (plist-get item :email)))
                              (plist-get msg :to)))
            (all (cl-union to cc))  
            (me (mapcar #'downcase (mu4e-personal-addresses)))
@@ -678,12 +680,15 @@ delay needs to be set to 0."
   
   (with-current-buffer "*mu4e-headers*"
     (let* ((msg (mu4e-message-at-point))
+           (me (mapcar #'downcase (mu4e-personal-addresses)))
            (from (mu4e-message-field msg :from))
-           (from-name (capitalize (downcase (plist-get (car from) :name))))
-           (from-email (plist-get (car from) :email))
-           (me (mapcar #'downcase (mu4e-personal-addresses))))
-      (if (member from-email me) "Me"from-name))))
+           (from-name (plist-get (car from) :name))
+           (from-email (plist-get (car from) :email)))
+      (cond ((member from-email me) "Me")
+            ((stringp from-name)    (capitalize (downcase from-name)))
+            (t                      from-email)))))
 
+           
 (defun nano-modeline-mu4e-view-in-xwidget ()
   (interactive)
   (with-current-buffer "*mu4e-headers*"
