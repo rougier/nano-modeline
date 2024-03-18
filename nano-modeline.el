@@ -357,8 +357,8 @@ using the given FACE-PREFIX as the default."
     (cond ((stringp color) color)
           (t (face-foreground face nil 'default)))))
 
-(defun nano-modeline--make-text-button (label face)
-  "Make a text button from LABEL and FACE"
+(defun nano-modeline--make-text-button (label face state)
+  "Make a text button from LABEL and FACE for given STATE."
 
   (let* ((foreground (face-foreground face nil 'default))
          (background (face-background face nil 'default))
@@ -381,15 +381,30 @@ using the given FACE-PREFIX as the default."
                         :foreground ,foreground
                         :background ,background))))
 
-(defun nano-modeline--make-svg-button (label face)
-  "Make a svg button from LABEL and FACE"
+(defvar nano-modeline--svg-button-cache nil
+  "Cache for modeline buttons")
+
+(defun nano-modeline--make-svg-button (label face state)
+  "Make a svg button from LABEL and FACE for given STATE."
     
   (require 'svg-lib)
-  (let* ((stroke (nano-modeline--stroke-width face))
-         (tag (svg-lib-tag label face :stroke stroke))
-         (size (image-size tag))
-         (width (ceiling (car size))))
-    (propertize (make-string width ? ) 'display tag)))        
+  (unless nano-modeline--svg-button-cache
+     (setq nano-modeline--svg-button-cache (make-hash-table :test 'equal)))
+
+  (with-memoization
+      (gethash (list label (get-text-property 0 'svg-faces label)
+                     face state) nano-modeline--svg-button-cache)
+
+    (let* ((svg-faces (get-text-property 0 'svg-faces label))
+           (label-face (when svg-faces
+                         (alist-get state svg-faces)))
+           (stroke (nano-modeline--stroke-width face))
+           (tag (if (facep label-face)
+                    (svg-lib-tag label label-face :stroke stroke)
+                  (apply #'svg-lib-tag label face label-face))) ;; :stroke stroke)))
+           (size (image-size tag))
+           (width (ceiling (car size))))
+      (propertize (make-string width ? ) 'display tag))))
 
 (defun nano-modeline--make-button (button &optional use-svg)
   "Make a button from a BUTTON decription. When USE-SVG is t and
@@ -409,9 +424,13 @@ button."
                      ((eq state 'highlight) 'nano-modeline-button-highlight-face)
                      ((eq state 'inactive)  'nano-modeline-button-inactive-face)
                      (t                     'nano-modeline-button-active-face)))
+         (new-state (cond ((not active)          'inactive)
+                          ((eq state 'highlight) 'highlight)
+                          ((eq state 'inactive)  'inactive)
+                          (t                     'active)))
          (button (if (and use-svg (package-installed-p 'svg-lib))
-                     (nano-modeline--make-svg-button label face)
-                   (nano-modeline--make-text-button label face))))
+                     (nano-modeline--make-svg-button label face state)
+                   (nano-modeline--make-text-button label face state))))
     (propertize button
                 'pointer 'hand
                 'label label
