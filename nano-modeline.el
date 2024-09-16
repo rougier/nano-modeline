@@ -1,10 +1,10 @@
 ;;; nano-modeline.el --- N Λ N O modeline -*- lexical-binding: t -*-
 
-;; Copyright (C) 2021-2023 Free Software Foundation, Inc.
+;; Copyright (C) 2021-2024 Free Software Foundation, Inc.
 
 ;; Maintainer: Nicolas P. Rougier <Nicolas.Rougier@inria.fr>
 ;; URL: https://github.com/rougier/nano-modeline
-;; Version: 1.1.0
+;; Version: 2.0
 ;; Package-Requires: ((emacs "27.1"))
 ;; Keywords: convenience, mode-line, header-line
 
@@ -25,41 +25,34 @@
 
 ;;; Commentary:
 ;;
-;; Nano modeline is a an alterntive to the GNU/Emacs modeline. It can
+;; Nano modeline is a an alternative to the GNU/Emacs modeline. It can
 ;; be displayed at the bottom (mode-line) or at the top (header-line)
 ;; depending on the nano-modeline-position custom setting. There are
 ;; several modelines that can be installed on a per-mode basis or as
-;; the default one.
+;; the default.
+;;
+;; Everything is configurable via the nano-modeline customization group.
 ;;
 ;; Usage example:
 ;;
-;; Install prog mode modeline:
-;; (add-hook 'prog-mode-hook #'nano-modeline-prog-mode)
+;; Use default modeline for the current buffer
+;; (nano-modeline)
 ;;
-;; Make text mode modeline the default:
-;; (nano-modeline-text-mode t)
+;; Install the modeline for all prog buffers:
+;; (add-hook 'prog-mode-hook
+;;    (lambda () (nano-modeline nano-modeline-format-default)))
 ;;
-;; Install all available modes:
-;; (add-hook 'prog-mode-hook            #'nano-modeline-prog-mode)
-;; (add-hook 'text-mode-hook            #'nano-modeline-text-mode)
-;; (add-hook 'org-mode-hook             #'nano-modeline-org-mode)
-;; (add-hook 'pdf-view-mode-hook        #'nano-modeline-pdf-mode)
-;; (add-hook 'mu4e-headers-mode-hook    #'nano-modeline-mu4e-headers-mode)
-;; (add-hook 'mu4e-view-mode-hook       #'nano-modeline-mu4e-message-mode)
-;; (add-hook 'mu4e-compose-mode-hook    #'nano-modeline-mu4e-compose-mode)
-;; (add-hook 'elfeed-show-mode-hook     #'nano-modeline-elfeed-entry-mode)
-;; (add-hook 'elfeed-search-mode-hook   #'nano-modeline-elfeed-search-mode)
-;; (add-hook 'elpher-mode-hook          #'nano-modeline-elpher-mode)
-;; (add-hook 'term-mode-hook            #'nano-modeline-term-mode)
-;; (add-hook 'eat-mode-hook             #'nano-modeline-eat-mode)
-;; (add-hook 'xwidget-webkit-mode-hook  #'nano-modeline-xwidget-mode)
-;; (add-hook 'messages-buffer-mode-hook #'nano-modeline-message-mode)
-;; (add-hook 'org-capture-mode-hook     #'nano-modeline-org-capture-mode)
-;; (add-hook 'org-agenda-mode-hook      #'nano-modeline-org-agenda-mode)
-;;
+;; Make the default modeline the default for all buffers:
+;; (nano-modeline nil t)
 ;;
 ;;; NEWS:
 ;;
+;; Version  2.0
+;; - Full rewrite for simplification
+;; - Advanced customization interfaces
+;; - No more svg buttons (only text buttons)
+;; - No mode active/inactive faces (active indicator instead)
+;; - Pixel precise alignment of the mode-line/header-line
 ;;
 ;; Version  1.1.0
 ;; - Minor bugfix with org-capture
@@ -126,7 +119,7 @@
 ;;
 
 ;;; Code:
-(require 'cl-lib)
+(require 'nano-theme)
 
 (defgroup nano nil
   "N Λ N O"
@@ -136,701 +129,725 @@
   "N Λ N O Modeline"
   :group 'nano)
 
+(defgroup nano-modeline-faces nil
+  "N Λ N O modeline faces"
+  :group 'nano-modeline)
+
+(defgroup nano-modeline-modes nil
+  "N Λ N O modeline modes"
+  :group 'nano-modeline)
+
+(define-widget 'nano-modeline-part-type 'lazy
+  "Nano modeline part made of various elements."
+  :offset 4
+  :tag "Nano modeline part"
+  :type '(repeat
+          (choice (choice :tag "→ Border"
+                     (const :tag "Left" nano-modeline-element-border-left)
+                     (const :tag "Right" nano-modeline-element-border-right))
+                  ;; ----------------------------------------------------------
+                  (choice :tag "→ Space"
+                     (const :tag "Full" nano-modeline-element-space)
+                     (const :tag "Half" nano-modeline-element-half-space)
+                     (list  :tag "Custom" (const :tag "" nano-modeline-element-space)
+                                          (integer :tag "Width (pixels)")))
+                  ;; ----------------------------------------------------------
+                  (choice :tag "→ Mu4e"
+                    (choice :tag "→ Compose"
+                        (const :tag "Context (button)" nano-modeline-button-mu4e-compose-context)
+                        (const :tag "Subject (live)" nano-modeline-element-mu4e-compose-subject)
+                        (const :tag "Attach (button)" nano-modeline-button-mu4e-attach)
+                        (const :tag "Sign (button)" nano-modeline-button-mu4e-sign)
+                        (const :tag "Encrypt (button)" nano-modeline-button-mu4e-encrypt)
+                        (const :tag "Send (button)" nano-modeline-button-mu4e-send))
+                     (choice :tag "→ Message"
+                        (const :tag "From" nano-modeline-element-mu4e-message-from)
+                        (const :tag "To"   nano-modeline-element-mu4e-message-to)
+                        (const :tag "Date" nano-modeline-element-mu4e-message-date))
+                     (choice :tag "→ Headers"
+                        (const :tag "Query" nano-modeline-element-mu4e-last-query)
+                        (const :tag "Context (button)" nano-modeline-button-mu4e-context)
+                        (const :tag "Folding (button)" nano-modeline-button-mu4e-folding)
+                        (const :tag "Threads (button)" nano-modeline-button-mu4e-threads)
+                        (const :tag "related (button)" nano-modeline-button-mu4e-related)
+                        (const :tag "Update (button)"  nano-modeline-button-mu4e-update)))
+                  ;; ----------------------------------------------------------
+                  (choice :tag "→ Buffer"
+                     (const :tag "Status" nano-modeline-element-buffer-status)
+                     (const :tag "Name" nano-modeline-element-buffer-name)
+                     (const :tag "Mode" nano-modeline-element-buffer-mode)
+                     (const :tag "VC mode" nano-modeline-element-buffer-vc-mode)
+                     (const :tag "Position" nano-modeline-element-buffer-position))
+                  ;; ----------------------------------------------------------
+                  (choice :tag "→ Terminal"
+                     (const :tag "Status" nano-modeline-element-terminal-status)
+                     (const :tag "Name" nano-modeline-element-terminal-name)
+                     (const :tag "Mode" nano-modeline-element-terminal-mode)
+                     (const :tag "Working directory" nano-modeline-element-terminal-directory))
+                  ;; ----------------------------------------------------------
+                  (choice :tag "→ Elfeed"
+                     (const :tag "Search filter" nano-modeline-element-elfeed-search-filter)
+                     (const :tag "Search Count" nano-modeline-element-elfeed-search-count)
+                     (const :tag "Entry feed" nano-modeline-element-elfeed-entry-feed)
+                     (const :tag "Entry count" nano-modeline-element-elfeed-entry-count)
+                     (const :tag "Entry title" nano-modeline-element-elfeed-entry-title))
+                     ;; ----------------------------------------------------------
+                  (choice :tag "→ Window"
+                     (const :tag "Status" nano-modeline-element-window-status)
+                     (const :tag "Close" nano-modeline-element-window-close))
+                  (list  :tag "Button" (const :tag "" nano-modeline-button)
+                                       (string :tag "Label")
+                                       (function :tag "Action")
+                                       (symbol :tag "state")
+                                       (string :tag "Help message"))
+                  ;; ----------------------------------------------------------
+                  (choice :tag "→ Custom"
+                     (string :tag "String")
+                     (function :tag "Function")))))
+
+(define-widget 'nano-modeline-type 'lazy
+  "Nano modeline made of left and right parts"
+  :offset 4
+  :tag "Nano modeline"
+  :type '(cons
+          (nano-modeline-part-type :tag "Left part")
+          (nano-modeline-part-type :tag "Right part")))
+
+(defcustom nano-modeline-symbol-list
+  '((buffer-read-only  . "RO")
+    (buffer-read-write . "RW")
+    (buffer-modified   . "**")
+    (buffer-terminal   . ">_")
+    (buffer-clone      . "--")
+    (window-close . (" " . (6 . 0)))
+    (window-active . "●")
+    (window-inactive . "")
+    (window-dedicated . "󰐃")
+    (vc-branch  . "")
+    (vc-hash  . "#")
+    (mail-html . (" " . (4 . 0)))
+    (mail-attach . (" " . (4 . 0)))
+    (mail-encrypt . (" " . (4 . 0)))
+    (mail-sign . (" " . (4 . 0)))
+    (mail-send  . ("󰒊 " . (4 . 0)))
+    (mail-update . (" " . (4 . 0)))
+    (mail-fold . (" " . (4 . 0)))
+    (mail-unfold . (" " . (4 . 0))))
+  "Various symbols used in the modeline. It is possible to add padding to
+left and right for symbols that do not align perfectly (NERD
+fonts). Default symbols make use of NERD font and may appear as tofu if
+the fontis not installed on your system. Either install NERD font or use
+other characters."
+  :type '(alist :key-type symbol
+                :value-type (choice (string :tag "Label")
+                                    (cons  :tag "Label with padding"
+                                          (string :tag "Label")
+                                          (cons :tag "Padding in pixels"
+                                                (integer :tag "Left")
+                                                (integer :tag "Right")))))
+  :group 'nano-modeline)
+
+(defcustom nano-modeline-position 'header
+  "Default position for the nano modeline"
+
+  :type '(choice (const :tag "Top"    header)
+                 (const :tag "Bottom" footer))
+  :group 'nano-modeline)
+
+(defcustom nano-modeline-borders '(t . t)
+  "Whether to add left / right borders to modlines"
+
+  :type '(cons (boolean :tag "Left")
+                 (boolean :tag "Right"))
+  :group 'nano-modeline)
+
+
+(defcustom nano-modeline-border-color (face-background 'default)
+  "Border color"
+
+  :type '(color)
+  :group 'nano-modeline)
+
+
+(defcustom nano-modeline-alignment '(fringe . fringe)
+  "Left and right alignment of the mode-line (or header-line).
+
+fringes-outside-margins t
+   ┌───┬────────┬───────────────────────────────────────┬────────┬───┬───┐
+   │                         'window alignment                           │
+   └───┴────────┴───────────────────────────────────────┴────────┴───┴───┘
+   ┌───┬────────┬───────────────────────────────────────┬────────┬───┐
+   │                         'fringe alignment                       │
+   └───┴────────┴───────────────────────────────────────┴────────┴───┘
+       ┌────────┬───────────────────────────────────────┬────────┐
+       │                     'margin alignment                   │
+       └────────┴───────────────────────────────────────┴────────┘
+                ┌───────────────────────────────────────┐
+                │             'text alignment           │
+                └───────────────────────────────────────┘
+   ┌───┬────────┬───────────────────────────────────────┬────────┬───┬───┐
+   │   │        │                                       │        │   │   │
+   │ • │    •   │               Text area               │   •    │ • │ • │
+   │ │ │    │   │                                       │   │    │ │ │ │ │
+   └─┼─┴────┼───┴───────────────────────────────────────┴───┼────┴─┼─┴─┼─┘
+     │ Left margin                                    Right margin │   │
+   Left fringe                                            Right fringe │
+                                                                Scroll bar
+
+fringes-outside-margins nil
+   ┌───┬────────┬───────────────────────────────────────┬────────┬───┬───┐
+   │                         'window alignment                           │
+   └───┴────────┴───────────────────────────────────────┴────────┴───┴───┘
+   ┌────────┬───┬───────────────────────────────────────┬───┬────────┐
+   │                         'margin alignment                       │
+   └────────┴───┴───────────────────────────────────────┴───┴────────┘
+            ┌───┬───────────────────────────────────────┬───┐
+            │                'fringe alignment              │
+            └───┴───────────────────────────────────────┴───┘
+                ┌───────────────────────────────────────┐
+                │             'text alignment           │
+                └───────────────────────────────────────┘
+   ┌────────┬───┬───────────────────────────────────────┬───┬────────┬───┐
+   │        │   │                                       │   │        │   │
+   │   •    │ • │               Text area               │ • │    •   │ • │
+   │   │    │ │ │                                       │ │ │    │   │ │ │
+   └───┼────┴─┼─┴───────────────────────────────────────┴─┼─┴────┼───┴─┼─┘
+       │ Left fringe                                Right fringe │     │
+    Left margin                                           Right margin │
+                                                                Scroll bar
+"
+  :type '(cons (choice :tag "Left"
+                       (const window)
+                       (const margin)
+                       (const fringe)
+                       (const text))
+               (choice :tag "Right"
+                       (const window)
+                       (const margin)
+                       (const fringe)
+                       (const text)))
+  :group 'nano-modeline)
+
+
 (defcustom nano-modeline-padding '(0.20 . 0.25)
-  "Default vertical space adjustment (in fraction of character height)"
+  "Default vertical space adjustment (in fraction of character height) for
+the buffer status element."
   :type '(cons (float :tag "Top spacing")
                (float :tag "Bottom spacing"))
   :group 'nano-modeline)
 
-(defcustom nano-modeline-position #'nano-modeline-header
-  "Default position for the nano modeline"
+(defface nano-modeline-face-buffer-read-only
+  `((t (:foreground ,(face-foreground 'nano-default-i)
+        :background ,(face-background 'nano-default-i)
+        :weight ,(face-attribute 'bold :weight))))
+  "Face for read only buffer"
+  :group 'nano-modeline-faces)
 
-  :type '(choice (const :tag "Top"    nano-modeline-header)
-                 (const :tag "Bottom" nano-modeline-footer))
-  :group 'nano-modeline)
+(defface nano-modeline-face-buffer-read-write
+  `((t (:foreground ,(face-foreground 'nano-faded-i)
+        :background ,(face-background 'nano-faded-i)
+        :weight ,(face-attribute 'bold :weight))))
+  "Face for read-write buffer"
+  :group 'nano-modeline-faces)
 
-(defcustom nano-modeline-window-dedicated-symbol '(" " . "")
-  "Pairs of strings showing a window is dedicated or not dedicated"
-  :type '(cons (string :tag "Window is dedicated" )
-               (string :tag "Window is not dedicated"))
-  :group 'nano-modeline)
+(defface nano-modeline-face-buffer-modified
+  `((t (:foreground ,(face-foreground 'nano-popout-i)
+        :background ,(face-background 'nano-popout-i)
+        :weight ,(face-attribute 'bold :weight))))
+  "Face for modified buffer"
+  :group 'nano-modeline-faces)
 
-(defface nano-modeline-active
-  `((t (:foreground ,(face-foreground 'default)
-        :background ,(face-background 'header-line nil t)
-        :box (:line-width 1 :color ,(face-background 'default)))))
-    "Face for when line is active")
+(defface nano-modeline-face-buffer-marked
+  `((t (:foreground ,(face-foreground 'nano-critical-i)
+        :background ,(face-background 'nano-critical-i)
+        :weight ,(face-attribute 'bold :weight))))
+  "Face for marked buffer"
+  :group 'nano-modeline-faces)
 
-(defface nano-modeline-inactive
-  `((t (:inherit (,(when (facep 'nano-faded) 'nano-faded)
-                  nano-modeline-active))))
-  "Face for when line is inactive")
-
-(defface nano-modeline-status
-  `((t (:foreground ,(face-background 'default)
-        :background ,(face-foreground 'shadow nil t)
-        :inherit bold)))
-  "Face for line status")
-
-(defface nano-modeline-button-active-face
-  `((t :foreground ,(face-foreground 'default)
-       :background ,(face-background 'default)
-       :family "Roboto Mono"
-       :weight regular
-       :box (:line-width 2
-             :color ,(face-foreground 'default)
-             :style flat-button)))
-  "Active button face")
-
-(defface nano-modeline-button-inactive-face
-  `((t :foreground ,(face-foreground (if (facep 'nano-faded) 'nano-faded 'default))
-       :background ,(face-background 'header-line nil t)
-       :family "Roboto Mono"
-       :weight regular
-       :box (:line-width 2
-             :color ,(face-foreground 'default)
-             :style flat-button)))
-  "Inactive button face.")
-
-(defface nano-modeline-button-highlight-face
-  `((t :foreground ,(face-background 'default)
-       :background ,(face-foreground 'default)
-       :family "Roboto Mono"
-       :weight bold))
-  "Highlight button face.")
-
-(defvar nano-modeline-base-face nil)
-
-(defun nano-modeline--stroke-width (face)
-  "Extract the line width of the box for the given FACE."
-
-  (let* ((box (face-attribute face ':box nil 'default))
-         (width (plist-get box ':line-width)))
-      (cond ((integerp width) width)
-            ((consp width) (car width))
-            (t 0))))
-
-;; Nano line faces
-(defcustom nano-modeline-faces
-  `((header-active      . (nano-modeline-active))
-    (header-inactive    . (nano-modeline-inactive))
-    (footer-active      . (nano-modeline-active))
-    (footer-inactive    . (nano-modeline-inactive))
-    (status-RW-active   . (nano-modeline-status))
-    (status-RO-active   . (nano-modeline-status))
-    (status-**-active   . (nano-modeline-status
-                           ,(when (facep 'nano-popout-i) 'nano-popout-i)))
-    (name-active        . (bold))
-    (primary-active     . ())
-    (secondary-active   . (,(when (facep 'nano-faded) 'nano-faded))))
-  "Nano line faces.
-
-Each face defined here is used by the modeline depending on the current state (active / inactive). It is ok to define a face for a single state. In such case, the alternative state will use defaults."
-  :type '(alist :key-type (symbol :tag "Face")
-                :value-type (repeat :tag "inherits" face)))
-
-(defface nano-modeline--empty-face
+(defface nano-modeline-face-default
   `((t (:foreground ,(face-foreground 'default))))
-  "Empty face for resetting mode-line / header-line."
-  :group nil)
+  "Default face"
+  :group 'nano-modeline-faces)
 
-(defvar nano-modeline--selected-window nil
-  "Selected window before mode-line was activated.")
+(defface nano-modeline-face-primary
+  `((t (:foreground ,(face-foreground 'default)
+        :weight ,(face-attribute 'bold :weight))))
+  "Face for primary information"
+  :group 'nano-modeline-faces)
 
-(defun nano-modeline--update-selected-window ()
-  "Update selected window (before mode-line is active)"
-  (setq nano-modeline--selected-window (selected-window)))
+(defface nano-modeline-face-secondary
+  `((t (:foreground ,(face-foreground 'nano-faded))))
+  "Face for secondary information"
+  :group 'nano-modeline-faces)
 
-(defun nano-modeline--base-face (face-prefix)
-  "Return the face for FACE-PREFIX according to current active state."
+(defface nano-modeline-face-button-active
+  `((t :foreground ,(face-foreground 'nano-default-i)
+       :background ,(face-background 'nano-default-i)
+       :weight ,(face-attribute 'bold :weight)))
+  "Active button face"
+  :group 'nano-modeline-faces)
 
-  (let* ((window (get-buffer-window (current-buffer)))
-         (active (eq window nano-modeline--selected-window))
-         (state (intern (concat (symbol-name face-prefix)
-                                (if active "-active" "-inactive"))))
-         (face (cadr (assoc state nano-modeline-faces))))
-    face))
+(defface nano-modeline-face-button-progress
+  `((t :foreground ,(face-foreground 'nano-critical-i)
+       :background ,(face-background 'nano-critical-i)
+       :weight ,(face-attribute 'bold :weight)))
+  "Progress button face"
+  :group 'nano-modeline-faces)
 
-(defun nano-modeline-face (&optional face-prefix)
-  "Return the face for FACE-PREFIX according to current active state and
-make it inherit the base face."
+(defface nano-modeline-face-button-inactive
+  `((t :foreground ,(face-foreground 'nano-faded)
+       :background ,(face-background 'default)))
+  "Inactive button face."
+  :group 'nano-modeline-faces)
 
-  (let* ((window (get-buffer-window (current-buffer)))
-         (active (eq window nano-modeline--selected-window))
-         (state (intern (concat (symbol-name face-prefix)
-                                (if active "-active" "-inactive"))))
-         (face (cdr (assoc state nano-modeline-faces)))
-         (face (if nano-modeline-base-face
-                   (push nano-modeline-base-face face)
-                 face))
-         (face (reverse face)))
-    `(:inherit ,face)))
+(defface nano-modeline-face-button-highlight
+  `((t :foreground ,(face-foreground 'nano-popout-i)
+       :background ,(face-background 'nano-popout-i)
+       :weight ,(face-attribute 'bold :weight)))
+  "Highlight button face."
+  :group 'nano-modeline-faces)
 
 
-(defvar-local nano-modeline-left-fringe-width 0)
-(defvar-local nano-modeline-right-fringe-width 0)
 
-(defun nano-modeline--make (left right face-prefix)
-  "Build a dynamic mode/header line made of LEFT and RIGHT part,
-using the given FACE-PREFIX as the default."
+(defcustom nano-modeline-format-default
+  (cons '(nano-modeline-element-buffer-status
+          nano-modeline-element-space
+          nano-modeline-element-buffer-name
+          nano-modeline-element-space
+          nano-modeline-element-buffer-mode
+          nano-modeline-element-space
+          nano-modeline-element-buffer-vc-mode)
+        '(nano-modeline-element-buffer-position
+          nano-modeline-element-window-status
+          nano-modeline-element-space))
+    "Default format"
+    :type 'nano-modeline-type
+    :group 'nano-modeline-modes)
 
-  `(:eval
-    (let* ((nano-modeline-base-face (nano-modeline--base-face ',face-prefix))
-           (left (mapconcat
-                  (lambda (element)
-                    (if (stringp element)
-                        (propertize element 'face nano-modeline-base-face)
-                      (apply (car element) (cdr element))))
-                  ',left))
-           (right (mapconcat
-                   (lambda (element)
-                    (if (stringp element)
-                        (propertize element 'face nano-modeline-base-face)
-                     (apply (car element) (cdr element))))
-                   ',right))
-           (width (window-width))
-           (outside fringes-outside-margins)
-           (left-fringe (if outside -1.0 0.0))
-           (left-margin (if outside 0.0 1.0))
-           (right-fringe (if outside -1.0 0.0))
-           (right-margin (if outside -1.0 0.0))
-           (left-max-size (- width (length right) 2))
-           (left (if (> (length left) left-max-size)
-                     (concat (truncate-string-to-width left left-max-size)
-                             (propertize "…" 'face `(:inherit  ,nano-modeline-base-face)))
-                   left)))
-      (concat (propertize " "
-                        'display `(space :align-to (+ left-margin
-                                                      (,left-fringe . left-fringe)
-                                                      (,left-margin . left-margin))))
-            (propertize " " 'face 'fringe
-                        'display '(space :width (nano-modeline-left-fringe-width)))
+(defcustom nano-modeline-format-terminal
+  (cons '(nano-modeline-element-terminal-status
+          nano-modeline-element-space
+          nano-modeline-element-terminal-name
+          nano-modeline-element-space
+          nano-modeline-element-terminal-mode)
+        '(nano-modeline-element-terminal-directory
+          nano-modeline-element-window-status
+          nano-modeline-element-space))
+  "Modeline format for terminals"
+  :type 'nano-modeline-type
+  :group 'nano-modeline-modes)
+
+(defcustom nano-modeline-format-elfeed-search
+  (cons '(nano-modeline-element-buffer-status
+          nano-modeline-element-space
+          nano-modeline-element-elfeed-search-filter)
+        '(nano-modeline-element-elfeed-search-count
+          nano-modeline-element-window-status
+          nano-modeline-element-space))
+  "Modeline format for elfeed search"
+  :type 'nano-modeline-type
+  :group 'nano-modeline-modes)
+
+(defcustom nano-modeline-format-elfeed-entry
+  (cons '(nano-modeline-element-buffer-status
+          nano-modeline-element-space
+          nano-modeline-element-elfeed-entry-feed
+          nano-modeline-element-space
+          nano-modeline-element-elfeed-entry-title)
+        '(nano-modeline-element-elfeed-entry-count
+          nano-modeline-element-window-status
+          nano-modeline-element-space))
+  "Modeline format for elfeed search"
+  :type 'nano-modeline-type
+  :group 'nano-modeline-modes)
+
+(defcustom nano-modeline-format-mu4e-headers
+  (cons '(nano-modeline-element-buffer-status
+          nano-modeline-element-space
+          nano-modeline-element-mu4e-last-query)
+        '(nano-modeline-button-mu4e-context
+          nano-modeline-element-half-space
+          nano-modeline-button-mu4e-folding
+          nano-modeline-element-half-space
+          nano-modeline-button-mu4e-threads
+          nano-modeline-element-half-space
+          nano-modeline-button-mu4e-related
+          nano-modeline-element-half-space
+          nano-modeline-button-mu4e-update
+          nano-modeline-element-half-space))
+  "Modeline for mu4e headers mode"
+  :type 'nano-modeline-type
+  :group 'nano-modeline-modes)
+
+(defcustom nano-modeline-format-mu4e-message
+  (cons '(;; nano-modeline-element-buffer-status
+          nano-modeline-element-mu4e-message-status
+          nano-modeline-element-space
+          nano-modeline-element-mu4e-message-from
+          " to "
+          nano-modeline-element-mu4e-message-to)
+        '(nano-modeline-element-mu4e-message-date
+          nano-modeline-element-space))
+  "Modeline for mu4e message mode"
+  :type 'nano-modeline-type
+  :group 'nano-modeline-modes)
+
+
+(defcustom nano-modeline-format-mu4e-compose
+  (cons '(nano-modeline-element-buffer-status
+          nano-modeline-element-space
+          nano-modeline-element-mu4e-compose-subject)
+        '(nano-modeline-button-mu4e-compose-context
+          nano-modeline-element-half-space
+          nano-modeline-button-mu4e-attach
+          nano-modeline-element-half-space
+          nano-modeline-button-mu4e-encrypt
+          nano-modeline-element-half-space
+          nano-modeline-button-mu4e-sign
+          nano-modeline-element-half-space
+          nano-modeline-button-mu4e-send
+          nano-modeline-element-half-space))
+  "Modeline for mu4e compose mode"
+  :type 'nano-modeline-type
+  :group 'nano-modeline-modes)
+
+(defun nano-modeline-align-to (direction what &optional char-size pixel-size)
+  "This methods return a display space specification to align some text on
+the DIRECTION ('left or 'right) of WHAT ('window, 'margin, 'fringe or
+'text) plus CHAR-SIZE and PIXEL-SIZE."
+
+  (let* ((char-size (or char-size 0))
+         (pixel-size (or pixel-size 0)))
+    (cond ((eq 'left direction)
+           (cond ((eq what 'window) (if fringes-outside-margins
+                                        `(space :align-to (+ left-fringe
+                                                             (,pixel-size)
+                                                             ,char-size))
+                                      `(space :align-to (+ left-margin
+                                                           (,pixel-size)
+                                                           ,char-size))))
+                 ((eq what 'fringe) `(space :align-to (+ left-fringe
+                                                         (,pixel-size)
+                                                         ,char-size)))
+                 ((eq what 'margin) `(space :align-to (+ left-margin
+                                                         (,pixel-size)
+                                                         ,char-size)))
+                 (t                 `(space :align-to (+ left
+                                                         (,pixel-size)
+                                                         ,char-size)))))
+          ((eq 'right direction)
+           (cond ((eq what 'window) `(space :align-to (+ scroll-bar
+                                                  (1.0 . scroll-bar)
+                                                  (,pixel-size)
+                                                  ,char-size)))
+          ((eq what 'fringe) `(space :align-to (+ right-fringe
+                                                  (1.0 . right-fringe)
+                                                  (,pixel-size)
+                                                  ,char-size)))
+          ((eq what 'margin) `(space :align-to (+ right-margin
+                                                  (1.0 . right-margin)
+                                                  (,pixel-size)
+                                                  ,char-size)))
+          (t                 `(space :align-to (+ right
+                                                  (,pixel-size)
+                                                  ,char-size))))))))
+
+(defun nano-modeline-padding-to (&optional left right face)
+  "This function returns the left and right padding to precisely align the
+mode-line (or header-line) to window, margin, fringe or text extents,
+depending on LEFT and RIGHT. LEFT and RIGHT can be constant ('window,
+'fringe, 'margin or 'text) or a cons specifying (what . (char-size
+. pixel-size)). It returns two strings that must be respectively
+prepended and appended to the mode-line (or header-line). An optional
+FACE can be given to be used for the prefix and the suffix."
+
+  (let* ((left (or left (car nano-modeline-alignment)))
+         (left (if (not (consp left))
+                   (cons left '(0 . 0))
+                 left))
+         (right (or right (cdr nano-modeline-alignment)))
+         (right (if (not (consp right))
+                    (cons right '(0 . 0))
+                  right))
+         (face (or face `(:foreground ,(face-foreground 'default)
+                          :background ,(face-background 'default)
+                          :underline nil :overline nil :inherit nil :box nil))))
+    (cons (concat (propertize " " 'display (nano-modeline-align-to 'left 'window))
+                  (propertize " " 'display (nano-modeline-align-to 'left (car left) (cadr left) (cddr left))
+                                  'face face))
+          (concat (propertize " " 'display (nano-modeline-align-to 'right (car right) (cadr right) (cddr right)))
+                  (propertize " " 'display (nano-modeline-align-to 'right 'window) 'face face)))))
+
+(defun nano-modeline--eval-element (element)
+  "Evaluate an ELEMENT depending on its type."
+
+  (cond ((stringp element)   element)
+        ((functionp element) (funcall element))
+        ((consp element)     (apply element))
+        (t                   "(error)")))
+
+(defun nano-modeline-make (format)
+  "This function builds a modeline with LEFT on the left and RIGHT on the
+right. It takes care of truncating first the left part and then the
+right part if the combination of left and right doesn't fit the
+modeline."
+
+  (let* ((left (concat (when (car nano-modeline-borders)
+                         (nano-modeline-element-border-left))
+                  (mapconcat #'nano-modeline--eval-element (car format) "")))
+         (right (concat (mapconcat #'nano-modeline--eval-element (cdr format) "")
+                        (when (cdr nano-modeline-borders)
+                          (nano-modeline-element-border-right))))
+         (alignment nano-modeline-alignment)
+         (padding (nano-modeline-padding-to (car alignment) (cdr alignment)))
+
+         ;; Compute modeline width taking into account margin and alignment
+         (width (+ (window-width)
+                   (cond ((and fringes-outside-margins (eq 'fringe (car alignment)))
+                          (or (car (window-margins)) 0))
+                         ((and (not fringes-outside-margins) (eq 'margin (car alignment)))
+                          (+ 1 (or (car (window-margins)) 0)))
+                         (t 0))
+                   (cond ((and fringes-outside-margins (eq 'fringe (cdr alignment)))
+                          (or (cdr (window-margins)) 0))
+                         ((and (not fringes-outside-margins) (eq 'margin (cdr alignment)))
+                          (+ 1 (or (cdr (window-margins)) 0)))
+                         (t 0))))
+
+         ;; Truncate left member (first) if necessary, minimum size is 7
+         ;; -> 7 corresponds to the size of border + buffer status + 1
+         (right-width (floor (/ (string-pixel-width right) (frame-char-width))))
+         (max-width (max (- width right-width) 7))
+         (left (truncate-string-to-width left max-width nil nil "…"))
+
+         ;; Truncate right member (second) if necessary
+         (right (if (> (+ right-width (length left)) width)
+                    (truncate-string-to-width right (- width (length left)) nil nil "…")
+                  right))
+         (pixel-adjust (- (string-pixel-width right))))
+    (concat (car padding)
             left
             (propertize " "
-                        'face `(:inherit ,nano-modeline-base-face )
-                        'display `(space :align-to (- right-margin
-                                                      (,right-fringe . right-fringe)
-                                                      (,right-margin . right-margin)
-                                                      (nano-modeline-right-fringe-width)
-                                                      ,(length right))))
+                        'display (nano-modeline-align-to
+                                  'right 'fringe 0 pixel-adjust))
             right
-            (propertize " " 'face 'fringe
-                        'display '(space :width (nano-modeline-right-fringe-width)))))))
+            (cdr padding))))
 
-;; (defun nano-modeline--make (left right face-prefix)
-;;   "Build a dynamic mode/header line made of LEFT and RIGHT part,
-;; using the given FACE-PREFIX as the default."
+(defun nano-modeline-symbol (name)
+  "Retrieve SYMBOL from the nano-modeline-symbols list"
+  (or (alist-get name nano-modeline-symbol-list) "??"))
 
-;;   `(:eval
-;;     (let* ((nano-modeline-base-face (nano-modeline--base-face ',face-prefix))
-;;            (left (mapconcat
-;;                   (lambda (element)
-;;                     (if (stringp element)
-;;                         (propertize element 'face nano-modeline-base-face)
-;;                       (apply (car element) (cdr element))))
-;;                   ',left))
-;;            (right (mapconcat
-;;                    (lambda (element)
-;;                     (if (stringp element)
-;;                         (propertize element 'face nano-modeline-base-face)
-;;                      (apply (car element) (cdr element))))
-;;                    ',right))
-;;            (width (window-width))
-;;            (fringe (if fringes-outside-margins 0.0 -1.0))
-;;            (left-max-size (- width (length right) 2))
-;;            (left (if (> (length left) left-max-size)
-;;                      (concat (truncate-string-to-width left left-max-size)
-;;                              (propertize "…" 'face `(:inherit  ,nano-modeline-base-face)))
-;;                    left)))
-;;       (concat (propertize " "
-;;                 'display `(space :align-to (+ left-margin
-;;                                               (,fringe . left-fringe)
-;;                                               ( 0.0 . left-margin))))
-;;               left
-;;               (propertize " "
-;;                 'face `(:inherit ,nano-modeline-base-face)
-;;                 'display `(space :align-to (- right
-;;                                               (,fringe . right-fringe)
-;;                                               ( 0.0 . right-margin)
-;;                                               ,(length right))))
-;;               right))))
+(defun nano-modeline-element-buffer-status (&optional symbol face raise)
+  "Return a prefix indicating if buffer is read-only, read-write or modified"
 
+  (let* ((raise (or raise nano-modeline-padding))
+         (face  (or face (cond (buffer-read-only    'nano-modeline-face-buffer-read-only)
+                               ((buffer-modified-p) 'nano-modeline-face-buffer-modified)
+                               (t                   'nano-modeline-face-buffer-read-write))))
+         (symbol (or symbol (cond ((buffer-base-buffer) (nano-modeline-symbol 'buffer-clone))
+                                  (buffer-read-only     (nano-modeline-symbol 'buffer-read-only))
+                                  ((buffer-modified-p)  (nano-modeline-symbol 'buffer-modified))
+                                  (t                    (nano-modeline-symbol 'buffer-read-write))))))
+    (propertize (concat
+                 (propertize " " 'display `(raise ,(car raise)))
+                 symbol
+                 (propertize " " 'display `(raise ,(- (cdr raise)))))
+                'face face)))
 
-(defun nano-modeline--stroke-color (face)
-  "Extract the line color of the box for the given FACE."
+(defun nano-modeline-element-buffer-name ()
+  "Return a string with the buffer name"
 
-  (let* ((box (face-attribute face ':box))
-         (color (plist-get box ':color)))
-    (cond ((stringp color) color)
-          (t (face-foreground face nil 'default)))))
+  (propertize (format-mode-line "%b") 'face 'nano-modeline-face-primary))
 
-(defun nano-modeline--make-text-button (label face state)
-  "Make a text button from LABEL and FACE for given STATE."
-
-  (let* ((foreground (face-foreground face nil 'default))
-         (background (face-background face nil 'default))
-         (label (concat " " label " "))
-         ;; We compensate the footer padding with an irregular outer
-         ;; box around label (vertical border with a default
-         ;; background color). If this is not made the background color
-         ;; is the height of the modeline which is not very aesthetic.
-         (padding (floor (/ (* (frame-char-height)
-                               (+ (car nano-modeline-padding)
-                                  (cdr nano-modeline-padding))) 2)))
-         (padding (+ padding 0))
-         (window (get-buffer-window (current-buffer)))
-         (active (eq window nano-modeline--selected-window))
-         (face (if active
-                   'nano-modeline-active
-                 'nano-modeline-inactive)))
-    (propertize label
-                'face `(:inherit ,face
-                        :foreground ,foreground
-                        :background ,background))))
-
-(defvar nano-modeline--svg-button-cache nil
-  "Cache for modeline buttons")
-
-(defun nano-modeline--make-svg-button (label face state)
-  "Make a svg button from LABEL and FACE for given STATE."
-
-  (require 'svg-lib)
-  (unless nano-modeline--svg-button-cache
-     (setq nano-modeline--svg-button-cache (make-hash-table :test 'equal)))
-
-  (with-memoization
-      (gethash (list label (get-text-property 0 'svg-faces label)
-                     face state) nano-modeline--svg-button-cache)
-
-    (let* ((svg-faces (get-text-property 0 'svg-faces label))
-           (label-face (when svg-faces
-                         (alist-get state svg-faces)))
-           (stroke (nano-modeline--stroke-width face))
-           (tag (if (facep label-face)
-                    (svg-lib-tag label label-face :stroke stroke)
-                  (apply #'svg-lib-tag label face label-face))) ;; :stroke stroke)))
-           (size (image-size tag))
-           (width (ceiling (car size))))
-      (propertize (make-string width ? ) 'display tag))))
-
-(defun nano-modeline--make-button (button &optional use-svg)
-  "Make a button from a BUTTON decription. When USE-SVG is t and
-svg-lib is installed, result is a SVG button else, it is a text
-button."
-
-  (let* ((label (plist-get button :label))
-         (label (if (functionp label)
-                    (funcall label)
-                  label))
-         (state (plist-get button :state))
-         (help (plist-get button :help))
-         (hook (plist-get button :hook))
-         (window (get-buffer-window (current-buffer)))
-         (active (eq window nano-modeline--selected-window))
-         (face (cond ((not active)          'nano-modeline-button-inactive-face)
-                     ((eq state 'highlight) 'nano-modeline-button-highlight-face)
-                     ((eq state 'inactive)  'nano-modeline-button-inactive-face)
-                     (t                     'nano-modeline-button-active-face)))
-         (new-state (cond ((not active)          'inactive)
-                          ((eq state 'highlight) 'highlight)
-                          ((eq state 'inactive)  'inactive)
-                          (t                     'active)))
-         (button (if (and use-svg (package-installed-p 'svg-lib))
-                     (nano-modeline--make-svg-button label face state)
-                   (nano-modeline--make-text-button label face state))))
-    (propertize button
-                'pointer 'hand
-                'label label
-                'keymap (let ((map (make-sparse-keymap)))
-                          (define-key map [header-line mouse-1] hook)
-                          (define-key map [mode-line mouse-1] hook)
-                          map)
-                'help-echo `(lambda (window object pos)
-                              (nano-modeline--update-button-state ,label 'highlight)
-                              (let (message-log-max)
-                                (message ,help))
-                              nil))))
-
-(defun nano-modeline--reset-button-state (&rest args)
-  "Reset the state of all the buttons."
-
-  (when (boundp 'nano-modeline--buttons)
-    (dolist (buttons (mapcar 'cdr nano-modeline--buttons))
-      (dolist (button buttons)
-        (unless (eq (plist-get button :state) 'inactive)
-          (plist-put button :state 'active)))))
-  (force-mode-line-update))
-
-(defun nano-modeline--update-button-state (label state)
-  "Update the state of the button LABEL with new STATE and update
-other button states."
-
-  (let* ((window (get-buffer-window (current-buffer)))
-         (active (eq window nano-modeline--selected-window)))
-    (when (and active (boundp 'nano-modeline--buttons))
-      (dolist (buttons (mapcar 'cdr nano-modeline--buttons))
-        (dolist (button buttons)
-          (unless (eq (plist-get button :state) 'inactive)
-            (let* ((button-label (plist-get button :label))
-                   (button-label (if (functionp button-label)
-                                     (funcall button-label)
-                                   button-label)))
-          (if (string-equal button-label label)
-              (plist-put button :state state)
-            (plist-put button :state 'active))))))))
-  (force-mode-line-update))
-
-(defun nano-modeline-header (left &optional right default)
-  "Install a header line made of LEFT and RIGHT parts. Line can be
-made DEFAULT."
-
-  (require 'tooltip)
-
-  (if default
-      (setq-default header-line-format (nano-modeline--make left right 'header))
-    (setq-local header-line-format (nano-modeline--make left right 'header)))
-  (make-local-variable 'nano-modeline--buttons)
-  (setq nano-modeline--buttons nil)
-  (advice-add 'tooltip-hide :before #'nano-modeline--reset-button-state)
-  (face-remap-set-base 'header-line 'nano-modeline--empty-face)
-  (add-hook 'post-command-hook #'nano-modeline--update-selected-window))
-
-(defun nano-modeline-footer (left &optional right default)
-  "Install a footer line made of LEFT and RIGHT parts. Line can be
-made DEFAULT."
-
-  (if default
-      (setq-default mode-line-format (nano-modeline--make left right 'header))
-    (setq-local mode-line-format (nano-modeline--make left right 'header)))
-  (make-local-variable 'nano-modeline--buttons)
-  (setq nano-modeline--buttons nil)
-  (advice-add 'tooltip-hide :before #'nano-modeline--reset-button-state)
-  (face-remap-set-base 'mode-line 'nano-modeline--empty-face)
-  (face-remap-set-base 'mode-line-inactive 'nano-modeline-empty-face)
-  (add-hook 'post-command-hook #'nano-modeline--update-selected-window))
-
-(defun nano-modeline-buffer-name (&optional name)
-  "Buffer name"
+(defun nano-modeline-element-buffer-mode ()
+  "Return a string describing current major mode."
 
   (propertize
-   (cond (name name)
-         ((buffer-narrowed-p) (format"%s [narrow]" (buffer-name)))
-         (t (buffer-name)))
-   'face (nano-modeline-face 'name)))
+   (concat
+    "(" (downcase (cond ((consp mode-name) (car mode-name))
+                        ((stringp mode-name) mode-name)
+                        (t "unknow")))
+    (when (buffer-narrowed-p)  "/narrow") " mode)")
+   'face 'nano-modeline-face-default))
 
-(defun nano-modeline-buffer-status (&optional status padding)
-  "Generic prefix to indicate buffer STATUS with vertical PADDING (top . bottom)"
-
-  (let* ((padding (or padding nano-modeline-padding))
-         (top (propertize " " 'display `(raise ,(car padding))))
-         (bot (propertize " " 'display `(raise ,(- (cdr padding))))))
-    (cond (buffer-read-only
-           (propertize (concat top (or status "RO") bot)
-                       'face (nano-modeline-face 'status-RO)))
-          ((buffer-modified-p)
-           (propertize (concat top (or status "**") bot)
-                       'face (nano-modeline-face 'status-**)))
-          (t
-           (propertize (concat top (or status "RW") bot)
-                       'face (nano-modeline-face 'status-RW))))))
-
-
-(defun nano-modeline-buttons (buttons &optional use-svg group)
-  "Clickable BUTTONS in text or svg mode depending on
-USE-SVG. BUTTONS is a list of cons (label. (hook . help)) where
-hook is an interactive function that is called when the button is
-clicked and help is the tooltip help message. GROUP (default to
-0) is an arbitrary optional index of the group this button
-belongs to.If you want to have button highlight when the mouse
-hovers a button, tooltip mode needs to be active and tooltip
-delay needs to be set to 0."
-
-  (unless (and (boundp 'nano-modeline--buttons)
-               nano-modeline--buttons
-               (assoc (or group 0) nano-modeline--buttons))
-    (unless (boundp 'nano-modeline--buttons)
-      (make-local-variable 'nano-modeline--buttons))
-    (let* ((group (or group 0))
-           (buttons (mapcar (lambda (button)
-                              (list ':label (car button)
-                                    ':state 'active
-                                    ':help (cddr button)
-                                    ':hook (cadr button)))
-                            buttons)))
-      (if (cdr (assoc group nano-modeline--buttons))
-          (setf (cdr (assoc group nano-modeline--buttons)) buttons)
-        (add-to-list 'nano-modeline--buttons (cons group buttons)))))
-
-  (let* ((buttons (cdr (assoc (or group 0) nano-modeline--buttons)))
-         (buttons (if (and use-svg (package-installed-p 'svg-lib))
-                      (mapconcat (lambda (button)
-                                   (nano-modeline--make-button button t))
-                                 buttons (propertize " " 'face (nano-modeline-face)))
-                    (mapconcat (lambda (button)
-                                 (nano-modeline--make-button button nil))
-                               buttons (propertize " " 'face (nano-modeline-face))))))
-    (if use-svg
-        (propertize buttons 'face (nano-modeline-face))
-      buttons)))
-
-(defun nano-modeline-file-size ()
-  "File size in human readable format"
-
-  (if-let* ((file-name (buffer-file-name))
-            (file-attributes (file-attributes file-name))
-            (file-size (file-attribute-size file-attributes))
-            (file-size (file-size-human-readable file-size)))
-      (propertize (format "(%s)" file-size)
-                  'face (nano-modeline-face 'primary))
-    ""))
-
-(defun nano-modeline-cursor-position (&optional format)
-  "Cursor position using given FORMAT."
-
-  (let ((format (or format "%l:%c ")))
-    (propertize (format-mode-line format)
-                'face (nano-modeline-face 'secondary))))
-
-(defun nano-modeline-buffer-line-count ()
-  "Buffer total number of lines"
-
-  (save-excursion
-    (goto-char (point-max))
-    (propertize
-     (format-mode-line "(%l lines)")
-     'face (nano-modeline-face 'primary))))
-
-(defun nano-modeline-window-dedicated (&optional dedicated not-dedicated)
-  "Pin symbol when window is dedicated"
-
-  (propertize (if (window-dedicated-p)
-                  (or dedicated (car nano-modeline-window-dedicated-symbol))
-                (or not-dedicated (cdr nano-modeline-window-dedicated-symbol)))
-              'face (nano-modeline-face 'secondary)))
-
-(defun nano-modeline-git-info (&optional symbol)
-  "Git information as (branch, file status)"
+(defun nano-modeline-element-buffer-vc-mode ()
+  "VC information as (branch, file status)"
 
   (when vc-mode
       (when-let* ((file (buffer-file-name))
                   (branch (substring-no-properties vc-mode 5))
                   (state (vc-state file)))
-        (propertize (format "(%s%s, %s)" (or symbol " ") branch state)
-                    'face (nano-modeline-face 'primary)))))
+        (propertize (format "(%s%s, %s)" (nano-modeline-symbol 'vc-branch) branch state)
+                    'face 'nano-modeline-face-default))))
 
-(defun nano-modeline-primary-info (text)
-  "Information using primary face"
+(defun nano-modeline-element-buffer-position ()
+  "Return a string describing current position in buffer."
+  (propertize (format-mode-line " %C:%l") 'face 'nano-modeline-face-secondary))
 
-  (propertize text 'face (nano-modeline-face 'primary)))
-
-(defun nano-modeline-secondary-info (text)
-  "Information using primary face"
-
-  (propertize text 'face (nano-modeline-face 'secondary)))
-
-(defun nano-modeline-mu4e-search-filter ()
-  "Mu4e current search"
-
-  (propertize (mu4e-last-query) 'face (nano-modeline-face 'name)))
-
-(defun nano-modeline-mu4e-context ()
-  "Mu4e current context"
-
-  (let* ((context (mu4e-context-current))
-         (name (if context (mu4e-context-name context) "none")))
-    (propertize (format "[%s] " name)
-                'face (nano-modeline-face 'secondary))))
-
-(defun nano-modeline-mu4e-raw-context ()
-  "Mu4e current context (raw form for button)"
-
-  (let* ((context (mu4e-context-current))
-         (name (if context (mu4e-context-name context) "NONE")))
-    (upcase name)))
-
-(defun nano-modeline-mu4e-message-to ()
-  "Return the recipients of a message, separating me from others"
-
-  (with-current-buffer "*mu4e-headers*"
-    (let* ((msg (mu4e-message-at-point))
-           (list (memq 'list (plist-get msg :flags)))
-           (cc (mapcar (lambda (item)
-                         (downcase (plist-get item :email)))
-                       (plist-get msg :cc)))
-           (to (mapcar (lambda (item)
-                         (downcase (plist-get item :email)))
-                       (plist-get msg :to)))
-           (to-names (mapcar (lambda (item)
-                               (if (stringp (plist-get item :name))
-                                   (capitalize (downcase (plist-get item :name)))
-                                 (plist-get item :email)))
-                             (plist-get msg :to)))
-           (all (cl-union to cc))
-           (me (mapcar #'downcase (mu4e-personal-addresses)))
-           (me (cl-intersection all me :test #'string-equal))
-           (others (cl-set-difference all me :test #'string-equal)))
-      (cond (list
-             (concat "to " (car to-names)))
-            ((= (length others) 0)
-             "to me")
-            ((and (> (length others) 0) (< (length others) (length all)))
-             (format "to me (+%d recipients)" (length others)))
-            ((and (= (length others) 1))
-             (format "to %s" (car to-names)))
-            (t
-             (format "to %s (+%d recipients)" (car to-names) (1- (length others))))))))
-
-(defun nano-modeline-mu4e-message-from ()
-  "Return the sender of the message that can be me or a name"
-
-  (with-current-buffer "*mu4e-headers*"
-    (let* ((msg (mu4e-message-at-point))
-           (me (mapcar #'downcase (mu4e-personal-addresses)))
-           (from (mu4e-message-field msg :from))
-           (from-name (plist-get (car from) :name))
-           (from-email (plist-get (car from) :email)))
-      (cond ((member from-email me) "Me")
-            ((stringp from-name)    (capitalize (downcase from-name)))
-            (t                      from-email)))))
+(defun nano-modeline-element-window-spacing ()
+  "Return conditional spacing"
+  '(:eval (let (mode-line-format)
+            (let ((padding (nano-modeline-padding-to)))
+              (concat (car padding)
+                      (if (window-in-direction 'down)
+                          (propertize " " 'face '(:height 80))
+                        (propertize " " 'face '(:height 10)))
+                      (cdr padding))))))
 
 
-(defun nano-modeline-mu4e-view-in-xwidget ()
-  (interactive)
-  (with-current-buffer "*mu4e-headers*"
-    (let ((msg (mu4e-message-at-point)))
-      (mu4e-action-view-in-xwidget msg))))
+(defun nano-modeline-element-window-status ()
+  "Return a string describing window status"
 
-(defun nano-modeline-mu4e-context-next ()
-  "Switch to next mu4e context"
+  (let* ((dedicated (nano-modeline-symbol 'window-dedicated))
+         (inactive (nano-modeline-symbol 'window-inactive))
+         (active (nano-modeline-symbol 'window-active))
+         (status (cond ((minibuffer-window-active-p (minibuffer-window))
+                        (if (eq (old-selected-window) (selected-window))
+                            (if (window-dedicated-p)
+                                (cons dedicated 'nano-modelice-face-primary)
+                              (cons active 'nano-modeline-face-primary))
+                          (if (window-dedicated-p)
+                             (cons dedicated 'nano-modeline-face-secondary))))
+                       ((and (not (one-window-p)) (mode-line-window-selected-p))
+                        (if (window-dedicated-p)
+                            (cons dedicated 'nano-modelice-face-primary)
+                          (cons active 'nano-modeline-face-primary)))
+                       ((window-dedicated-p)
+                        (cons dedicated 'nano-modeline-face-secondary))
+                       ((not (one-window-p))
+                        (cons inactive 'nano-modeline-face-secondary)))))
+    (when (and (consp status) (> (length (car status)) 0))
+      (propertize (concat " " (car status)) 'face (cdr status)))))
 
-  (interactive)
-  (let* ((current (mu4e-context-name (mu4e-context-current)))
-         (contexts (mapcar (lambda (context)
-                             (mu4e-context-name context))
-                           mu4e-contexts))
-         (index (mod (1+ (cl-position current contexts))
-                     (length contexts)))
-         (current (nth index contexts)))
-    (mu4e-context-switch t current)))
 
-(defun nano-modeline-mu4e-message-subject ()
-  "Mu4e message subject"
+(defun nano-modeline-element-space (&optional width)
+  "Return a space string of given pixel WIDTH."
 
-  (let* ((msg (mu4e-message-at-point))
-         (subject (mu4e-message-field msg :subject)))
-    (propertize (format "%s" subject)
-                'face (nano-modeline-face 'name))))
+  (let ((width (or width (frame-char-width))))
+    (propertize " " 'display `(space :width (,width)))))
 
-(defun nano-modeline-mu4e-message-date ()
-  "Mu4e message date"
+(defun nano-modeline-element-half-space ()
+  "Return half a space string."
 
-  (let* ((msg (mu4e-message-at-point))
-         (date (mu4e-message-field msg :date)))
-    (propertize (format-time-string "%d %b %Y at %H:%M" date)
-                'face (nano-modeline-face 'secondary))))
+  (nano-modeline-element-space (floor (/ (frame-char-width) 2))))
 
-(defun nano-modeline-pdf-page ()
-  "PDF view mode page number / page total"
+(defun nano-modeline-element-border-left (&optional width face raise)
+  "Return a string for a left border with given WIDTH (pixel) and FACE"
 
-  (let ((page-current (image-mode-window-get 'page))
-        (page-total (pdf-cache-number-of-pages)))
-    (propertize (format "%d/%d " page-current page-total)
-                'face (nano-modeline-face 'secondary))))
+  (let* ((color nano-modeline-border-color)
+         (face (or face `(:background ,color :underline ,color)))
+        (width (or width 1))
+        (raise (or raise 0)))
+  (propertize " " 'display `((raise ,raise) (space :width (,width))) 'face face )))
 
-(defun nano-modeline-elfeed-entry-status ()
-  "Elfeed entry status"
+(defun nano-modeline-element-border-right (&optional width face raise)
+  "Return a string for a right border with given WIDTH (pixel) and FACE"
 
-  (let* ((feed (elfeed-entry-feed elfeed-show-entry))
-         (feed-title (plist-get (elfeed-feed-meta feed) :title)))
-    (nano-modeline-buffer-status feed-title)))
+  (let* ((color nano-modeline-border-color)
+         (face (or face `(:background ,color :underline ,color)))
+         (width (or width 1))
+         (raise (or raise 0))
+         (align (cdr nano-modeline-alignment)))
+    (concat
+     (propertize " " 'display `((raise ,raise) (space :width (,width))) 'face face))))
 
-(defun nano-modeline-elfeed-entry-title ()
-  "Elfeed entry title"
 
-  (let* ((title (elfeed-entry-title elfeed-show-entry))
-         (title (string-replace "%" "%%" title)))
-    (propertize title 'face (nano-modeline-face 'name))))
+(defun nano-modeline--button (label face)
+  "Make a text button from LABEL and FACE."
 
-(defun nano-modeline-elfeed-search-filter ()
-  "Elfeed search filter"
+  (let* ((padding (if (consp label)
+                      (cdr label)
+                    (cons (floor (/ (frame-char-width) 2))
+                          (- (frame-char-width)
+                             (floor (/ (frame-char-width) 2))))))
+         (color nano-modeline-border-color)
+         (label (if (consp label)
+                    (car label)
+                  label)))
+    (propertize (concat (propertize " "   'display `((raise 0.1) (space :width (,(car padding)))))
+                        (propertize label 'display `((raise 0.1)))
+                        (propertize " "   'display `((raise 0.1) (space :width (,(cdr padding))))))
+                'pointer 'hand
+                'face `(:inherit ,face
+                                 :weight regular
+                                 :height 0.75
+                                 :overline ,color ;; ,(face-foreground 'header-line nil 'default)
+                                 :underline ,(if (bound-and-true-p nano-modeline-box-state)
+                                                 (face-background 'default)
+                                               color)
+                                 :box (:color ,(face-background 'header-line nil 'default)
+                                              :line-width (0 . 4))))))
 
-  (propertize
-   (if (and (not (zerop (elfeed-db-last-update)))
-            (> (elfeed-queue-count-total) 0))
-       (let ((total (elfeed-queue-count-total))
-             (in-process (elfeed-queue-count-active)))
-         (format "%d jobs pending, %d active"  (- total in-process) in-process))
-     (cond (elfeed-search-filter-active "")
-           ((string-match-p "[^ ]" elfeed-search-filter) elfeed-search-filter)
-           (t "")))
-   'face (nano-modeline-face 'name)))
+(defun nano-modeline-button (label &optional action state help)
+  "Make a text button from LABEL and STATE that triggers ACTION when
+pressed. A HELP text can be provided as a tootlip."
 
-(defun nano-modeline-elfeed-search-count ()
-  "Elfeed search statistics"
+  (propertize (nano-modeline--button label
+                                             (cond ((eq state 'active)   'nano-modeline-face-button-active)
+                                                   ((eq state 'progress) 'nano-modeline-face-button-progress)
+                                                   (t                    'nano-modeline-face-button-inactive)))
+              'keymap (unless (eq state 'progress)
+                        (let ((map (make-sparse-keymap)))
+                          (define-key map (kbd "<header-line> <mouse-1>")
+                                    `(lambda ()
+                                       (interactive)
+                                       (when (functionp ',action)
+                                         (funcall ',action))))
+                          map))
+              'pointer (unless (eq state 'progress)
+                         'hand)
+              'mouse-face (unless (eq state 'progress)
+                            '(:inherit nano-modeline-face-button-highlight))
+              'help-echo help))
 
-  (propertize (cond ((zerop (elfeed-db-last-update)) "")
-                    ((> (elfeed-queue-count-total) 0) "")
-                    (t (concat (elfeed-search--count-unread) " ")))
-   'face (nano-modeline-face 'secondary)))
 
-(defun nano-modeline-elpher-protocol ()
-  "Elpher protocol"
+(defun nano-modeline-element-window-close ()
+  "Return a string button that closes the window."
 
-  (propertize (format "(%s)"
-   (elpher-address-protocol (elpher-page-address elpher-current-page)))
-   'face (nano-modeline-face 'primary)))
+  (let ((buffer (current-buffer)))
+    (nano-modeline-button (nano-modeline-symbol 'window-close)
+                               `(lambda ()
+                                  (when (get-buffer-window ,buffer)
+                                    (delete-window (get-buffer-window ,buffer))))
+                               'active)))
 
-(defun nano-modeline-elpher-title ()
-  "Elpher protocol"
 
-  (propertize
-   (elpher-page-display-string elpher-current-page)
-   'face (nano-modeline-face 'name)))
+  ;; (let ((buffer (current-buffer))
+  ;;       (face  (cond ((minibuffer-window-active-p (minibuffer-window))
+  ;;                     (if (eq (old-selected-window) (selected-window))
+  ;;                         'nano-modelice-face-primary
+  ;;                       'nano-modelice-face-secondary))
+  ;;                    ((mode-line-window-selected-p)
+  ;;                     'nano-modelice-face-primary)
+  ;;                    (t 'nano-modelice-face-secondary))))
+  ;;   (unless (one-window-p)
+  ;;     (propertize (nano-modeline-symbol 'window-close) 'face face
+  ;;                 'keymap (let ((map (make-sparse-keymap)))
+  ;;                           (define-key map (kbd "<header-line> <mouse-1>")
+  ;;                                       `(lambda ()
+  ;;                                          (interactive)
+  ;;                                          (when (get-buffer-window ,buffer)
+  ;;                                            (delete-window (get-buffer-window ,buffer)))))
+  ;;                           map)
+  ;;                 'mouse-face `(:inherit nano-critical
+  ;;                               :box nil
+  ;;                               :overline ,(face-foreground 'default)
+  ;;                               :underline nil 'unspecified ,(face-foreground 'default))
+  ;;                 'help-echo "Close window"))))
 
-(defun nano-modeline-date (&optional date format)
-  "Date using given FORMAT and DATE"
+;; --- Terminal ---------------------------------------------------------------
 
-  (propertize (format-time-string (or format "%A %-e %B %Y") date)
-              'face (nano-modeline-face 'secondary)))
+(defun nano-modeline-element-terminal-status ()
+  "Terminal status"
+  (nano-modeline-element-buffer-status (nano-modeline-symbol 'buffer-terminal)
+                                       'nano-modeline-face-buffer-read-only))
 
-(defun nano-modeline-org-agenda-date (&optional format)
-  "Date at point in org agenda  using given FORMAT"
+(defun nano-modeline-element-terminal-name ()
+  "Terminal shell name"
+  (propertize (format "%s" shell-file-name) 'face 'nano-modeline-face-primary))
 
-  (when-let* ((day (or (org-get-at-bol 'ts-date)
-                       (org-get-at-bol 'day)))
-              (date (calendar-gregorian-from-absolute day))
-              (day (nth 1 date))
-              (month (nth 0 date))
-              (year (nth 2 date))
-              (date (encode-time 0 0 0 day month year)))
-    (propertize (format-time-string (or format "%A %-e %B %Y") date)
-                'face (nano-modeline-face 'secondary))))
-
-(defun nano-modeline-term-shell-name ()
-  "Term shell name"
-
-  (propertize shell-file-name
-              'face (nano-modeline-face 'name)))
-
-(defun nano-modeline-term-shell-mode ()
-  "Term shell mode"
-
-  (propertize (if (term-in-char-mode)
-                  "(char mode)"
-                "(line mode)")
-               'face (nano-modeline-face 'primary)))
-
-(defun nano-modeline-eat-shell-mode ()
-  "Eat shell mode"
-
-  (propertize (cond (eat--semi-char-mode "(semi-char mode)")
-                    (eat--char-mode "(char mode)")
-                    (eat--line-mode "(line mode)")
-                    (t "(unknown mode)"))
-               'face (nano-modeline-face 'primary)))
-
-(defun nano-modeline-default-directory (&optional max-length)
-  "Term current directory"
+(defun nano-modeline-element-terminal-directory (&optional max-length)
+  "Current working directory"
 
   (let* ((max-length (or max-length 32))
          (dir default-directory)
@@ -843,229 +860,401 @@ delay needs to be set to 0."
       (setq path (cdr path)))
     (when path
       (setq output (concat "…/" output)))
-    (propertize output 'face (nano-modeline-face 'secondary))))
+    (propertize output 'face 'nano-modeline-face-secondary)))
 
-(defun nano-modeline-xwidget-uri ()
-  "xwidget URI"
+(defun nano-modeline-element-terminal-mode ()
+  "Terminal mode"
+  (let ((mode (cond ((derived-mode-p '(term-mode))
+                     (cond ((term-in-char-mode) "char")
+                           ((term-in-line-mode) "line")
+                           (t                   "????")))
+                    ((derived-mode-p '(eat-mode))
+                     (cond (eat--semi-char-mode "semi-char")
+                           (eat--char-mode "char")
+                           (eat--line-mode "line")))
+                    (t nil))))
+    (when mode
+      (propertize (format "(%s mode)" mode) 'face 'nano-modeline-face-default))))
 
-  (propertize (xwidget-webkit-uri (xwidget-at (point-min)))
-              'face (nano-modeline-face 'name)))
+;; --- Elfeed -----------------------------------------------------------------
 
-(defun nano-modeline-org-buffer-name (&optional name)
-  "Org buffer name"
+(defun nano-modeline-element-elfeed-entry-feed ()
+  "Elfeed entry status"
+
+  (let* ((feed (elfeed-entry-feed elfeed-show-entry))
+         (feed-title (plist-get (elfeed-feed-meta feed) :title)))
+    (propertize feed-title 'face 'nano-modeline-face-primary)))
+
+(defun nano-modeline-element-elfeed-entry-title ()
+  "Elfeed entry title"
+
+  (let* ((title (elfeed-entry-title elfeed-show-entry))
+         (title (string-replace "%" "%%" title)))
+    (propertize title 'face 'nano-modeline-face-default)))
+
+(defun nano-modeline-element-elfeed-entry-count ()
+  "Count the number of entries and feeds being currently displayed."
+
+  (with-current-buffer "*elfeed-search*"
+    (cond ((zerop (elfeed-db-last-update)) " ")
+          ((> (elfeed-queue-count-total) 0) " ")
+          (t  (propertize (if (and elfeed-search-filter-active elfeed-search-filter-overflowing)
+                              "?/?"
+                            (cl-loop with feeds = (make-hash-table :test 'equal)
+                                     for entry in elfeed-search-entries
+                                     for feed = (elfeed-entry-feed entry)
+                                     for url = (elfeed-feed-url feed)
+                                     count entry into entry-count
+                                     count (elfeed-tagged-p 'unread entry) into unread-count
+                                     do (puthash url t feeds)
+                                     finally
+                                     (cl-return
+                                      (format "%s/%s" (+ 1 unread-count) entry-count))))
+                          'face 'nano-modeline-face-secondary)))))
+
+(defun nano-modeline-element-elfeed-search-filter ()
+  "Elfeed search filter"
 
   (propertize
-   (cond (name
-          name)
-         ((buffer-narrowed-p)
-          (format"%s [%s]" (or (buffer-base-buffer) (buffer-name))
-                 (org-link-display-format
-                  (substring-no-properties
-                   (or (org-get-heading 'no-tags) "-")))))
-          (t
-           (buffer-name)))
-   'face (nano-modeline-face 'name)))
+   (if (and (not (zerop (elfeed-db-last-update)))
+            (> (elfeed-queue-count-total) 0))
+       (let ((total (elfeed-queue-count-total))
+             (in-process (elfeed-queue-count-active)))
+         (format "%d jobs pending, %d active"  (- total in-process) in-process))
+     (cond (elfeed-search-filter-active "")
+           ((string-match-p "[^ ]" elfeed-search-filter) elfeed-search-filter)
+           (t "")))
+   'face 'nano-modeline-face-primary))
 
-(defun nano-modeline-org-outline-path ()
-  "Org outline path"
-
-  (let ((path (org-with-point-at (org-get-at-bol 'org-marker)
-                (org-display-outline-path nil nil " » " t))))
-    (propertize (substring-no-properties path)
-                'face (nano-modeline-face 'name))))
-
-(defun nano-modeline-org-capture-description ()
-  "Org capture descrioption"
-
-  (let* ((header (nth 4 (org-heading-components)))
-         (header (or header ""))
-         (header (org-link-display-format header))
-         (header (replace-regexp-in-string org-ts-regexp3 "" header))
-         (header (string-trim header))
-         (header (substring-no-properties header)))
-    (propertize (format "(%s)" header)
-                ;; (format "(%s)" (substring-no-properties (org-capture-get :description)))
-                'face (nano-modeline-face 'primary))))
-
-(defun nano-modeline-prog-mode (&optional default)
-  "Nano line for prog mode. Can be made DEFAULT mode."
-
-  (funcall nano-modeline-position
-            '((nano-modeline-buffer-status) " "
-              (nano-modeline-buffer-name) " "
-              (nano-modeline-git-info))
-            '((nano-modeline-cursor-position)
-              (nano-modeline-window-dedicated))
-            default))
-
-(defun nano-modeline-text-mode (&optional default)
-  "Nano line for text mode. Can be made DEFAULT mode."
-
-  (funcall nano-modeline-position
-           '((nano-modeline-buffer-status) " "
-             (nano-modeline-buffer-name) " "
-             (nano-modeline-git-info))
-           '((nano-modeline-cursor-position)
-             (nano-modeline-window-dedicated))
-           default))
-
-(defun nano-modeline-elpher-mode ()
-  "Nano line for elpher mode"
-
-  (setq elpher-use-header nil)
-  (funcall nano-modeline-position
-           '((nano-modeline-buffer-status "GEM") " "
-             (nano-modeline-elpher-title) " "
-             (nano-modeline-elpher-protocol))
-           '((nano-modeline-cursor-position)
-             (nano-modeline-window-dedicated))))
-
-(defun nano-modeline-org-mode ()
-  "Nano line for org mode"
-
-  (funcall nano-modeline-position
-           '((nano-modeline-buffer-status) " "
-             (nano-modeline-org-buffer-name) " "
-             (nano-modeline-git-info))
-           '((nano-modeline-cursor-position)
-             (nano-modeline-window-dedicated))))
-
-(defun nano-modeline-pdf-mode ()
-  "Nano line for text mode"
-
-  (funcall nano-modeline-position
-           '((nano-modeline-buffer-status "PDF") " "
-             (nano-modeline-buffer-name) " "
-             (nano-modeline-file-size))
-           '((nano-modeline-pdf-page)
-             (nano-modeline-window-dedicated))))
-
-(defun nano-modeline-mu4e-headers-mode ()
-  "Nano line for mu4e headers mode with a button to change context"
-
-  (let ((buttons '((nano-modeline-mu4e-raw-context . (nano-modeline-mu4e-context-next . "Switch to next context")))))
-  (funcall nano-modeline-position
-           '((nano-modeline-buffer-status "MAIL") " "
-             (nano-modeline-mu4e-search-filter))
-             `((nano-modeline-buttons ,buttons t) " "
-             (nano-modeline-window-dedicated)))))
+(defun nano-modeline-element-elfeed-search-count ()
+  "Elfeed search statistics"
+  (propertize (or (cond ((zerop (elfeed-db-last-update)) " ")
+                        ((> (elfeed-queue-count-total) 0) " ")
+                        (t (elfeed-search--count-unread))) " ")
+   'face 'nano-modeline-face-secondary))
 
 
-(defun nano-modeline-mu4e-message-mode ()
-  "Nano line for mu4e message mode with several buttons for most
-common action"
+;; --- Mu4e -------------------------------------------------------------------
+(defun nano-modeline-element-mu4e-message-status ()
+  "Return a status for the message at point"
 
-  (let ((buttons '(("[bootstrap:archive]" . (mu4e-view-mark-for-refile . "Archive message"))
-                   (":bootstrap:trash]" . (mu4e-view-mark-for-trash . "Delete message"))
-                   ("[bootstrap:file-richtext]". (nano-modeline-mu4e-view-in-xwidget . "View message as HTML"))
-                   ("[bootstrap:folder]". (mu4e-headers-mark-for-move . "Move message"))
-                   ("[bootstrap:tag]". (mu4e-headers-mark-for-tag . "Tag message"))
-                   ("[bootstrap:reply]". (mu4e-compose-reply . "Reply to message"))
-                   ("[bootstrap:forward]". (mu4e-compose-forward . "Forward message")))))
-    (funcall nano-modeline-position
-             `((nano-modeline-buffer-status "FROM") " "
-               (nano-modeline-buffer-name ,(nano-modeline-mu4e-message-from)) " "
-               (nano-modeline-primary-info ,(nano-modeline-mu4e-message-to)))
-             `((nano-modeline-mu4e-message-date) " "
-               ;; (nano-modeline-buttons ,buttons t) " "
-               (nano-modeline-window-dedicated)))))
+  (let* ((msg (mu4e-message-at-point))
+         (docid (mu4e-message-field msg :docid))
+         (mark (when docid
+                 (with-current-buffer "*mu4e-headers*"
+                   (gethash docid mu4e--mark-map)))))
+    (nano-modeline-element-buffer-status nil
+                 (when mark 'nano-modeline-face-buffer-marked))))
 
-(defun nano-modeline-mu4e-compose-mode ()
-  "Nano line for mu4e compose mode"
+(defun nano-modeline-action-mu4e-update ()
+  (message "The default mu4e update function does nothing. You need to re-write this function or replace the default action."))
 
-  (let ((buttons '(("[bootstrap:download]" . (save-buffer . "Save message"))
-                   ("[bootstrap:paperclip]" . (mml-attach-file . "Attach file"))
-                   ("[bootstrap:lock]" . (mml-secure-message-encrypt . "Encrypt message"))
-                   ("[bootstrap:check]" . (mml-secure-message-sign . "Sign message"))
-                   ("[bootstrap:send]" . (message-send-and-exit . "Send message")))))
-    (funcall nano-modeline-position
-             `((nano-modeline-buffer-status "DRAFT") " "
-               (nano-modeline-buffer-name "Message"))
-             `((nano-modeline-buttons ,buttons t) " "
-               (nano-modeline-window-dedicated)))))
+(defun nano-modeline-action-mu4e-xwidget-view ()
+  (interactive)
+  (with-current-buffer "*mu4e-headers*"
+    (mu4e-action-view-in-xwidget (mu4e-message-at-point))))
 
-(defun nano-modeline-elfeed-entry-mode ()
-  "Nano line for elfeed entry mode"
+(defun nano-modeline-action-mu4e-next-context ()
+  "Switch to next mu4e context"
 
-  (funcall nano-modeline-position
-           '((nano-modeline-elfeed-entry-status) " "
-             (nano-modeline-elfeed-entry-title))))
+  (let* ((current (mu4e-context-name (mu4e-context-current)))
+         (contexts (mapcar (lambda (context)
+                             (mu4e-context-name context))
+                           mu4e-contexts))
+         (index (mod (1+ (cl-position current contexts))
+                     (length contexts)))
+         (current (nth index contexts)))
+    (mu4e-context-switch t current)))
 
-(defun nano-modeline-elfeed-search-mode ()
-  "Nano line for elfeed search mode"
+(defun nano-modeline-action-mu4e-compose-next-context ()
+  "Switch to next mu4e context"
 
-  (add-hook 'elfeed-search-update-hook #'force-mode-line-update)
-  (funcall nano-modeline-position
-           '((nano-modeline-buffer-status "NEWS") " "
-             (nano-modeline-elfeed-search-filter))
-           '((nano-modeline-elfeed-search-count)
-             (nano-modeline-window-dedicated))))
+  (let* ((current (mu4e-context-name (mu4e-context-current)))
+         (contexts (mapcar (lambda (context)
+                             (mu4e-context-name context))
+                           mu4e-contexts))
+         (index (mod (1+ (cl-position current contexts))
+                     (length contexts)))
+         (current (nth index contexts)))
+    (mu4e-context-switch t current)
+    (mu4e-compose-context-switch t current)))
 
-(defun nano-modeline-term-mode ()
-  "Nano line for term mode"
+(defun nano-modeline-action-mu4e-toggle-related ()
+  "Toggle inclusion of related emails."
 
-  (funcall nano-modeline-position
-           '((nano-modeline-buffer-status ">_") " "
-             (nano-modeline-term-shell-name) " "
-             (nano-modeline-term-shell-mode))
-           '((nano-modeline-default-directory) " "
-             (nano-modeline-window-dedicated))))
+  (setq mu4e-search-include-related
+        (not mu4e-search-include-related))
+  (mu4e-search-rerun))
 
-(defun nano-modeline-eat-mode ()
-  "Nano line for term (eat) mode"
+(defun nano-modeline-action-mu4e-toggle-threads ()
+  "Toggle thread grouping mode."
 
-  (funcall nano-modeline-position
-           '((nano-modeline-buffer-status ">_") " "
-             (nano-modeline-term-shell-name) " "
-             (nano-modeline-eat-shell-mode))
-           '((nano-modeline-default-directory) " "
-             (nano-modeline-window-dedicated))))
+  (setq mu4e-search-threads
+        (not mu4e-search-threads))
+  (mu4e-search-rerun))
 
-(defun nano-modeline-xwidget-mode ()
-  "Nano line for xwidget mode"
+(defun nano-modeline-action-mu4e-toggle-folding ()
+  "Toggle thread folding mode (global)"
 
-  (funcall nano-modeline-position
-           '((nano-modeline-buffer-status "URL") " "
-             (nano-modeline-xwidget-uri))
-           '((nano-modeline-window-dedicated))))
+ (mu4e-thread-fold-toggle-all))
 
-(defun nano-modeline-message-mode ()
-  "Nano line for messages mode"
+(defun nano-modeline-action-mu4e-sign ()
+  "Sign email"
+  (mml-secure-messag-sign))
 
-  (funcall nano-modeline-position
-           '((nano-modeline-buffer-status "LOG") " "
-             (nano-modeline-buffer-name) " "
-             (nano-modeline-buffer-line-count))
-           '((nano-modeline-window-dedicated))))
+(defun nano-modeline-action-mu4e-encrypt ()
+  "Encrypt email"
+  (mml-secure-messag-encrypt))
 
-(defun nano-modeline-org-capture-mode ()
-  "Nano line for org capture mode"
+(defun nano-modeline-action-mu4e-attach ()
+  "Attach file."
+  (mml-attach-file))
 
-  (defun nano-modeline-org-capture-filename ()
-    (buffer-file-name (org-base-buffer (current-buffer))))
+(defun nano-modeline-action-mu4e-send ()
+  "Send email and exit"
+  (message-send-and-exit))
 
-  (let* ((filename (nano-modeline-org-capture-filename))
-         (save (format "Save entry to %s" filename))
-         (buttons `(("SAVE" . (org-capture-finalize . ,save))
-                    ("CANCEL" . (org-capture-kill . "Delete entry"))
-                    ("[bootstrap:arrows-expand]" . (delete-other-windows . "expand"))
-                    )))
-    (funcall nano-modeline-position
-             `((nano-modeline-buffer-status "ORG") " "
-               (nano-modeline-buffer-name "Capture") " "
-               (nano-modeline-org-capture-description))
-             `((nano-modeline-buttons ,buttons t) " "
-               (nano-modeline-window-dedicated)))))
+(defun nano-modeline-element-mu4e-last-query ()
+  "Last search query"
+    (propertize (mu4e-last-query) 'face 'nano-modeline-face-primary))
 
-(defun nano-modeline-org-agenda-mode ()
-  "Nano line for org agenda mode"
+(defun nano-modeline-element-mu4e-message-to ()
+  "Recipients of a message, separating me from others"
 
-  (add-hook 'post-command-hook #'force-mode-line-update)
-  (funcall nano-modeline-position
-            '((nano-modeline-buffer-status "ORG") " "
-              (nano-modeline-buffer-name "Agenda"))
-            '((nano-modeline-org-agenda-date) " "
-              (nano-modeline-window-dedicated))))
+  (if (not (get-buffer "*mu4e-headers*"))
+      "…"
+    (with-current-buffer "*mu4e-headers*"
+      (let* ((msg (mu4e-message-at-point))
+             (list (memq 'list (plist-get msg :flags)))
+             (cc (mapcar (lambda (item)
+                           (downcase (plist-get item :email)))
+                         (plist-get msg :cc)))
+             (to (mapcar (lambda (item)
+                           (downcase (plist-get item :email)))
+                         (plist-get msg :to)))
+             (to-names (mapcar (lambda (item)
+                                 (if (stringp (plist-get item :name))
+                                     (capitalize (downcase (plist-get item :name)))
+                                   (plist-get item :email)))
+                               (plist-get msg :to)))
+             (all (cl-union to cc))
+             (me (mapcar #'downcase (mu4e-personal-addresses)))
+             (me (cl-intersection all me :test #'string-equal))
+             (others (cl-set-difference all me :test #'string-equal)))
+        (cond (list
+               (concat "" (car to-names)))
+              ((= (length others) 0)
+               "me")
+              ((and (> (length others) 0) (< (length others) (length all)))
+               (format "me (+%d recipients)" (length others)))
+              ((and (= (length others) 1))
+               (format "%s" (car to-names)))
+              (t
+               (format "%s (+%d recipients)" (car to-names) (1- (length others)))))))))
+
+(defun nano-modeline-element-mu4e-message-from ()
+  "Message sender"
+
+  (if (not (get-buffer "*mu4e-headers*"))
+      "Message"
+    (with-current-buffer "*mu4e-headers*"
+      (let* ((msg (mu4e-message-at-point))
+             (me (mapcar #'downcase (mu4e-personal-addresses)))
+             (from (mu4e-message-field msg :from))
+             (from-name (plist-get (car from) :name))
+             (from-email (plist-get (car from) :email)))
+        (propertize
+         (cond ((member from-email me) "Me")
+               ((stringp from-name)    (capitalize (downcase from-name)))
+               (t                      from-email))
+         'face 'nano-modeline-face-primary)))))
+
+(defun nano-modeline-element-mu4e-message-subject ()
+  "Message subject"
+
+  (if (not (get-buffer "*mu4e-headers*"))
+      "(none)"
+    (with-current-buffer "*mu4e-headers*"
+      (let* ((msg (mu4e-message-at-point))
+             (subject (mu4e-message-field msg :subject)))
+        (propertize (format "%s" subject)
+                    'face 'nano-modeline-face-default)))))
+
+(defun nano-modeline-element-mu4e-compose-subject ()
+  "Compose subject (live)"
+
+  (if (not (derived-mode-p '(mu4e-compose-mode)))
+      ""
+      (save-excursion
+        (message-position-on-field "Subject")
+        (message-beginning-of-line)
+        (if (eq (point) (line-beginning-position))
+            (propertize "(no subject)"
+                        'face 'nano-modeline-face-default)
+          (propertize (buffer-substring (point) (line-end-position))
+                      'face 'nano-modeline-face-primary)))))
+
+(defun nano-modeline-element-mu4e-message-date ()
+  "Message date"
+
+  (if (not (get-buffer "*mu4e-headers*"))
+      (propertize "No message available" 'face 'nano-modeline-face-secondary)
+    (with-current-buffer "*mu4e-headers*"
+      (let* ((msg (mu4e-message-at-point))
+             (date (mu4e-message-field msg :date)))
+        (propertize (format-time-string "%d %b %Y at %H:%M" date)
+                    'face 'nano-modeline-face-secondary)))))
+
+
+(defun nano-modeline-button-mu4e-context ()
+  "Switch to next context."
+
+  (let* ((context (mu4e-context-current))
+         (name (if context (upcase (mu4e-context-name context))
+                 "NONE")))
+    (nano-modeline-button name
+                                #'nano-modeline-action-mu4e-next-context
+                                'active
+                                "Click for next context")))
+
+(defun nano-modeline-button-mu4e-compose-context ()
+  "Switch to next context."
+
+  (let* ((context (mu4e-context-current))
+         (name (if context (upcase (mu4e-context-name context))
+                 "NONE")))
+    (nano-modeline-button name
+                                #'nano-modeline-action-mu4e-compose-next-context
+                                'active
+                                "Click for next context")))
+
+(defun nano-modeline-button-mu4e-xwidget ()
+  "Show mai using xwidget"
+  (nano-modeline-button (nano-modeline-symbol 'mail-html)
+                                #'nano-modeline-action-mu4e-xwidget-view
+                                'active))
+
+(defun nano-modeline-button-mu4e-related ()
+  "Toggle related mails"
+  (nano-modeline-button "R"
+                                #'nano-modeline-action-mu4e-toggle-related
+                                (if mu4e-search-include-related
+                                    'active 'inactive)))
+
+(defun nano-modeline-button-mu4e-threads ()
+  "Toggle threads view"
+  (nano-modeline-button "T"
+                                #'nano-modeline-action-mu4e-toggle-threads
+                                (if mu4e-search-threads
+                                    'active 'inactive)))
+
+(defun nano-modeline-button-mu4e-folding ()
+  "Toggle folding"
+  (if mu4e-thread--fold-status
+      (nano-modeline-button (nano-modeline-symbol 'mail-unfold)
+                                    #'nano-modeline-action-mu4e-toggle-folding
+                                    'active)
+    (nano-modeline-button (nano-modeline-symbol 'mail-fold)
+                                  #'nano-modeline-action-mu4e-toggle-folding
+                                  'inactive)))
+
+(defun nano-modeline-button-mu4e-update ()
+  "Button to start an update (independently of the method). If a local
+variable 'nano-modeline-mu4e-update-progress is defined, it will be
+displayed in the button label.
+
+User is responsible to define the overwrite the function
+nano-modeline-action-mu4e-update that will be triggered when button is
+pressed."
+
+  (if (and (boundp 'nano-modeline-mu4e-update-progress)
+           (stringp nano-modeline-mu4e-update-progress)
+           (> (length nano-modeline-mu4e-update-progress) 0))
+
+      (nano-modeline-button
+       (cons (concat (car (nano-modeline-symbol 'mail-update))
+                     nano-modeline-mu4e-update-progress)
+             '(4 . 4))
+       nil 'progress)
+    (nano-modeline-button (nano-modeline-symbol 'mail-update)
+                                  #'nano-modeline-action-mu4e-update
+                                  'active)))
+
+(defun nano-modeline-button-mu4e-attach ()
+  (nano-modeline-button (nano-modeline-symbol 'mail-attach)
+                                #'nano-modeline-action-mu4e-attach
+                                'active
+                                "Attach some files"))
+
+(defun nano-modeline-button-mu4e-encrypt ()
+  (nano-modeline-button (nano-modeline-symbol 'mail-encrypt)
+                                #'nano-modeline-action-mu4e-encrypt
+                                'active
+                                "Encrypt email"))
+
+(defun nano-modeline-button-mu4e-sign ()
+  (nano-modeline-button (nano-modeline-symbol 'mail-sign)
+                                #'nano-modeline-action-mu4e-sign
+                                'active
+                                "Sign email"))
+
+(defun nano-modeline-button-mu4e-send ()
+  (nano-modeline-button (nano-modeline-symbol 'mail-send)
+                                #'nano-modeline-action-mu4e-send
+                                'active
+                                "Send email"))
+
+(defun nano-modeline (&optional format position default)
+  "Install a modeline described by FORMAT at the given POSITON. If
+DEFAULT is true, this is made the default mode/header line."
+
+  (interactive)
+  (let* ((position (or position nano-modeline-position))
+         (color nano-modeline-border-color)
+         (format (or format nano-modeline-format-default))
+         (face  `(:box (:color ,color :line-width (1 . 1))
+                  :overline nil
+                  :underline nil
+                  :inherit nano-subtle))
+         (face-relative  `(:box (:color ,color :line-width (0 . 1))
+                           :overline nil
+                           :underline nil
+                          :inherit nano-subtle)))
+
+    (face-remap-reset-base 'header-line)
+    (face-remap-reset-base 'mode-line)
+
+    ;; Install specific faces
+    (if (not (eq position 'footer))
+        (if default
+            (progn
+              (apply #'set-face-attribute 'header-line nil face))
+          (progn
+            (face-remap-add-relative 'header-line face-relative)))
+      (if default
+          (progn
+            (apply #'set-face-attribute 'mode-line-active nil face)
+            (apply #'set-face-attribute 'mode-line-inactive nil face))
+        (progn
+          (face-remap-add-relative 'mode-line-active face-relative)
+          (face-remap-add-relative 'mode-line-inactive  face-relative))))
+
+    ;; Instal modeline
+    (if (not (eq position 'footer))
+        (progn
+          (setq header-line-format `(:eval (nano-modeline-make ',format)))
+          (setq mode-line-format nil)
+          (when default
+              (setq-default header-line-format `(:eval (nano-modeline-make ',format)))
+              (setq-default mode-line-format nil)))
+      (progn
+        (setq mode-line-format `(:eval (nano-modeline-make ',format)))
+        (setq header-line-format nil)
+        (when default
+          (setq-default mode-line-format `(:eval (nano-modeline-make ',format)))
+          (setq-default header-line-format nil))))))
+
+
 
 (provide 'nano-modeline)
 ;;; nano-modeline.el ends here
