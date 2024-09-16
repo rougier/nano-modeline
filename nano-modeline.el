@@ -119,7 +119,6 @@
 ;;
 
 ;;; Code:
-(require 'nano-theme)
 
 (defgroup nano nil
   "N Λ N O"
@@ -337,29 +336,29 @@ the buffer status element."
   :group 'nano-modeline)
 
 (defface nano-modeline-face-buffer-read-only
-  `((t (:foreground ,(face-foreground 'nano-default-i)
-        :background ,(face-background 'nano-default-i)
+  `((t (:foreground ,(face-background 'default)
+        :background ,(face-foreground 'default)
         :weight ,(face-attribute 'bold :weight))))
   "Face for read only buffer"
   :group 'nano-modeline-faces)
 
 (defface nano-modeline-face-buffer-read-write
-  `((t (:foreground ,(face-foreground 'nano-faded-i)
-        :background ,(face-background 'nano-faded-i)
+  `((t (:foreground ,(face-background 'font-lock-comment-face nil 'default)
+        :background ,(face-foreground 'font-lock-comment-face nil 'default)
         :weight ,(face-attribute 'bold :weight))))
   "Face for read-write buffer"
   :group 'nano-modeline-faces)
 
 (defface nano-modeline-face-buffer-modified
-  `((t (:foreground ,(face-foreground 'nano-popout-i)
-        :background ,(face-background 'nano-popout-i)
+  `((t (:foreground ,(face-background 'default)
+        :background ,(face-foreground 'warning nil 'default)
         :weight ,(face-attribute 'bold :weight))))
   "Face for modified buffer"
   :group 'nano-modeline-faces)
 
 (defface nano-modeline-face-buffer-marked
-  `((t (:foreground ,(face-foreground 'nano-critical-i)
-        :background ,(face-background 'nano-critical-i)
+  `((t (:foreground ,(face-background 'default)
+        :background ,(face-foreground 'error nil 'default)
         :weight ,(face-attribute 'bold :weight))))
   "Face for marked buffer"
   :group 'nano-modeline-faces)
@@ -376,34 +375,34 @@ the buffer status element."
   :group 'nano-modeline-faces)
 
 (defface nano-modeline-face-secondary
-  `((t (:foreground ,(face-foreground 'nano-faded))))
+  `((t (:foreground ,(face-foreground 'font-lock-comment-face nil 'default))))
   "Face for secondary information"
   :group 'nano-modeline-faces)
 
 (defface nano-modeline-face-button-active
-  `((t :foreground ,(face-foreground 'nano-default-i)
-       :background ,(face-background 'nano-default-i)
+  `((t :foreground ,(face-background 'default)
+       :background ,(face-foreground 'default)
        :weight ,(face-attribute 'bold :weight)))
   "Active button face"
   :group 'nano-modeline-faces)
 
 (defface nano-modeline-face-button-progress
-  `((t :foreground ,(face-foreground 'nano-critical-i)
-       :background ,(face-background 'nano-critical-i)
-       :weight ,(face-attribute 'bold :weight)))
+  `((t (:foreground ,(face-background 'default)
+        :background ,(face-foreground 'error nil t)
+        :weight ,(face-attribute 'bold :weight)))
   "Progress button face"
   :group 'nano-modeline-faces)
 
 (defface nano-modeline-face-button-inactive
-  `((t :foreground ,(face-foreground 'nano-faded)
+  `((t :foreground ,(face-foreground 'font-lock-comment-face nil t)
        :background ,(face-background 'default)))
   "Inactive button face."
   :group 'nano-modeline-faces)
 
 (defface nano-modeline-face-button-highlight
-  `((t :foreground ,(face-foreground 'nano-popout-i)
-       :background ,(face-background 'nano-popout-i)
-       :weight ,(face-attribute 'bold :weight)))
+  `((t (:foreground ,(face-background 'default)
+        :background ,(face-foreground 'warning nil t)
+        :weight ,(face-attribute 'bold :weight)))
   "Highlight button face."
   :group 'nano-modeline-faces)
 
@@ -810,30 +809,6 @@ pressed. A HELP text can be provided as a tootlip."
                                   (when (get-buffer-window ,buffer)
                                     (delete-window (get-buffer-window ,buffer))))
                                'active)))
-
-
-  ;; (let ((buffer (current-buffer))
-  ;;       (face  (cond ((minibuffer-window-active-p (minibuffer-window))
-  ;;                     (if (eq (old-selected-window) (selected-window))
-  ;;                         'nano-modelice-face-primary
-  ;;                       'nano-modelice-face-secondary))
-  ;;                    ((mode-line-window-selected-p)
-  ;;                     'nano-modelice-face-primary)
-  ;;                    (t 'nano-modelice-face-secondary))))
-  ;;   (unless (one-window-p)
-  ;;     (propertize (nano-modeline-symbol 'window-close) 'face face
-  ;;                 'keymap (let ((map (make-sparse-keymap)))
-  ;;                           (define-key map (kbd "<header-line> <mouse-1>")
-  ;;                                       `(lambda ()
-  ;;                                          (interactive)
-  ;;                                          (when (get-buffer-window ,buffer)
-  ;;                                            (delete-window (get-buffer-window ,buffer)))))
-  ;;                           map)
-  ;;                 'mouse-face `(:inherit nano-critical
-  ;;                               :box nil
-  ;;                               :overline ,(face-foreground 'default)
-  ;;                               :underline nil 'unspecified ,(face-foreground 'default))
-  ;;                 'help-echo "Close window"))))
 
 ;; --- Terminal ---------------------------------------------------------------
 
