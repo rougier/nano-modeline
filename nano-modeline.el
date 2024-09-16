@@ -380,29 +380,29 @@ the buffer status element."
   :group 'nano-modeline-faces)
 
 (defface nano-modeline-face-button-active
-  `((t :foreground ,(face-background 'default)
-       :background ,(face-foreground 'default)
-       :weight ,(face-attribute 'bold :weight)))
+  `((t (:foreground ,(face-background 'default)
+        :background ,(face-foreground 'default)
+        :weight ,(face-attribute 'bold :weight))))
   "Active button face"
   :group 'nano-modeline-faces)
 
 (defface nano-modeline-face-button-progress
   `((t (:foreground ,(face-background 'default)
-        :background ,(face-foreground 'error nil t)
-        :weight ,(face-attribute 'bold :weight)))
+        :background ,(face-foreground 'error nil 'default)
+        :weight ,(face-attribute 'bold :weight))))
   "Progress button face"
   :group 'nano-modeline-faces)
 
 (defface nano-modeline-face-button-inactive
-  `((t :foreground ,(face-foreground 'font-lock-comment-face nil t)
-       :background ,(face-background 'default)))
+  `((t (:foreground ,(face-foreground 'font-lock-comment-face nil 'default)
+        :background ,(face-background 'default))))
   "Inactive button face."
   :group 'nano-modeline-faces)
 
 (defface nano-modeline-face-button-highlight
   `((t (:foreground ,(face-background 'default)
-        :background ,(face-foreground 'warning nil t)
-        :weight ,(face-attribute 'bold :weight)))
+        :background ,(face-foreground 'warning nil 'default)
+        :weight ,(face-attribute 'bold :weight))))
   "Highlight button face."
   :group 'nano-modeline-faces)
 
