@@ -771,7 +771,7 @@ modeline."
                                  :weight regular
                                  :height 0.75
                                  :overline ,color ;; ,(face-foreground 'header-line nil 'default)
-                                 :underline ,(if (bound-and-true-p nano-modeline-box-state)
+                                 :underline ,(if (bound-and-true-p nano-box-state)
                                                  (face-background 'default)
                                                color)
                                  :box (:color ,(face-background 'header-line nil 'default)
