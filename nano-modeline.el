@@ -803,23 +803,27 @@ modeline."
   "Make a text button from LABEL and STATE that triggers ACTION when
 pressed. A HELP text can be provided as a tootlip."
 
-  (propertize (nano-modeline--button label
-                                             (cond ((eq state 'active)   'nano-modeline-face-button-active)
-                                                   ((eq state 'progress) 'nano-modeline-face-button-progress)
-                                                   (t                    'nano-modeline-face-button-inactive)))
-              'keymap (unless (eq state 'progress)
-                        (let ((map (make-sparse-keymap)))
-                          (define-key map (kbd "<header-line> <mouse-1>")
-                                    `(lambda ()
-                                       (interactive)
-                                       (when (functionp ',action)
-                                         (funcall ',action))))
-                          map))
-              'pointer (unless (eq state 'progress)
-                         'hand)
-              'mouse-face (unless (eq state 'progress)
-                            '(:inherit nano-modeline-face-button-highlight))
-              'help-echo help))
+
+  (let ((buffer (current-buffer)))
+    (propertize (nano-modeline--button label
+                                       (cond ((eq state 'active)   'nano-modeline-face-button-active)
+                                             ((eq state 'progress) 'nano-modeline-face-button-progress)
+                                             (t                    'nano-modeline-face-button-inactive)))
+                'keymap (unless (eq state 'progress)
+                          (let ((map (make-sparse-keymap)))
+                            (define-key map (kbd "<header-line> <mouse-1>")
+                                        `(lambda ()
+                                           (interactive)
+                                           (when (and (get-buffer-window ,buffer)
+                                                      (functionp ',action))
+                                             (with-current-buffer ,buffer
+                                               (funcall ',action)))))
+                            map))
+                'pointer (unless (eq state 'progress)
+                           'hand)
+                'mouse-face (unless (eq state 'progress)
+                              '(:inherit nano-modeline-face-button-highlight))
+                'help-echo help)))
 
 
 (defun nano-modeline-element-window-close ()
