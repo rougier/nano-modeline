@@ -184,6 +184,12 @@
                      (const :tag "Mode" nano-modeline-element-terminal-mode)
                      (const :tag "Working directory" nano-modeline-element-terminal-directory))
                   ;; ----------------------------------------------------------
+                  (choice :tag "→ Org capture"
+                     (const :tag "Description"  nano-modeline-element-org-capture-description)
+                     (const :tag "Save (button)" nano-modeline-button-org-capture-save)
+                     (const :tag "Kill (button)" nano-modeline-button-org-capture-kill)
+                     (const :tag "Refile (button)" nano-modeline-button-org-capture-refile))
+                     ;; ----------------------------------------------------------
                   (choice :tag "→ Elfeed"
                      (const :tag "Search filter" nano-modeline-element-elfeed-search-filter)
                      (const :tag "Search Count" nano-modeline-element-elfeed-search-count)
@@ -217,7 +223,7 @@
     (buffer-read-write . "RW")
     (buffer-modified   . "**")
     (buffer-terminal   . ">_")
-    (buffer-clone      . "--")
+    (buffer-clone      . "//")
     (window-close . (" " . (6 . 0)))
     (window-active . "●")
     (window-inactive . "")
@@ -433,6 +439,22 @@ the buffer status element."
           nano-modeline-element-window-status
           nano-modeline-element-space))
   "Modeline format for terminals"
+  :type 'nano-modeline-type
+  :group 'nano-modeline-modes)
+
+(defcustom nano-modeline-format-org-capture
+  (cons '(nano-modeline-element-buffer-status
+          nano-modeline-element-space
+          nano-modeline-element-buffer-name
+          nano-modeline-element-space
+          nano-modeline-element-org-capture-description)
+        '(nano-modeline-button-org-capture-kill
+          nano-modeline-element-half-space
+          nano-modeline-button-org-capture-refile
+          nano-modeline-element-half-space
+          nano-modeline-button-org-capture-save
+          nano-modeline-element-half-space))
+  "Modeline format for org capture"
   :type 'nano-modeline-type
   :group 'nano-modeline-modes)
 
@@ -850,6 +872,44 @@ pressed. A HELP text can be provided as a tootlip."
                     (t nil))))
     (when mode
       (propertize (format "(%s mode)" mode) 'face 'nano-modeline-face-default))))
+
+;; --- Org capture ------------------------------------------------------------
+
+(defun nano-modeline-element-org-capture-description ()
+  "Org capture description"
+
+  (let* ((header (nth 4 (org-heading-components)))
+         (header (or header ""))
+         (header (org-link-display-format header))
+         (header (replace-regexp-in-string org-ts-regexp3 "" header))
+         (header (string-trim header))
+         (header (substring-no-properties header)))
+    (propertize (format "(%s)" header)
+                'face 'nano-modeline-face-secondary)))
+
+(defun nano-modeline-button-org-capture-save ()
+  "Finalize the capture process."
+
+    (nano-modeline-button "SAVE"
+                          #'org-capture-finalize
+                          'active
+                          "Finalize the capture process"))
+
+(defun nano-modeline-button-org-capture-kill ()
+  "Abort the current capture process"
+
+    (nano-modeline-button "KILL"
+                          #'org-capture-kill
+                          'active
+                          "Abort the current capture process"))
+
+(defun nano-modeline-button-org-capture-refile ()
+  "Abort the current capture process"
+
+    (nano-modeline-button "REFILE"
+                          #'org-capture-refile
+                          'active
+                          "Finalize the current capture and then refile the entry."))
 
 ;; --- Elfeed -----------------------------------------------------------------
 
