@@ -1039,15 +1039,18 @@ pressed. A HELP text can be provided as a tootlip."
 
 (defun nano-modeline-action-mu4e-sign ()
   "Sign email"
-  (mml-secure-messag-sign))
+  (require 'mml)
+  (mml-secure-message-sign))
 
 (defun nano-modeline-action-mu4e-encrypt ()
   "Encrypt email"
-  (mml-secure-messag-encrypt))
+  (require 'mml)
+  (mml-secure-message-encrypt))
 
 (defun nano-modeline-action-mu4e-attach ()
   "Attach file."
-  (mml-attach-file))
+  (require 'mml)
+  (mml-attach-file (mml-minibuffer-read-file "Attach file: ")))
 
 (defun nano-modeline-action-mu4e-send ()
   "Send email and exit"
