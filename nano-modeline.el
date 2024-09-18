@@ -458,6 +458,18 @@ the buffer status element."
   :type 'nano-modeline-type
   :group 'nano-modeline-modes)
 
+(defcustom nano-modeline-format-org-lookup
+  (cons '(nano-modeline-element-buffer-status
+          nano-modeline-element-space
+          nano-modeline-element-buffer-name
+          nano-modeline-element-space
+          nano-modeline-element-buffer-mode)
+        '(nano-modeline-button-window-close
+          nano-modeline-element-half-space))
+  "Modeline format for org lookup"
+  :type 'nano-modeline-type
+  :group 'nano-modeline-modes)
+
 (defcustom nano-modeline-format-elfeed-search
   (cons '(nano-modeline-element-buffer-status
           nano-modeline-element-space
