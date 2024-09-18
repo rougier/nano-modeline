@@ -199,7 +199,7 @@
                      ;; ----------------------------------------------------------
                   (choice :tag "→ Window"
                      (const :tag "Status" nano-modeline-element-window-status)
-                     (const :tag "Close" nano-modeline-element-window-close))
+                     (const :tag "Close" nano-modeline-button-window-close))
                   (list  :tag "Button" (const :tag "" nano-modeline-button)
                                        (string :tag "Label")
                                        (function :tag "Action")
@@ -224,7 +224,7 @@
     (buffer-modified   . "**")
     (buffer-terminal   . ">_")
     (buffer-clone      . "//")
-    (window-close . (" " . (6 . 0)))
+    (window-close . "CLOSE")
     (window-active . "●")
     (window-inactive . "")
     (window-dedicated . "󰐃")
@@ -826,7 +826,7 @@ pressed. A HELP text can be provided as a tootlip."
                 'help-echo help)))
 
 
-(defun nano-modeline-element-window-close ()
+(defun nano-modeline-button-window-close ()
   "Return a string button that closes the window."
 
   (let ((buffer (current-buffer)))
