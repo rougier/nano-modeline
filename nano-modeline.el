@@ -191,6 +191,7 @@
                      (const :tag "Refile (button)" nano-modeline-button-org-capture-refile))
                      ;; ----------------------------------------------------------
                   (choice :tag "→ Elfeed"
+                     (const :tag "Update (button)" nano-modeline-button-elfeed-update)
                      (const :tag "Search filter" nano-modeline-element-elfeed-search-filter)
                      (const :tag "Search Count" nano-modeline-element-elfeed-search-count)
                      (const :tag "Entry feed" nano-modeline-element-elfeed-entry-feed)
@@ -475,8 +476,10 @@ the buffer status element."
           nano-modeline-element-space
           nano-modeline-element-elfeed-search-filter)
         '(nano-modeline-element-elfeed-search-count
+          nano-modeline-element-space
+          nano-modeline-button-elfeed-update
           nano-modeline-element-window-status
-          nano-modeline-element-space))
+          nano-modeline-element-half-space))
   "Modeline format for elfeed search"
   :type 'nano-modeline-type
   :group 'nano-modeline-modes)
@@ -725,7 +728,6 @@ modeline."
                         (propertize " " 'face '(:height 10)))
                       (cdr padding))))))
 
-
 (defun nano-modeline-element-window-status ()
   "Return a string describing window status"
 
@@ -960,6 +962,23 @@ pressed. A HELP text can be provided as a tootlip."
                                      (cl-return
                                       (format "%s/%s" (+ 1 unread-count) entry-count))))
                           'face 'nano-modeline-face-secondary)))))
+
+(defun nano-modeline-button-elfeed-update ()
+  "Button to start an update."
+
+  (with-current-buffer "*elfeed-search*"
+
+    (if (or (zerop (elfeed-db-last-update))
+            (= (elfeed-queue-count-total) 0))
+        (nano-modeline-button (nano-modeline-symbol 'mail-update)
+                              #'elfeed-update
+                              'active)
+      (let* ((total (elfeed-queue-count-total))
+             (in-process (elfeed-queue-count-active))
+             (label (format " %d" total)))
+        (nano-modeline-button
+         (cons (concat (car (nano-modeline-symbol 'mail-update)) label) '(4 . 4))
+         nil 'progress)))))
 
 (defun nano-modeline-element-elfeed-search-filter ()
   "Elfeed search filter"
