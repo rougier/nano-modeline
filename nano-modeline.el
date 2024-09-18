@@ -484,9 +484,7 @@ the buffer status element."
 (defcustom nano-modeline-format-elfeed-entry
   (cons '(nano-modeline-element-buffer-status
           nano-modeline-element-space
-          nano-modeline-element-elfeed-entry-feed
-          nano-modeline-element-space
-          nano-modeline-element-elfeed-entry-title)
+          nano-modeline-element-elfeed-entry-feed)
         '(nano-modeline-element-elfeed-entry-count
           nano-modeline-element-window-status
           nano-modeline-element-space))
@@ -737,13 +735,13 @@ modeline."
          (status (cond ((minibuffer-window-active-p (minibuffer-window))
                         (if (eq (old-selected-window) (selected-window))
                             (if (window-dedicated-p)
-                                (cons dedicated 'nano-modelice-face-primary)
+                                (cons dedicated 'nano-modeline-face-primary)
                               (cons active 'nano-modeline-face-primary))
                           (if (window-dedicated-p)
                              (cons dedicated 'nano-modeline-face-secondary))))
                        ((and (not (one-window-p)) (mode-line-window-selected-p))
                         (if (window-dedicated-p)
-                            (cons dedicated 'nano-modelice-face-primary)
+                            (cons dedicated 'nano-modeline-face-primary)
                           (cons active 'nano-modeline-face-primary)))
                        ((window-dedicated-p)
                         (cons dedicated 'nano-modeline-face-secondary))
