@@ -403,6 +403,13 @@ the buffer status element."
   "Progress button face"
   :group 'nano-modeline-faces)
 
+(defface nano-modeline-face-button-dangerous
+  `((t (:foreground ,(face-background 'default)
+        :background ,(face-foreground 'error nil 'default)
+        :weight ,(face-attribute 'bold :weight))))
+  "Dangerous button face"
+  :group 'nano-modeline-faces)
+
 (defface nano-modeline-face-button-inactive
   `((t (:foreground ,(face-foreground 'font-lock-comment-face nil 'default)
         :background ,(face-background 'default))))
@@ -815,15 +822,15 @@ modeline."
                         (propertize label 'display `((raise 0.1)))
                         (propertize " "   'display `((raise 0.1) (space :width (,(cdr padding))))))
                 'pointer 'hand
-                'face `(:inherit ,face
-                                 :weight regular
-                                 :height 0.75
-                                 :overline ,color ;; ,(face-foreground 'header-line nil 'default)
-                                 :underline ,(if (bound-and-true-p nano-box-state)
-                                                 (face-background 'default)
-                                               color)
-                                 :box (:color ,(face-background 'header-line nil 'default)
-                                              :line-width (0 . 4))))))
+                'face `( :inherit ,face
+                         ;; :weight regular
+                         :height 0.75
+                         :overline ,color ;; ,(face-foreground 'header-line nil 'default)
+                         :underline ,(if (bound-and-true-p nano-box-state)
+                                         (face-background 'default)
+                                       color)
+                         :box (:color ,(face-background 'header-line nil 'default)
+                                      :line-width (0 . 4))))))
 
 (defun nano-modeline-button (label &optional action state help)
   "Make a text button from LABEL and STATE that triggers ACTION when
@@ -833,6 +840,7 @@ pressed. A HELP text can be provided as a tootlip."
   (let ((buffer (current-buffer)))
     (propertize (nano-modeline--button label
                                        (cond ((eq state 'active)   'nano-modeline-face-button-active)
+                                             ((eq state 'dangerous) 'nano-modeline-face-button-progress)
                                              ((eq state 'progress) 'nano-modeline-face-button-progress)
                                              (t                    'nano-modeline-face-button-inactive)))
                 'keymap (unless (eq state 'progress)
@@ -930,7 +938,7 @@ pressed. A HELP text can be provided as a tootlip."
 
     (nano-modeline-button "KILL"
                           #'org-capture-kill
-                          'active
+                          'dangerous
                           "Abort the current capture process"))
 
 (defun nano-modeline-button-org-capture-refile ()
