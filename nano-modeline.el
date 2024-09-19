@@ -151,6 +151,9 @@
                      (list  :tag "Custom" (const :tag "" nano-modeline-element-space)
                                           (integer :tag "Width (pixels)")))
                   ;; ----------------------------------------------------------
+                  (choice :tag "→ Calendar"
+                     (const :tag "Selected date"  nano-modeline-element-calendar-date))
+                  ;; ----------------------------------------------------------
                   (choice :tag "→ Mu4e"
                     (choice :tag "→ Compose"
                         (const :tag "Context (button)" nano-modeline-button-mu4e-compose-context)
@@ -442,6 +445,17 @@ the buffer status element."
   "Modeline format for terminals"
   :type 'nano-modeline-type
   :group 'nano-modeline-modes)
+
+(defcustom nano-modeline-format-calendar
+  (cons '(nano-modeline-element-buffer-status
+          nano-modeline-element-space
+          nano-modeline-element-calendar-date)
+        '(nano-modeline-element-window-status
+          nano-modeline-element-space))
+  "Modeline format for calendar"
+  :type 'nano-modeline-type
+  :group 'nano-modeline-modes)
+
 
 (defcustom nano-modeline-format-org-capture
   (cons '(nano-modeline-element-buffer-status
@@ -926,6 +940,18 @@ pressed. A HELP text can be provided as a tootlip."
                           #'org-capture-refile
                           'active
                           "Finalize the current capture and then refile the entry."))
+
+;; --- Calendar ---------------------------------------------------------------
+(defun nano-modeline-element-calendar-date (&optional format)
+  "Calendar date"
+
+  (let* ((date (calendar-cursor-to-date))
+         (date (when date
+                 (encode-time 0 0 0 (nth 1 date) (nth 0 date) (nth 2 date))))
+         (format (or format "%d %B %Y")))
+    (propertize (format-time-string format date)
+                'face 'nano-modeline-face-primary)))
+
 
 ;; --- Elfeed -----------------------------------------------------------------
 
