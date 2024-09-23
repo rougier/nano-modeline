@@ -1007,8 +1007,11 @@ pressed. A HELP text can be provided as a tootlip."
         (nano-modeline-button (nano-modeline-symbol 'mail-update)
                               #'elfeed-update
                               'active)
-      (let* ((total (length elfeed-feeds))
-             (in-process (elfeed-queue-count-active))
+      (let* (;; (total (length elfeed-feeds))
+             (total (if elfeed-use-curl
+                        elfeed-curl-max-connections
+                      url-queue-parallel-processes n))
+             (in-process (- total (elfeed-queue-count-active)))
              (label (format " %d/%d" in-process total)))
         (nano-modeline-button
          (cons (concat (car (nano-modeline-symbol 'mail-update)) label) '(4 . 4))
