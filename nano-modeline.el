@@ -165,7 +165,8 @@
                      (choice :tag "→ Message"
                         (const :tag "From" nano-modeline-element-mu4e-message-from)
                         (const :tag "To"   nano-modeline-element-mu4e-message-to)
-                        (const :tag "Date" nano-modeline-element-mu4e-message-date))
+                        (const :tag "Date" nano-modeline-element-mu4e-message-date)
+                        (const :tag "Tags" nano-modeline-element-mu4e-message-tags))
                      (choice :tag "→ Headers"
                         (const :tag "Query" nano-modeline-element-mu4e-last-query)
                         (const :tag "Context (button)" nano-modeline-button-mu4e-context)
@@ -236,6 +237,7 @@
     (vc-branch  . "")
     (vc-hash  . "#")
     (mail-html . (" " . (4 . 0)))
+    (mail-tag . (" " . (4 . 0)))
     (mail-attach . (" " . (4 . 0)))
     (mail-encrypt . (" " . (4 . 0)))
     (mail-sign . (" " . (4 . 0)))
@@ -374,6 +376,13 @@ the buffer status element."
   "Face for marked buffer"
   :group 'nano-modeline-faces)
 
+(defface nano-modeline-face-tag
+  `((t ( :foreground ,(face-background 'default)
+         :background ,(face-foreground 'link nil 'default)
+         :weight ,(face-attribute 'bold :weight))))
+  "Default face"
+  :group 'nano-modeline-faces)
+
 (defface nano-modeline-face-default
   `((t (:foreground ,(face-foreground 'default))))
   "Default face"
@@ -391,8 +400,8 @@ the buffer status element."
   :group 'nano-modeline-faces)
 
 (defface nano-modeline-face-button-active
-  `((t (:foreground ,(face-background 'default)
-        :background ,(face-foreground 'default)
+  `((t (:foreground ,(face-background 'link nil 'default)
+        :background ,(face-foreground 'link nil 'default)
         :weight ,(face-attribute 'bold :weight))))
   "Active button face"
   :group 'nano-modeline-faces)
@@ -542,8 +551,8 @@ the buffer status element."
           nano-modeline-element-mu4e-message-from
           " to "
           nano-modeline-element-mu4e-message-to)
-        '(nano-modeline-element-mu4e-message-date
-          nano-modeline-element-space))
+        '(nano-modeline-element-mu4e-message-tags
+          nano-modeline-element-half-space))
   "Modeline for mu4e message mode"
   :type 'nano-modeline-type
   :group 'nano-modeline-modes)
@@ -824,7 +833,6 @@ modeline."
     (propertize (concat (propertize " "   'display `((raise 0.1) (space :width (,(car padding)))))
                         (propertize label 'display `((raise 0.1)))
                         (propertize " "   'display `((raise 0.1) (space :width (,(cdr padding))))))
-                'pointer 'hand
                 'face `( :inherit ,face
                          ;; :weight regular
                          :height 0.75
@@ -834,6 +842,17 @@ modeline."
                                        color)
                          :box (:color ,(face-background 'header-line nil 'default)
                                       :line-width (0 . 4))))))
+
+(defun nano-modeline-element-tags (tags &optional face)
+  "Make a tags string from TAGS and FACE."
+
+  (let ((face (or face 'nano-modeline-face-tag)))
+    (mapconcat (lambda (tag)
+                 (let ((tag (concat (car (nano-modeline-symbol 'mail-tag)) tag)))
+                   (nano-modeline--button tag face)))
+               tags
+               (nano-modeline-element-half-space))))
+
 
 (defun nano-modeline-button (label &optional action state help)
   "Make a text button from LABEL and STATE that triggers ACTION when
@@ -1053,6 +1072,20 @@ pressed. A HELP text can be provided as a tootlip."
                    (gethash docid mu4e--mark-map)))))
     (nano-modeline-element-buffer-status nil
                  (when mark 'nano-modeline-face-buffer-marked))))
+
+(defun nano-modeline-element-mu4e-message-tags ()
+  "Return a status for the message at point"
+
+  (let* ((msg (mu4e-message-at-point))
+         (tags (mu4e-message-field msg :tags)))
+    (when tags
+      (mapconcat (lambda (tag)
+                   (nano-modeline-button tag
+                                         `(lambda () (mu4e-search ,(format "tag:%s" tag)))
+                                         'active))
+                 tags
+               (nano-modeline-element-half-space)))))
+
 
 (defun nano-modeline-action-mu4e-update ()
   (message "The default mu4e update function does nothing. You need to re-write this function or replace the default action."))
