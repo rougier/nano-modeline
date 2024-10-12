@@ -540,7 +540,7 @@ the buffer status element."
           nano-modeline-button-nano-agenda-next-month
           nano-modeline-element-half-space
           ))
-    "Elpher format"
+    "NANO agenda format"
     :type 'nano-modeline-type
     :group 'nano-modeline-modes)
 
