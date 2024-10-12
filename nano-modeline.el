@@ -193,6 +193,11 @@
                      (const :tag "Save (button)" nano-modeline-button-org-capture-save)
                      (const :tag "Kill (button)" nano-modeline-button-org-capture-kill)
                      (const :tag "Refile (button)" nano-modeline-button-org-capture-refile))
+                  ;; ----------------------------------------------------------
+                  (choice :tag "→ Elpher"
+                     (const :tag "Protocol" nano-modeline-element-elpher-protocol)
+                     (const :tag "Page title" nano-modeline-element-elpher-title)
+                     (const :tag "Go back (button)" nano-modeline-button-elpher-back))
                      ;; ----------------------------------------------------------
                   (choice :tag "→ Elfeed"
                      (const :tag "Update (button)" nano-modeline-button-elfeed-update)
@@ -501,6 +506,17 @@ the buffer status element."
   "Modeline format for org lookup"
   :type 'nano-modeline-type
   :group 'nano-modeline-modes)
+
+(defcustom nano-modeline-format-elpher
+  (cons '(nano-modeline-element-elpher-protocol
+          nano-modeline-element-space
+          nano-modeline-element-elpher-title)
+        '(nano-modeline-button-elpher-back
+          nano-modeline-element-window-status
+          nano-modeline-element-half-space))
+    "Elpher format"
+    :type 'nano-modeline-type
+    :group 'nano-modeline-modes)
 
 (defcustom nano-modeline-format-elfeed-search
   (cons '(nano-modeline-element-buffer-status
@@ -858,14 +874,14 @@ modeline."
   "Make a text button from LABEL and STATE that triggers ACTION when
 pressed. A HELP text can be provided as a tootlip."
 
-
   (let ((buffer (current-buffer)))
     (propertize (nano-modeline--button label
-                                       (cond ((eq state 'active)   'nano-modeline-face-button-active)
+                                       (cond ((eq state 'active)    'nano-modeline-face-button-active)
+                                             ((eq state 'disabled)  'nano-modeline-face-button-inactive)
                                              ((eq state 'dangerous) 'nano-modeline-face-button-progress)
-                                             ((eq state 'progress) 'nano-modeline-face-button-progress)
-                                             (t                    'nano-modeline-face-button-inactive)))
-                'keymap (unless (eq state 'progress)
+                                             ((eq state 'progress)  'nano-modeline-face-button-progress)
+                                             (t                     'nano-modeline-face-button-inactive)))
+                'keymap (unless (or (eq state 'progress) (eq state 'disabled))
                           (let ((map (make-sparse-keymap)))
                             (define-key map (kbd "<header-line> <mouse-1>")
                                         `(lambda ()
@@ -875,9 +891,9 @@ pressed. A HELP text can be provided as a tootlip."
                                              (with-current-buffer ,buffer
                                                (funcall ',action)))))
                             map))
-                'pointer (unless (eq state 'progress)
+                'pointer (unless (or (eq state 'progress) (eq state 'disabled))
                            'hand)
-                'mouse-face (unless (eq state 'progress)
+                'mouse-face (unless (or (eq state 'progress) (eq state 'disabled))
                               '(:inherit nano-modeline-face-button-highlight))
                 'help-echo help)))
 
@@ -960,7 +976,7 @@ pressed. A HELP text can be provided as a tootlip."
 
     (nano-modeline-button "KILL"
                           #'org-capture-kill
-                          'dangerous
+                          'active
                           "Abort the current capture process"))
 
 (defun nano-modeline-button-org-capture-refile ()
@@ -983,8 +999,36 @@ pressed. A HELP text can be provided as a tootlip."
                 'face 'nano-modeline-face-primary)))
 
 
-;; --- Elfeed -----------------------------------------------------------------
+;; --- Elpher -----------------------------------------------------------------
 
+(defun nano-modeline-element-elpher-protocol ()
+  "Elpher protocol"
+
+  (let* ((protocol (elpher-address-protocol (elpher-page-address elpher-current-page)))
+         (symbol (cond ((equal protocol "gemini") "GEM")
+                       ((equal protocol "gopher") "/"))))
+    (nano-modeline-element-buffer-status symbol)))
+
+(defun nano-modeline-element-elpher-title ()
+  "Elpher page title"
+
+  (propertize
+   (elpher-page-display-string elpher-current-page)
+   'face 'nano-modeline-face-primary))
+
+(defun nano-modeline-button-elpher-back ()
+  "Go to previous site."
+
+  (if elpher-history
+      (nano-modeline-button "BACK"
+                            #'elpher-back
+                            'active
+                            "Go to previous site")
+    (nano-modeline-button "BACK" nil 'disabled "")))
+
+
+
+;; --- Elfeed -----------------------------------------------------------------
 (defun nano-modeline-element-elfeed-entry-feed ()
   "Elfeed entry status"
 
@@ -1257,9 +1301,9 @@ pressed. A HELP text can be provided as a tootlip."
          (name (if context (upcase (mu4e-context-name context))
                  "NONE")))
     (nano-modeline-button name
-                                #'nano-modeline-action-mu4e-next-context
-                                'active
-                                "Click for next context")))
+                          #'nano-modeline-action-mu4e-next-context
+                          'active
+                          "Click for next context")))
 
 (defun nano-modeline-button-mu4e-compose-context ()
   "Switch to next context."
