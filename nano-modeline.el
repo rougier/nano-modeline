@@ -233,8 +233,8 @@
     (buffer-read-write . "RW")
     (buffer-modified   . "**")
     (buffer-terminal   . ">_")
-    (buffer-clone      . "//")
-    (buffer-narrow     . "><")
+    (buffer-clone      . "CC")
+    (buffer-narrow     . "NW")
     (window-close . "CLOSE")
     (window-active . "●")
     (window-inactive . "")
@@ -477,7 +477,6 @@ the buffer status element."
   "Modeline format for calendar"
   :type 'nano-modeline-type
   :group 'nano-modeline-modes)
-
 
 (defcustom nano-modeline-format-org-capture
   (cons '(nano-modeline-element-buffer-status
