@@ -198,6 +198,14 @@
                      (const :tag "Protocol" nano-modeline-element-elpher-protocol)
                      (const :tag "Page title" nano-modeline-element-elpher-title)
                      (const :tag "Go back (button)" nano-modeline-button-elpher-back))
+                  ;; ----------------------------------------------------------
+                  (choice :tag "→ NANO Agenda"
+                     (const :tag "Date" nano-modeline-element-nano-agenda-date)
+                     (const :tag "Go to previous month (button)" nano-modeline-button-nano-agenda-prev-month)
+                     (const :tag "Go to previous day (button)" nano-modeline-button-nano-agenda-prev-day)
+                     (const :tag "Go to today (button)" nano-modeline-button-nano-agenda-today)
+                     (const :tag "Go to next day (button)" nano-modeline-button-nano-agenda-next-day)
+                     (const :tag "Go to next month (button)" nano-modeline-button-nano-agenda-next-month))
                      ;; ----------------------------------------------------------
                   (choice :tag "→ Elfeed"
                      (const :tag "Update (button)" nano-modeline-button-elfeed-update)
@@ -513,6 +521,25 @@ the buffer status element."
         '(nano-modeline-button-elpher-back
           nano-modeline-element-window-status
           nano-modeline-element-half-space))
+    "Elpher format"
+    :type 'nano-modeline-type
+    :group 'nano-modeline-modes)
+
+(defcustom nano-modeline-format-nano-agenda
+  (cons '(nano-modeline-element-buffer-status
+          nano-modeline-element-space
+          nano-modeline-element-nano-agenda-date)
+        '(nano-modeline-button-nano-agenda-prev-month
+          nano-modeline-element-half-space
+          nano-modeline-button-nano-agenda-prev-day
+          nano-modeline-element-half-space
+          nano-modeline-button-nano-agenda-today
+          nano-modeline-element-half-space
+          nano-modeline-button-nano-agenda-next-day
+          nano-modeline-element-half-space
+          nano-modeline-button-nano-agenda-next-month
+          nano-modeline-element-half-space
+          ))
     "Elpher format"
     :type 'nano-modeline-type
     :group 'nano-modeline-modes)
@@ -1024,6 +1051,56 @@ pressed. A HELP text can be provided as a tootlip."
                             'active
                             "Go to previous site")
     (nano-modeline-button "BACK" nil 'disabled "")))
+
+
+;; --- Nano Agenda -----------------------------------------------------------
+
+(defun nano-modeline-element-nano-agenda-date (&optional format)
+  "Current date"
+
+  (let ((format (or format "%A %d %B %Y")))
+    (propertize (format-time-string format nano-agenda-date)
+                'face 'nano-modeline-face-primary)))
+
+(defun nano-modeline-button-nano-agenda-prev-month ()
+  "Go to previous month"
+
+  (nano-modeline-button "<<"
+                        #' nano-agenda-goto-prev-month
+                        'active
+                        "Go to previous month"))
+
+(defun nano-modeline-button-nano-agenda-today ()
+  "Go to today"
+
+  (nano-modeline-button "TODAY"
+                        #' nano-agenda-goto-today
+                        'active
+                        "Go to today"))
+
+(defun nano-modeline-button-nano-agenda-prev-day ()
+  "Go to previous day"
+
+  (nano-modeline-button "<"
+                        #' nano-agenda-goto-prev-day
+                        'active
+                        "Go to previous day"))
+
+(defun nano-modeline-button-nano-agenda-next-day ()
+  "Go to nextious day"
+
+  (nano-modeline-button ">"
+                        #' nano-agenda-goto-next-day
+                        'active
+                        "Go to next day"))
+
+(defun nano-modeline-button-nano-agenda-next-month ()
+  "Go to nextious month"
+
+  (nano-modeline-button ">>"
+                        #' nano-agenda-goto-next-month
+                        'active
+                        "Go to next month"))
 
 
 
