@@ -43,6 +43,12 @@ To make a specific mode the default one, you can type:
 Currently, only the prog and text mode are generic enough to be made the
 default.
 
+To use nano-modeline to replace the default mode line, you should set `mode-line-format` to `null` with the same hooks to disable the default one. For example
+
+```emacs-lisp
+(add-hook 'prog-mode-hook
+          (lambda () (setq mode-line-format nil)))
+```
 
 ### Screenshots (using [N Λ N O theme](https://github.com/rougier/nano-theme)):
 
