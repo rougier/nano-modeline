@@ -1507,16 +1507,14 @@ DEFAULT is true, this is made the default mode/header line."
     (if (not (eq position 'footer))
         (progn
           (setq header-line-format `(:eval (nano-modeline-make ',format)))
-          (setq mode-line-format nil)
           (when default
-              (setq-default header-line-format `(:eval (nano-modeline-make ',format)))
-              (setq-default mode-line-format nil)))
+              (setq-default mode-line-format nil)
+              (setq-default header-line-format `(:eval (nano-modeline-make ',format)))))
       (progn
         (setq mode-line-format `(:eval (nano-modeline-make ',format)))
-        (setq header-line-format nil)
         (when default
-          (setq-default mode-line-format `(:eval (nano-modeline-make ',format)))
-          (setq-default header-line-format nil))))))
+          (setq-default header-line-format nil)
+          (setq-default mode-line-format `(:eval (nano-modeline-make ',format))))))))
 
 
 
