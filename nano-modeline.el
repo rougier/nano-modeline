@@ -166,6 +166,7 @@
                         (const :tag "From" nano-modeline-element-mu4e-message-from)
                         (const :tag "To"   nano-modeline-element-mu4e-message-to)
                         (const :tag "Date" nano-modeline-element-mu4e-message-date)
+                        (const :tag "Status" nano-modeline-element-mu4e-message-status)
                         (const :tag "Tags" nano-modeline-element-mu4e-message-tags))
                      (choice :tag "→ Headers"
                         (const :tag "Query" nano-modeline-element-mu4e-last-query)
