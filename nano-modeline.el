@@ -413,8 +413,8 @@ the buffer status element."
   :group 'nano-modeline-faces)
 
 (defface nano-modeline-face-button-active
-  `((t (:foreground ,(face-background 'link nil 'default)
-        :background ,(face-foreground 'link nil 'default)
+  `((t (:foreground ,(face-background 'shadow nil 'default)
+        :background ,(face-foreground 'shadow nil 'default)
         :weight ,(face-attribute 'bold :weight))))
   "Active button face"
   :group 'nano-modeline-faces)
@@ -538,8 +538,7 @@ the buffer status element."
           nano-modeline-button-nano-agenda-next-day
           nano-modeline-element-half-space
           nano-modeline-button-nano-agenda-next-month
-          nano-modeline-element-half-space
-          ))
+          nano-modeline-element-half-space))
     "NANO agenda format"
     :type 'nano-modeline-type
     :group 'nano-modeline-modes)
