@@ -464,6 +464,13 @@ the buffer status element."
     :type 'nano-modeline-type
     :group 'nano-modeline-modes)
 
+(defcustom nano-modeline-format-empty
+  (cons '()
+        '())
+    "Empty format"
+    :type 'nano-modeline-type
+    :group 'nano-modeline-modes)
+
 (defcustom nano-modeline-format-terminal
   (cons '(nano-modeline-element-terminal-status
           nano-modeline-element-space
