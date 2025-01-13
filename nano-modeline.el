@@ -365,35 +365,42 @@ the buffer status element."
 (defface nano-modeline-face-buffer-read-only
   `((t (:foreground ,(face-background 'default)
         :background ,(face-foreground 'default)
-        :weight ,(face-attribute 'bold :weight))))
+        :weight ,(face-attribute 'bold :weight nil 'default))))
   "Face for read only buffer"
   :group 'nano-modeline-faces)
 
 (defface nano-modeline-face-buffer-read-write
   `((t (:foreground ,(face-background 'font-lock-comment-face nil 'default)
         :background ,(face-foreground 'font-lock-comment-face nil 'default)
-        :weight ,(face-attribute 'bold :weight))))
+        :weight ,(face-attribute 'bold :weight nil 'default))))
   "Face for read-write buffer"
   :group 'nano-modeline-faces)
 
 (defface nano-modeline-face-buffer-modified
   `((t (:foreground ,(face-background 'default)
         :background ,(face-foreground 'warning nil 'default)
-        :weight ,(face-attribute 'bold :weight))))
+        :weight ,(face-attribute 'bold :weight nil 'default))))
   "Face for modified buffer"
+  :group 'nano-modeline-faces)
+
+(defface nano-modeline-face-buffer-interactive
+  `((t (:foreground ,(face-background 'default)
+        :background ,(face-foreground 'link nil 'default)
+        :weight ,(face-attribute 'bold :weight nil 'default))))
+  "Face for interactive buffer"
   :group 'nano-modeline-faces)
 
 (defface nano-modeline-face-buffer-marked
   `((t (:foreground ,(face-background 'default)
         :background ,(face-foreground 'error nil 'default)
-        :weight ,(face-attribute 'bold :weight))))
+        :weight ,(face-attribute 'bold :weight nil 'default))))
   "Face for marked buffer"
   :group 'nano-modeline-faces)
 
 (defface nano-modeline-face-tag
   `((t ( :foreground ,(face-background 'default)
          :background ,(face-foreground 'link nil 'default)
-         :weight ,(face-attribute 'bold :weight))))
+         :weight ,(face-attribute 'bold :weight nil 'default))))
   "Default face"
   :group 'nano-modeline-faces)
 
@@ -404,7 +411,7 @@ the buffer status element."
 
 (defface nano-modeline-face-primary
   `((t (:foreground ,(face-foreground 'default)
-        :weight ,(face-attribute 'bold :weight))))
+        :weight ,(face-attribute 'bold :weight nil 'default))))
   "Face for primary information"
   :group 'nano-modeline-faces)
 
@@ -416,21 +423,21 @@ the buffer status element."
 (defface nano-modeline-face-button-active
   `((t (:foreground ,(face-background 'shadow nil 'default)
         :background ,(face-foreground 'shadow nil 'default)
-        :weight ,(face-attribute 'bold :weight))))
+        :weight ,(face-attribute 'bold :weight nil 'default))))
   "Active button face"
   :group 'nano-modeline-faces)
 
 (defface nano-modeline-face-button-progress
   `((t (:foreground ,(face-background 'default)
         :background ,(face-foreground 'error nil 'default)
-        :weight ,(face-attribute 'bold :weight))))
+        :weight ,(face-attribute 'bold :weight nil 'default))))
   "Progress button face"
   :group 'nano-modeline-faces)
 
 (defface nano-modeline-face-button-dangerous
   `((t (:foreground ,(face-background 'default)
         :background ,(face-foreground 'error nil 'default)
-        :weight ,(face-attribute 'bold :weight))))
+        :weight ,(face-attribute 'bold :weight nil 'default))))
   "Dangerous button face"
   :group 'nano-modeline-faces)
 
@@ -443,7 +450,7 @@ the buffer status element."
 (defface nano-modeline-face-button-highlight
   `((t (:foreground ,(face-background 'default)
         :background ,(face-foreground 'warning nil 'default)
-        :weight ,(face-attribute 'bold :weight))))
+        :weight ,(face-attribute 'bold :weight nil 'default))))
   "Highlight button face."
   :group 'nano-modeline-faces)
 
