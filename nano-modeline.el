@@ -178,10 +178,19 @@
                   ;; ----------------------------------------------------------
                   (choice :tag "→ Buffer"
                      (const :tag "Status" nano-modeline-element-buffer-status)
+                     (const :tag "Interactive" nano-modeline-element-buffer-interactive)
                      (const :tag "Name" nano-modeline-element-buffer-name)
                      (const :tag "Mode" nano-modeline-element-buffer-mode)
                      (const :tag "VC mode" nano-modeline-element-buffer-vc-mode)
                      (const :tag "Position" nano-modeline-element-buffer-position))
+                  ;; ----------------------------------------------------------
+                  (choice :tag "→ GPTel"
+                     (const :tag "Status" nano-modeline-element-gptel-status)
+                     (const :tag "Backend" nano-modeline-element-gptel-backend)
+                     (const :tag "Query" nano-modeline-element-gptel-query-status)
+                     (const :tag "Media (button)" nano-modeline-button-gptel-media)
+                     (const :tag "Context (button)" nano-modeline-button-gptel-context)
+                     (const :tag "Model (button)" nano-modeline-button-gptel-model))
                   ;; ----------------------------------------------------------
                   (choice :tag "→ Terminal"
                      (const :tag "Status" nano-modeline-element-terminal-status)
@@ -454,8 +463,6 @@ the buffer status element."
   "Highlight button face."
   :group 'nano-modeline-faces)
 
-
-
 (defcustom nano-modeline-format-default
   (cons '(nano-modeline-element-buffer-status
           nano-modeline-element-space
@@ -613,7 +620,6 @@ the buffer status element."
   :type 'nano-modeline-type
   :group 'nano-modeline-modes)
 
-
 (defcustom nano-modeline-format-mu4e-compose
   (cons '(nano-modeline-element-buffer-status
           nano-modeline-element-space
@@ -629,6 +635,22 @@ the buffer status element."
           nano-modeline-button-mu4e-send
           nano-modeline-element-half-space))
   "Modeline for mu4e compose mode"
+  :type 'nano-modeline-type
+  :group 'nano-modeline-modes)
+
+(defcustom nano-modeline-format-gptel
+  (cons '(nano-modeline-element-buffer-interactive
+          nano-modeline-element-space
+          nano-modeline-element-gptel-backend
+          nano-modeline-element-space
+          nano-modeline-element-gptel-query-status)
+        '(nano-modeline-button-gptel-media
+          nano-modeline-element-half-space
+          nano-modeline-button-gptel-context
+          nano-modeline-element-half-space
+          nano-modeline-button-gptel-model
+          nano-modeline-element-half-space))
+  "Modeline for gptel (requires gptel-use-header-line to be nil)"
   :type 'nano-modeline-type
   :group 'nano-modeline-modes)
 
@@ -765,6 +787,24 @@ modeline."
          (face  (or face (cond (buffer-read-only    'nano-modeline-face-buffer-read-only)
                                ((buffer-modified-p) 'nano-modeline-face-buffer-modified)
                                (t                   'nano-modeline-face-buffer-read-write))))
+         (symbol (or symbol (cond ((buffer-narrowed-p)  (nano-modeline-symbol 'buffer-narrow))
+                                  ((buffer-base-buffer) (nano-modeline-symbol 'buffer-clone))
+                                  (buffer-read-only     (nano-modeline-symbol 'buffer-read-only))
+                                  ((buffer-modified-p)  (nano-modeline-symbol 'buffer-modified))
+                                  (t                    (nano-modeline-symbol 'buffer-read-write))))))
+    (propertize (concat
+                 (propertize " " 'display `(raise ,(car raise)))
+                 symbol
+                 (propertize " " 'display `(raise ,(- (cdr raise)))))
+                'face face)))
+
+(defun nano-modeline-element-buffer-interactive (&optional symbol face raise)
+  "Return a prefix indicating if buffer is interactive, read-write or modified"
+
+  (let* ((raise (or raise nano-modeline-padding))
+         (face  (or face (cond (buffer-read-only    'nano-modeline-face-buffer-interactive)
+                               ((buffer-modified-p) 'nano-modeline-face-buffer-interactive)
+                               (t                   'nano-modeline-face-buffer-interactive))))
          (symbol (or symbol (cond ((buffer-narrowed-p)  (nano-modeline-symbol 'buffer-narrow))
                                   ((buffer-base-buffer) (nano-modeline-symbol 'buffer-clone))
                                   (buffer-read-only     (nano-modeline-symbol 'buffer-read-only))
@@ -1481,6 +1521,64 @@ pressed."
                                 #'nano-modeline-action-mu4e-send
                                 'active
                                 "Send email"))
+
+;; --- GPTel -----------------------------------------------------------------
+(defun nano-modeline-element-gptel-backend ()
+  "gptel backend"
+  (propertize
+   (format "%s" (gptel-backend-name gptel-backend))
+   'face 'nano-modeline-face-primary))
+
+(defun nano-modeline-element-gptel-query-status ()
+  "gptel query status (ready, waiting,typing)"
+  (propertize
+   (format "(%s)" (if (stringp mode-line-process)
+                      (downcase
+                       (string-trim
+                        (substring-no-properties mode-line-process)))
+                    "ready"))))
+
+(defun nano-modeline-button-gptel-media ()
+  "Toggle media use"
+  (if (and (gptel--model-capable-p 'media) gptel-track-media)
+      (nano-modeline-button "MEDIA"
+                            #'nano-modeline-action-gptel-toggle-media
+                            'active)
+    (nano-modeline-button "NO MEDIA"
+                          #'nano-modeline-action-gptel-toggle-media
+                          'inactive)))
+
+(defun nano-modeline-action-gptel-toggle-media ()
+  "Toggle use of media"
+
+  (setq-local gptel-track-media (not gptel-track-media))
+  (if gptel-track-media
+      (message
+       (concat
+        "Sending media from included links. To include media, create "
+        "a \"standalone\" link in a paragraph by itself, separated from surrounding text."))
+    (message "Ignoring image links. Only link text will be sent."))
+  (force-mode-line-update))
+
+(defun nano-modeline-button-gptel-context ()
+  "Finalize the capture process."
+
+  (let* ((context (or (car-safe (rassoc gptel--system-message gptel-directives))
+                      (gptel--describe-directive gptel--system-message 15)))
+         (prompt-re "I want you\\( to\\)* act as a\\(n\\)* \\([A-Za-z ]*\\).")
+         (context (if (and (stringp gptel--system-message)
+                           (string-match prompt-re gptel--system-message))
+                      (match-string 3 gptel--system-message)
+                    context)))
+    (nano-modeline-button (upcase (format "%s" context))
+                          #'gptel-system-prompt 'active "Set context")))
+
+(defun nano-modeline-button-gptel-model ()
+  "Finalize the capture process."
+
+  (let ((model (gptel--model-name gptel-model)))
+    (nano-modeline-button (string-trim (upcase (format" %s" model)))
+                          #'gptel-menu 'active "Set model")))
 
 (defun nano-modeline (&optional format position default)
   "Install a modeline described by FORMAT at the given POSITON. If
