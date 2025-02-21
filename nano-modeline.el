@@ -1254,9 +1254,10 @@ pressed. A HELP text can be provided as a tootlip."
          (tags (mu4e-message-field msg :tags)))
     (when tags
       (mapconcat (lambda (tag)
-                   (nano-modeline-button tag
-                                         `(lambda () (mu4e-search ,(format "tag:%s" tag)))
-                                         'active))
+                   (let ((tag (concat (car (nano-modeline-symbol 'mail-tag)) tag)))
+                     (nano-modeline-button tag
+                                           `(lambda () (mu4e-search ,(format "tag:%s" tag)))
+                                           'active)))
                  tags
                (nano-modeline-element-half-space)))))
 
@@ -1339,9 +1340,9 @@ pressed. A HELP text can be provided as a tootlip."
 (defun nano-modeline-element-mu4e-message-to ()
   "Recipients of a message, separating me from others"
 
-  (if (not (get-buffer "*mu4e-headers*"))
-      "…"
-    (with-current-buffer "*mu4e-headers*"
+;;  (if (not (get-buffer "*mu4e-headers*"))
+;;      "…"
+;;    (with-current-buffer "*mu4e-headers*"
       (let* ((msg (mu4e-message-at-point))
              (list (memq 'list (plist-get msg :flags)))
              (cc (mapcar (lambda (item)
@@ -1368,14 +1369,15 @@ pressed. A HELP text can be provided as a tootlip."
               ((and (= (length others) 1))
                (format "%s" (car to-names)))
               (t
-               (format "%s (+%d recipients)" (car to-names) (1- (length others)))))))))
+               (format "%s (+%d recipients)" (car to-names) (1- (length others)))))))
+;;))
 
 (defun nano-modeline-element-mu4e-message-from ()
   "Message sender"
 
-  (if (not (get-buffer "*mu4e-headers*"))
-      "Message"
-    (with-current-buffer "*mu4e-headers*"
+;;  (if (not (get-buffer "*mu4e-headers*"))
+;;      "Message"
+;;    (with-current-buffer "*mu4e-headers*"
       (let* ((msg (mu4e-message-at-point))
              (me (mapcar #'downcase (mu4e-personal-addresses)))
              (from (mu4e-message-field msg :from))
@@ -1385,18 +1387,20 @@ pressed. A HELP text can be provided as a tootlip."
          (cond ((member from-email me) "Me")
                ((stringp from-name)    (capitalize (downcase from-name)))
                (t                      from-email))
-         'face 'nano-modeline-face-primary)))))
+         'face 'nano-modeline-face-primary)))
+;;))
 
 (defun nano-modeline-element-mu4e-message-subject ()
   "Message subject"
 
-  (if (not (get-buffer "*mu4e-headers*"))
-      "(none)"
-    (with-current-buffer "*mu4e-headers*"
+;;  (if (not (get-buffer "*mu4e-headers*"))
+;;      "(none)"
+;;    (with-current-buffer "*mu4e-headers*"
       (let* ((msg (mu4e-message-at-point))
              (subject (mu4e-message-field msg :subject)))
         (propertize (format "%s" subject)
-                    'face 'nano-modeline-face-default)))))
+                    'face 'nano-modeline-face-default)))
+;;))
 
 (defun nano-modeline-element-mu4e-compose-subject ()
   "Compose subject (live)"
