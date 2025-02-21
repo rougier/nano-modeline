@@ -289,11 +289,11 @@ other characters."
                  (const :tag "Bottom" footer))
   :group 'nano-modeline)
 
-(defcustom nano-modeline-borders '(t . t)
+(defcustom nano-modeline-borders (cons (display-graphic-p) (display-graphic-p))
   "Whether to add left / right borders to modlines"
 
   :type '(cons (boolean :tag "Left")
-                 (boolean :tag "Right"))
+               (boolean :tag "Right"))
   :group 'nano-modeline)
 
 
