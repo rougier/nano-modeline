@@ -772,7 +772,7 @@ modeline."
             left
             (propertize " "
                         'display (nano-modeline-align-to
-                                  'right 'fringe 0 pixel-adjust))
+                                  'right (cdr alignment) 0 pixel-adjust))
             right
             (cdr padding))))
 
