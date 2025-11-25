@@ -1591,6 +1591,10 @@ DEFAULT is true, this is made the default mode/header line."
   (interactive)
   (let* ((position (or position nano-modeline-position))
          (color nano-modeline-border-color)
+         (header-line-faces (if (and (facep 'header-line-active)
+                                     (facep 'header-line-inactive))
+                                '(header-line-active header-line-inactive)
+                              '(header-line)))
          (format (or format nano-modeline-format-default))
          (face  `(:box (:color ,color :line-width (1 . 1))
                   :overline nil
@@ -1607,10 +1611,10 @@ DEFAULT is true, this is made the default mode/header line."
     ;; Install specific faces
     (if (not (eq position 'footer))
         (if default
-            (progn
-              (apply #'set-face-attribute 'header-line nil face))
-          (progn
-            (face-remap-add-relative 'header-line face-relative)))
+            (dolist (f header-line-faces)
+              (apply #'set-face-attribute f nil face))
+          (dolist (f header-line-faces)
+            (face-remap-add-relative f face-relative)))
       (if default
           (progn
             (apply #'set-face-attribute 'mode-line-active nil face)
