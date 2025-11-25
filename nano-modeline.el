@@ -1595,11 +1595,11 @@ DEFAULT is true, this is made the default mode/header line."
          (face  `(:box (:color ,color :line-width (1 . 1))
                   :overline nil
                   :underline nil
-                  :inherit nano-subtle))
+                  :inherit ,(when (facep 'nano-subtle) 'nano-subtle)))
          (face-relative  `(:box (:color ,color :line-width (0 . 1))
                            :overline nil
                            :underline nil
-                          :inherit nano-subtle)))
+                          :inherit ,(when (facep 'nano-subtle) 'nano-subtle))))
 
     (face-remap-reset-base 'header-line)
     (face-remap-reset-base 'mode-line)
