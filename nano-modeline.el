@@ -713,30 +713,37 @@ process."
 ;; --- AGENDA -----------------------------------------------------------------
 
 ;; --- CALENDAR ---------------------------------------------------------------
-(defun nano-modeline-calendar-date (&optional format date)
+(defun nano-modeline-calendar-format-date (date &optional format)
+  "CALENDAR: date string"
+  (if date
+      (let* ((date (encode-time 0 0 0 (nth 1 date) (nth 0 date) (nth 2 date)))
+             (format (or format "%A %d %B %Y")))
+        (format-time-string format date))
+    ""))
+
+(defun nano-modeline-calendar-format-holidays (date)
+  "CALENDAR: holidays string"
+  (if date
+      (let* ((holidays (car (calendar-check-holidays date)))
+             (today (format-time-string "%d %B %Y"))
+             (date (encode-time 0 0 0 (nth 1 date) (nth 0 date) (nth 2 date)))
+             (date (format-time-string "%d %B %Y" date)))
+        (cond (holidays (format "(%s)" holidays))
+              ((string= date today) "(Today)")
+              (t "")))
+    ""))
+  
+(defun nano-modeline-calendar-date (&optional format)
   "CALENDAR: date"
-
   (with-current-buffer calendar-buffer
-    (if-let* ((date (or date (calendar-cursor-to-date)))
-              (date (encode-time 0 0 0 (nth 1 date) (nth 0 date) (nth 2 date)))
-              (format (or format "%A %d %B %Y")))
-        (format-time-string format date)
-      "")))
+    nano-modeline-calendar-format-date (calendar-cursor-to-date)))
 
-(defun nano-modeline-calendar-holidays (&optional date)
+(defun nano-modeline-calendar-holidays ()
   "CALENDAR: holiday"
-
   (with-current-buffer calendar-buffer
-    (if-let* ((date (or date (calendar-cursor-to-date))))
-        (let* ((holidays (car (calendar-check-holidays date)))
-               (today (format-time-string "%d %B %Y"))
-               (date (encode-time 0 0 0 (nth 1 date) (nth 0 date) (nth 2 date)))
-               (date (format-time-string "%d %B %Y" date)))
-          (cond (holidays (format "(%s)" holidays))
-                ((string= date today) "(Today)")
-                (t "")))
-      "")))
+    (nano-modeline-calendar-holidays (calendar-cursor-to-date))))
 
+;;;### autoload
 (defun nano-modeline-calendar (&optional where)
   "CALENDAR: calendar mode"
 
@@ -751,30 +758,25 @@ process."
 ;; --- NANO-CALENDAR ---------------------------------------------------------------
 (defun nano-modeline-nano-calendar-date (&optional format)
   "NANO-CALENDAR: date"
-
   (with-current-buffer nano-calendar-buffer
-    (if-let* ((date (nano-calendar-cursor-date)))
-        (nano-modeline-calendar-date format date)
-      "")))
+    (nano-modeline-calendar-format-date (nano-calendar-cursor-date))))
               
 (defun nano-modeline-nano-calendar-holidays ()
   "NANO-CALENDAR: holiday"
-
   (with-current-buffer nano-calendar-buffer
-    (if-let* ((date (nano-calendar-cursor-date)))
-        (nano-modeline-calendar-holidays date)
-      "")))
+    (nano-modeline-calendar-format-holidays (nano-calendar-cursor-date))))
 
 (defun nano-modeline-nano-calendar-workload ()
   "NANO-CALENDAR: workload"
 
   (with-current-buffer nano-calendar-buffer
     (if-let* ((workload (nano-calendar-cursor-workload)))
-        (cond ((eq workload 0) "No event")
-              ((eq workload 0) "1 event")
+        (cond ((eq workload 0) "No event ")
+              ((eq workload 1) "1 event ")
               (t              (format "%s events " workload)))
       "")))
 
+;;;### autoload
 (defun nano-modeline-nano-calendar (&optional where)
   "NANO-CALENDAR: calendar mode"
 
@@ -822,6 +824,7 @@ process."
   "TERMINAL: shell name"
   (format "%s" shell-file-name))
 
+;;;### autoload
 (defun nano-modeline-terminal (&optional where)
   "TERM: term mode (including eat)"
 
@@ -864,6 +867,7 @@ process."
       (file-name-nondirectory filename)
     ""))
 
+;;;### autoload
 (defun nano-modeline-dired (&optional where)
   "DIRED: dired mode"
 
