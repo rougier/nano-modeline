@@ -879,7 +879,42 @@ process."
                  #'nano-modeline-dired-secondary
                  #'nano-modeline-dired-filename))
 ;; --- DIRED ------------------------------------------------------------------
-  
+
+;; --- MAGIT ------------------------------------------------------------------
+(defun nano-modeline-magit-name ()
+  "MAGIT: name"
+  (let* ((name (string-trim (cadr (split-string (buffer-name) ":")))))
+    (format "%s" name)))
+            
+(defun nano-modeline-magit-set-header-line-format (oldfun &rest args)
+  (if (derived-mode-p 'magit-revision-mode)
+      (nano-modeline-magit-revision)
+    (apply oldfun args)))
+
+;;;### autoload
+(defun nano-modeline-magit-revision (&optional where)
+  "MAGIT: revision mode"
+
+  (interactive)
+  (nano-modeline where nil
+                 (lambda () (nano-modeline-buffer-status "MAGIT"))
+                 #'nano-modeline-magit-name
+                 (lambda () (nano-modeline-string "(revision mode)"))
+                 #'nano-modeline-extra))
+
+;;;### autoload
+(defun nano-modeline-magit-status (&optional where)
+  "MAGIT: status mode"
+
+  (interactive)
+  (nano-modeline where nil
+                 (lambda () (nano-modeline-buffer-status "MAGIT"))
+                 #'nano-modeline-magit-name
+                 (lambda () (nano-modeline-string "(status mode)"))
+                 #'nano-modeline-extra))
+;; --- MAGIT ------------------------------------------------------------------
+
+;;;### autoload
 (defun nano-modeline (&optional where default status primary secondary extra)
   "Install a modeline WHERE specified ('header or 'footer) and make it the
 DEFAULT if specified.
@@ -927,3 +962,7 @@ EXTRA     defaults to 'nano-modeline-extra'."
 (add-hook 'calendar-mode-hook      #'nano-modeline-calendar)
 (add-hook 'org-agenda-mode-hook    #'nano-modeline-org-agenda)
 (add-hook 'dired-mode-hook         #'nano-modeline-dired)
+
+(add-hook 'magit-status-mode-hook    #'nano-modeline-magit-status)
+(advice-add #'magit-set-header-line-format :around
+            #'nano-modeline-magit-set-header-line-format)
