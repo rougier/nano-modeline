@@ -525,6 +525,7 @@ process."
   (add-hook 'buffer-list-update-hook
             (lambda () (nano-modeline-mu4e--update-hook where))))
 
+;;;### autoload
 (defun nano-modeline-mu4e-view (&optional where)
   "MU4E: view mode"
 
@@ -535,6 +536,7 @@ process."
                  #'nano-modeline-mu4e-view-subject
                  #'nano-modeline-mu4e-view-date))
 
+;;;### autoload
 (defun nano-modeline-mu4e-compose (&optional where)
   "MU4E: compose mode"
 
@@ -545,6 +547,7 @@ process."
                  #'nano-modeline-mu4e-compose-subject
                  #'nano-modeline-empty))
 
+;;;### autoload
 (defun nano-modeline-mu4e-headers (&optional where)
   "MU4E: headers mode"
 
@@ -618,7 +621,7 @@ process."
   "ELFEED: Last update time."
   (format-time-string "%Y-%m-%d %H:%M " (elfeed-db-last-update)))
 
-
+;;;### autoload
 (defun nano-modeline-elfeed-search (&optional where)
   "ELFEED: search mode"
 
@@ -629,6 +632,7 @@ process."
                  #'nano-modeline-elfeed-search-count
                  #'nano-modeline-elfeed-last-update))
 
+;;;### autoload
 (defun nano-modeline-elfeed-show (&optional where)
   "ELFEED: search mode"
 
@@ -667,6 +671,7 @@ process."
             "(TLS encryption)"
           "")))))
 
+;;;### autoload
 (defun nano-modeline-elpher (&optional where)
   "ELPHER: elpher mode"
 
@@ -695,6 +700,7 @@ process."
               (substring-no-properties
                (buffer-substring (point-min) (1- (line-end-position))))))))
 
+;;;### autoload
 (defun nano-modeline-org-agenda (&optional where)
   "ORG-AGENDA: org-agenda mode"
 
