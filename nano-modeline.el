@@ -885,7 +885,13 @@ process."
   "MAGIT: name"
   (let* ((name (string-trim (cadr (split-string (buffer-name) ":")))))
     (format "%s" name)))
-            
+
+(defun nano-modeline-magit-revision-hash ()
+  "MAGIT: revision hash"
+
+  (let ((hash (buffer-substring (point-min) (+ (point-min) 7))))
+    (format "#%s… " (substring-no-properties hash))))
+
 (defun nano-modeline-magit-set-header-line-format (oldfun &rest args)
   (if (derived-mode-p 'magit-revision-mode)
       (nano-modeline-magit-revision)
@@ -900,7 +906,7 @@ process."
                  (lambda () (nano-modeline-buffer-status "MAGIT"))
                  #'nano-modeline-magit-name
                  (lambda () (nano-modeline-string "(revision mode)"))
-                 #'nano-modeline-extra))
+                 #'nano-modeline-magit-revision-hash))
 
 ;;;### autoload
 (defun nano-modeline-magit-status (&optional where)
