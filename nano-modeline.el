@@ -921,6 +921,48 @@ process."
 ;; --- MAGIT ------------------------------------------------------------------
 
 ;;;### autoload
+(defun nano-modeline-install ()
+  "Install modeline for all defined modes (using mode hook)."
+  
+  (interactive)
+   (add-hook 'mu4e-headers-mode-hook  #'nano-modeline-mu4e-headers)
+  (add-hook 'mu4e-view-mode-hook     #'nano-modeline-mu4e-view)
+  (add-hook 'mu4e-compose-mode-hook  #'nano-modeline-mu4e-compose)
+  (add-hook 'mu4e-update-pre-hook    #'nano-modeline-mu4e-update)
+  (add-hook 'elfeed-search-mode-hook #'nano-modeline-elfeed-search)
+  (add-hook 'elfeed-show-mode-hook   #'nano-modeline-elfeed-show)
+  (add-hook 'term-mode-hook          #'nano-modeline-terminal)
+  (add-hook 'eat-mode-hook           #'nano-modeline-terminal)
+  (add-hook 'calendar-mode-hook      #'nano-modeline-calendar)
+  (add-hook 'org-agenda-mode-hook    #'nano-modeline-org-agenda)
+  (add-hook 'dired-mode-hook         #'nano-modeline-dired)
+  (add-hook 'elpher-mode-hook        #'nano-modeline-elpher)
+  (add-hook 'magit-status-mode-hook    #'nano-modeline-magit-status)
+  (advice-add #'magit-set-header-line-format :around
+              #'nano-modeline-magit-set-header-line-format))
+
+;;;### autoload
+(defun nano-modeline-uninstall ()
+  "Uninstall modeline for all defined modes."
+
+    (interactive)
+    (remove-hook 'mu4e-headers-mode-hook  #'nano-modeline-mu4e-headers)
+    (remove-hook 'mu4e-view-mode-hook     #'nano-modeline-mu4e-view)
+    (remove-hook 'mu4e-compose-mode-hook  #'nano-modeline-mu4e-compose)
+    (remove-hook 'mu4e-update-pre-hook    #'nano-modeline-mu4e-update)
+    (remove-hook 'elfeed-search-mode-hook #'nano-modeline-elfeed-search)
+    (remove-hook 'elfeed-show-mode-hook   #'nano-modeline-elfeed-show)
+    (remove-hook 'term-mode-hook          #'nano-modeline-terminal)
+    (remove-hook 'eat-mode-hook           #'nano-modeline-terminal)
+    (remove-hook 'calendar-mode-hook      #'nano-modeline-calendar)
+    (remove-hook 'org-agenda-mode-hook    #'nano-modeline-org-agenda)
+    (remove-hook 'dired-mode-hook         #'nano-modeline-dired)
+    (remove-hook 'elpher-mode-hook        #'nano-modeline-elpher)
+    (remove-hook 'magit-status-mode-hook    #'nano-modeline-magit-status)
+    (advice-remove #'magit-set-header-line-format
+                   #'nano-modeline-magit-set-header-line-format))
+
+;;;### autoload
 (defun nano-modeline (&optional where default status primary secondary extra)
   "Install a modeline WHERE specified ('header or 'footer) and make it the
 DEFAULT if specified.
@@ -956,19 +998,3 @@ EXTRA     defaults to 'nano-modeline-extra'."
 (provide 'nano-modeline)
 
 ;;; nano-modeline.el ends here
-
-(add-hook 'mu4e-headers-mode-hook  #'nano-modeline-mu4e-headers)
-(add-hook 'mu4e-view-mode-hook     #'nano-modeline-mu4e-view)
-(add-hook 'mu4e-compose-mode-hook  #'nano-modeline-mu4e-compose)
-(add-hook 'mu4e-update-pre-hook    #'nano-modeline-mu4e-update)
-(add-hook 'elfeed-search-mode-hook #'nano-modeline-elfeed-search)
-(add-hook 'elfeed-show-mode-hook   #'nano-modeline-elfeed-show)
-(add-hook 'term-mode-hook          #'nano-modeline-terminal)
-(add-hook 'eat-mode-hook           #'nano-modeline-terminal)
-(add-hook 'calendar-mode-hook      #'nano-modeline-calendar)
-(add-hook 'org-agenda-mode-hook    #'nano-modeline-org-agenda)
-(add-hook 'dired-mode-hook         #'nano-modeline-dired)
-
-(add-hook 'magit-status-mode-hook    #'nano-modeline-magit-status)
-(advice-add #'magit-set-header-line-format :around
-            #'nano-modeline-magit-set-header-line-format)
